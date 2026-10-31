@@ -1,7 +1,28 @@
 import { useState, useRef, useCallback } from "react";
 
-export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) => void) {
+export interface VADOptions {
+  silenceThreshold?: number; // Normalized RMS/energy threshold (0.0 to 1.0)
+  silenceDurationMs?: number; // Trailing silence after speech to auto-stop
+  minSpeechDurationMs?: number; // Minimum speech before silence can trigger auto-stop
+  maxDurationMs?: number; // Maximum recording timeout cutoff
+  autoStopEnabled?: boolean; // Toggle automatic VAD stop
+}
+
+export function useMicrophoneCapture(
+  onTranscriptionComplete?: (text: string) => void,
+  options?: VADOptions
+) {
+  const {
+    silenceThreshold = 0.04,
+    silenceDurationMs = 1300,
+    minSpeechDurationMs = 500,
+    maxDurationMs = 20000,
+    autoStopEnabled = true,
+  } = options || {};
+
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -10,10 +31,35 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
   const audioContextRef = useRef<AudioContext | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  const speechDetectedRef = useRef(false);
+  const speechStartTimeRef = useRef(0);
+  const lastSpeechTimeRef = useRef(0);
+  const recordingStartTimeRef = useRef(0);
+  const isStoppingRef = useRef(false);
+
+  const stopRecording = useCallback(() => {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive" &&
+      !isStoppingRef.current
+    ) {
+      isStoppingRef.current = true;
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsSpeaking(false);
+    }
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
       setError(null);
       audioChunksRef.current = [];
+      speechDetectedRef.current = false;
+      speechStartTimeRef.current = 0;
+      lastSpeechTimeRef.current = 0;
+      recordingStartTimeRef.current = Date.now();
+      isStoppingRef.current = false;
+      setIsSpeaking(false);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -24,8 +70,11 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
         },
       });
 
-      // Setup audio analyzer for live waveform visualization
-      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      // Setup audio analyzer for live waveform visualization and VAD
+      const AudioCtxClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioCtx = new AudioCtxClass();
       audioContextRef.current = audioCtx;
       const source = audioCtx.createMediaStreamSource(stream);
       const analyser = audioCtx.createAnalyser();
@@ -34,13 +83,52 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
       const updateVolume = () => {
+        if (
+          !mediaRecorderRef.current ||
+          mediaRecorderRef.current.state === "inactive" ||
+          isStoppingRef.current
+        ) {
+          return;
+        }
+
         analyser.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
           sum += dataArray[i];
         }
         const avg = sum / dataArray.length;
-        setAudioLevel(Math.min(1.0, avg / 128));
+        const normalizedLevel = Math.min(1.0, avg / 128);
+        setAudioLevel(normalizedLevel);
+
+        const now = Date.now();
+
+        if (autoStopEnabled) {
+          // Voice Activity Detection logic
+          if (normalizedLevel >= silenceThreshold) {
+            if (!speechDetectedRef.current) {
+              speechDetectedRef.current = true;
+              speechStartTimeRef.current = now;
+              setIsSpeaking(true);
+            }
+            lastSpeechTimeRef.current = now;
+          } else if (speechDetectedRef.current) {
+            const speechDuration = (lastSpeechTimeRef.current || now) - speechStartTimeRef.current;
+            const silenceDuration = now - (lastSpeechTimeRef.current || now);
+
+            // Auto-stop when natural speech pause is detected
+            if (speechDuration >= minSpeechDurationMs && silenceDuration >= silenceDurationMs) {
+              stopRecording();
+              return;
+            }
+          }
+
+          // Safety guardrail for maximum recording cutoff
+          if (recordingStartTimeRef.current && now - recordingStartTimeRef.current >= maxDurationMs) {
+            stopRecording();
+            return;
+          }
+        }
+
         animationFrameRef.current = requestAnimationFrame(updateVolume);
       };
       updateVolume();
@@ -60,7 +148,7 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
       };
 
       mediaRecorder.onstop = async () => {
-        // Stop audio tracks
+        // Cleanly stop audio tracks and context
         stream.getTracks().forEach((track) => track.stop());
         if (audioContextRef.current) {
           audioContextRef.current.close().catch(() => {});
@@ -69,9 +157,16 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
           cancelAnimationFrame(animationFrameRef.current);
         }
         setAudioLevel(0);
+        setIsSpeaking(false);
 
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        if (audioBlob.size === 0) return;
+        if (audioBlob.size === 0) {
+          setIsTranscribing(false);
+          isStoppingRef.current = false;
+          return;
+        }
+
+        setIsTranscribing(true);
 
         // Post to backend for Faster-Whisper transcription
         try {
@@ -93,6 +188,9 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
         } catch (uploadErr) {
           console.error("Transcription upload error:", uploadErr);
           setError("Failed to transcribe audio.");
+        } finally {
+          setIsTranscribing(false);
+          isStoppingRef.current = false;
         }
       };
 
@@ -102,15 +200,17 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
       console.error("Microphone access error:", err);
       setError("Microphone permission denied or unavailable.");
       setIsRecording(false);
+      setIsSpeaking(false);
     }
-  }, [onTranscriptionComplete]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  }, [isRecording]);
+  }, [
+    autoStopEnabled,
+    maxDurationMs,
+    minSpeechDurationMs,
+    onTranscriptionComplete,
+    silenceDurationMs,
+    silenceThreshold,
+    stopRecording,
+  ]);
 
   const toggleRecording = useCallback(() => {
     if (isRecording) {
@@ -122,6 +222,8 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
 
   return {
     isRecording,
+    isTranscribing,
+    isSpeaking,
     audioLevel,
     error,
     startRecording,
@@ -129,4 +231,3 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
     toggleRecording,
   };
 }
-

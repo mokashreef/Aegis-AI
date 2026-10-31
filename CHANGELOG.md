@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 11: Client-Side Voice Activity Detection (VAD) & Silence Auto-Stop
+- **Client-Side VAD Engine (`useMicrophoneCapture.ts`)**: Built-in real-time energy analysis via Web Audio API `AudioContext` and `AnalyserNode` automatically detects active speech onset and natural sentence pauses.
+- **Hands-Free Trailing Silence Auto-Stop**: Stops recording automatically after a 1.3-second trailing pause following speech, triggering Faster-Whisper transcription without requiring a second manual click.
+- **Acoustic Guardrails**: 500 ms minimum speech duration rejects transient mouth clicks or keyboard taps; 20-second safety timeout protects against loud ambient background environments.
+- **Dynamic Feedback & Visual Cues**: Added real-time speaking indicators, transcribing spinner, and adaptive placeholder text in `CompanionOverlay.tsx`.
+- **Quality Assurance**: Production frontend bundle compiled with 0 TypeScript errors; 46 backend unit & integration tests passing with 0 flake8 warnings.
+
 ### Added - Phase 10: Native System Tray Icon, Background Daemon Mode & Minimization
 - **Windows System Tray Icon (`tray.py`)**: Dedicated notification area companion icon running detached on a background daemon thread with quick-action right-click context menu via `pystray`.
 - **Hide-to-Tray on Window Close**: Intercepted PyWebView `closing` event in `window.py` to prevent accidental process termination. Clicking close, pressing `ESC`, or `Alt+F4` minimizes the overlay to the tray while keeping background wake-word and API servers active.

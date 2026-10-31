@@ -1,0 +1,37 @@
+name: "📐 Request For Comments (RFC)"
+description: "Propose a significant architectural change or new subsystem design"
+title: "[RFC]: "
+labels: ["rfc", "architecture"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Major architectural shifts in Aegis AI must be reviewed via the RFC process.
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "Brief 1-2 paragraph pitch explaining the architectural concept."
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation & Goals"
+      description: "Why are we doing this? What use cases does this unlock or performance bottlenecks does it solve?"
+    validations:
+      required: true
+  - type: textarea
+    id: detailed_design
+    attributes:
+      label: "Detailed Architecture Specification"
+      description: "Explain interfaces, data schemas, protocol changes, security implications, and error handling."
+    validations:
+      required: true
+  - type: textarea
+    id: zero_key_compliance
+    attributes:
+      label: "Zero API Key & Local Execution Compliance"
+      description: "How does this proposal ensure 100% operation without mandatory paid services or proprietary cloud requirements?"
+    validations:
+      required: true

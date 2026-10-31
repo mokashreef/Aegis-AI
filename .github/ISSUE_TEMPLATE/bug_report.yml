@@ -1,0 +1,69 @@
+name: "🐛 Bug Report"
+description: "File a reproducible bug report to help improve Aegis AI"
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please ensure that you have checked existing issues to avoid duplicates.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Bug Description"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "When invoking Aegis AI via Alt+Space while running a full-screen application..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Exact steps to reproduce the behavior."
+      placeholder: |
+        1. Launch Aegis AI daemon
+        2. Press shortcut 'Alt + Space'
+        3. Enter prompt: 'Open Notepad'
+        4. Observe the failure
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "A clear and concise description of what you expected to happen."
+      placeholder: "Aegis AI HUD should overlay smoothly and trigger the Windows process automation."
+    validations:
+      required: true
+  - type: dropdown
+    id: ai_runtime
+    attributes:
+      label: "AI Runtime / Provider in Use"
+      description: "Which local or free AI engine was active?"
+      options:
+        - "Ollama (Local default)"
+        - "Pollinations AI (Free Cloud Fallback)"
+        - "HuggingFace Free Inference"
+        - "Groq Free Tier"
+        - "GitHub Models"
+        - "Other / Custom Local GGUF"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Environment Details"
+      description: "Operating system version, Python version, Node version, GPU specs."
+      placeholder: |
+        - OS: Windows 11 Pro 23H2 (Build 22631)
+        - Python: 3.11.8
+        - Node.js: 24.19.0
+        - Hardware: Intel i7 / 32GB RAM / RTX 4070
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs & Console Output"
+      description: "Paste relevant backend logs from `storage/logs/aegis.log` or frontend console logs."
+      render: shell

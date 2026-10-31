@@ -1,0 +1,72 @@
+name: Aegis AI CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python-lint-test:
+    name: Python Core Engine CI (Windows & Ubuntu)
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        python-version: ["3.11"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-asyncio pytest-cov
+          pip install -r backend/requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 backend --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+
+      - name: Run Python unit tests with coverage
+        run: |
+          pytest backend/tests -v --cov=backend/aegis_core --cov-report=term-missing
+
+  frontend-check:
+    name: Frontend React & TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/desktop-ui/package.json
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/desktop-ui
+        run: npm ci
+
+      - name: Type-check Frontend
+        working-directory: apps/desktop-ui
+        run: npm run check
+
+      - name: Build Frontend Production Artifact
+        working-directory: apps/desktop-ui
+        run: npm run build

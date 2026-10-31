@@ -1,0 +1,50 @@
+name: "✨ Feature Request"
+description: "Suggest an idea, workflow, automation skill, or integration for Aegis AI"
+title: "[FEATURE]: "
+labels: ["enhancement", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome community proposals! Aegis AI aims to be the premier open-source Windows AI companion with zero mandatory paid services.
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem or Opportunity"
+      description: "Is your feature request related to a problem? What workflow could be simplified or automated?"
+      placeholder: "I frequently need to summarize active browser tabs or capture tables from open desktop applications..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe the solution you'd like to see implemented."
+      placeholder: "Implement an agent tool using UIAutomation that inspects window handles and extracts tabular data."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "What other approaches, APIs, or workarounds did you consider?"
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Feature Category"
+      options:
+        - "Core Assistant & Reasoning"
+        - "Windows Desktop Automation"
+        - "Browser Automation (Playwright)"
+        - "Voice STT/TTS Pipeline"
+        - "Local Memory & Vector Search"
+        - "UI / UX / Overlay Experience"
+        - "Plugin Architecture"
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "Willingness to Contribute"
+      options:
+        - label: "I would like to work on this feature and submit a PR"

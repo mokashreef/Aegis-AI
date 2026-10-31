@@ -18,3 +18,4 @@ Replaces fake stub voice code (`asyncio.sleep(0.1)`) with a production-grade loc
 - `pytest backend/tests -v` -> 22/22 tests passing.
 - `flake8 backend` -> 0 warnings.
 - `npm run build` in `apps/desktop-ui` -> 0 errors.
+

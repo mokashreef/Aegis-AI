@@ -102,3 +102,4 @@ class VolumeManager:
 
 # Global volume manager singleton
 volume_manager = VolumeManager()
+

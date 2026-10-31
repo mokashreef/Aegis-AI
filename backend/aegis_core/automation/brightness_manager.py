@@ -83,3 +83,4 @@ class BrightnessManager:
 
 # Global brightness manager singleton
 brightness_manager = BrightnessManager()
+

@@ -20,6 +20,7 @@ class ToolResult(BaseModel):
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
+    message: Optional[str] = None
     execution_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -27,6 +28,7 @@ class ToolResult(BaseModel):
             "success": self.success,
             "data": self.data,
             "error": self.error,
+            "message": self.message,
             "execution_time_ms": self.execution_time_ms,
         }
 

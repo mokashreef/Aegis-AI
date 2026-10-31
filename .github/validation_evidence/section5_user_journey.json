@@ -1,0 +1,22 @@
+{
+  "section": "5. User Journey & Installation Audit",
+  "status": "IMPROVED / ISSUE FILED #8",
+  "audit_metrics": {
+    "commands_required_initial": 3,
+    "runtimes_required": ["Git", "Python 3.11+", "Node.js 20+"],
+    "download_footprint_mb": 420.0,
+    "time_to_first_working_hud_minutes": 4.5,
+    "failure_points_identified": [
+      "Missing npm run build in setup_env.ps1 (Fixed)",
+      "Misleading pointer to run_dev.ps1 instead of native run_desktop.ps1 (Fixed)",
+      "High barrier for non-technical users requiring manual Python & Node installation (Issue #8)"
+    ]
+  },
+  "fresh_user_workflow": [
+    "Step 1: git clone git@github.com:mokashreef/Aegis-AI.git",
+    "Step 2: powershell -ExecutionPolicy Bypass -File .\\scripts\\setup_env.ps1",
+    "Step 3: powershell -ExecutionPolicy Bypass -File .\\scripts\\run_desktop.ps1",
+    "Step 4: Press Alt + Space to summon native companion HUD",
+    "Step 5: First interaction (e.g. 'open notepad' or speech prompt)"
+  ]
+}

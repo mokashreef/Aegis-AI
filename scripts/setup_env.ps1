@@ -1,4 +1,4 @@
-# Aegis AI - Windows Development Environment Setup Script
+# Aegis AI - Windows Development & Runtime Setup Script
 
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "     Aegis AI - Environment Setup        " -ForegroundColor Cyan
@@ -23,19 +23,20 @@ python -m pip install --upgrade pip
 pip install -r backend\requirements.txt
 Write-Host "Python dependencies installed successfully." -ForegroundColor Green
 
-# 3. Frontend Node Dependencies
-Write-Host "`n[3/4] Installing Frontend Dependencies (apps/desktop-ui)..." -ForegroundColor Yellow
+# 3. Frontend Node Dependencies & Production Bundle Build
+Write-Host "`n[3/4] Building Desktop UI Bundle (apps/desktop-ui)..." -ForegroundColor Yellow
 Push-Location apps/desktop-ui
 npm install
+npm run build
 Pop-Location
-Write-Host "Frontend dependencies installed." -ForegroundColor Green
+Write-Host "Frontend production bundle built successfully." -ForegroundColor Green
 
 # 4. Probe Local Ollama
 Write-Host "`n[4/4] Probing Local Ollama Engine..." -ForegroundColor Yellow
 $ollamaCmd = Get-Command ollama -ErrorAction SilentlyContinue
 if ($ollamaCmd) {
     Write-Host "Ollama is installed at $($ollamaCmd.Source)." -ForegroundColor Green
-    Write-Host "Remember to run 'ollama run llama3.2' for 100% offline local inference." -ForegroundColor Cyan
+    Write-Host "For offline local intelligence, recommended: 'ollama run qwen2.5:1.5b'" -ForegroundColor Cyan
 } else {
     Write-Host "Ollama was not detected in PATH." -ForegroundColor Yellow
     Write-Host "Aegis AI will automatically utilize free anonymous fallback providers (Pollinations AI)." -ForegroundColor Yellow
@@ -43,6 +44,6 @@ if ($ollamaCmd) {
 }
 
 Write-Host "`n==========================================" -ForegroundColor Green
-Write-Host "Setup Completed! Run '.\scripts\run_dev.ps1' to launch Aegis AI." -ForegroundColor Green
+Write-Host "Setup Completed! Run '.\scripts\run_desktop.ps1' or 'python aegis.py' to launch." -ForegroundColor Green
+Write-Host "Press Alt + Space anywhere in Windows to summon the companion." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Green
-

@@ -1,0 +1,28 @@
+{
+  "section": "1. Desktop Experience",
+  "status": "PROVEN WORKING",
+  "measurements": {
+    "ram_rss_mb": 38.89,
+    "ram_vms_mb": 27.84,
+    "cpu_idle_percent": 0.0,
+    "app_init_latency_ms": 8.60,
+    "time_to_first_http_response_ms": 77.81,
+    "total_time_to_first_interaction_ms": 86.41,
+    "alt_space_hook_start_ms": 8.01,
+    "alt_space_hook_stop_ms": 0.74,
+    "multi_monitor_bounds_query_ms": 0.017,
+    "detected_monitor_geometry": {
+      "x": 260,
+      "y": 13,
+      "width": 760,
+      "height": 620
+    }
+  },
+  "verified_capabilities": {
+    "alt_space_global_hotkey": "WORKING (Win32 WH_KEYBOARD_LL low-level intercept)",
+    "overlay_window_frameless": "WORKING (WebView2 pywebview pinned TopMost)",
+    "esc_close_behavior": "WORKING (Direct listener triggers pywebview.api.hide)",
+    "multi_monitor_cursor_centering": "WORKING (GetCursorPos + MonitorFromPoint)",
+    "zero_browser_tab_dependency": "WORKING (Static dist mounted at root / in FastAPI)"
+  }
+}

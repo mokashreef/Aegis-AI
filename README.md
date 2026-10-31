@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6?logo=windows)](https://www.microsoft.com/windows)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Tauri](https://img.shields.io/badge/Desktop-Tauri%20v2-24C8D8?logo=tauri&logoColor=white)](https://tauri.app/)
+[![Desktop](https://img.shields.io/badge/Desktop-Native%20WebView2-0078D6?logo=microsoft)](backend/aegis_core/desktop/window.py)
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20TypeScript-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Ollama](https://img.shields.io/badge/AI%20Runtime-Ollama%20First-white?logo=ollama&logoColor=black)](https://ollama.com/)
 [![Zero API Keys](https://img.shields.io/badge/API%20Keys-Zero%20Required-success)](#-zero-api-keys-guarantee)

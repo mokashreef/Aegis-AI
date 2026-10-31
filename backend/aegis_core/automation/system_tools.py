@@ -1,11 +1,16 @@
 """
 Aegis AI - Built-in Desktop Automation Tools.
-Wraps Windows process, window, and clipboard managers as BaseTool implementations.
+Wraps Windows process, window, volume, brightness, screen capture, and quick notes
+as BaseTool implementations.
 """
 
 from typing import Any
+from aegis_core.automation.brightness_manager import brightness_manager
 from aegis_core.automation.clipboard_manager import ClipboardManager
+from aegis_core.automation.notes_manager import notes_manager
 from aegis_core.automation.process_manager import ProcessManager
+from aegis_core.automation.screen_capture import screen_capture
+from aegis_core.automation.volume_manager import volume_manager
 from aegis_core.automation.window_manager import WindowManager
 from aegis_core.plugins.base import BaseTool, RiskLevel, ToolResult
 from aegis_core.utils.system_info import get_system_telemetry
@@ -230,6 +235,159 @@ class SnapWindowTool(BaseTool):
         if res.get("success"):
             return ToolResult(success=True, data=res)
         return ToolResult(success=False, error=res.get("error", "Window snapping failed."))
+
+
+class VolumeControlTool(BaseTool):
+    name = "control_volume"
+    description = (
+        "Controls Windows master audio volume: 'set' (0-100), 'mute', 'unmute', "
+        "'increase', 'decrease', or 'get'."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "description": "The volume action: 'set', 'mute', 'unmute', 'increase', 'decrease', or 'get'.",
+                "enum": ["set", "mute", "unmute", "increase", "decrease", "get"],
+            },
+            "level": {
+                "type": "integer",
+                "description": "Target volume percentage (0 to 100) for 'set', or delta for adjust.",
+            },
+        },
+        "required": ["action"],
+    }
+
+    async def execute(self, action: str, level: int = 0, **kwargs: Any) -> ToolResult:
+        act = action.lower().strip()
+        if act == "get":
+            res = volume_manager.get_status()
+            return ToolResult(success=res.get("success", True), data=res)
+        elif act == "set":
+            res = volume_manager.set_volume(level)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act == "mute":
+            res = volume_manager.set_mute(True)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act == "unmute":
+            res = volume_manager.set_mute(False)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act in ["increase", "up"]:
+            delta = level if level > 0 else 10
+            res = volume_manager.adjust_volume(delta)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act in ["decrease", "down"]:
+            delta = level if level > 0 else 10
+            res = volume_manager.adjust_volume(-delta)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        return ToolResult(success=False, error=f"Unknown volume action '{action}'.")
+
+
+class BrightnessControlTool(BaseTool):
+    name = "control_brightness"
+    description = (
+        "Controls Windows display brightness: 'set' (0-100), 'increase', 'decrease', or 'get'."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "description": "Brightness action: 'set', 'increase', 'decrease', or 'get'.",
+                "enum": ["set", "increase", "decrease", "get"],
+            },
+            "level": {
+                "type": "integer",
+                "description": "Target brightness percentage (0-100) or delta.",
+            },
+        },
+        "required": ["action"],
+    }
+
+    async def execute(self, action: str, level: int = 0, **kwargs: Any) -> ToolResult:
+        act = action.lower().strip()
+        if act == "get":
+            res = brightness_manager.get_brightness()
+            return ToolResult(success=res.get("success", True), data=res)
+        elif act == "set":
+            res = brightness_manager.set_brightness(level)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act in ["increase", "up"]:
+            delta = level if level > 0 else 10
+            res = brightness_manager.adjust_brightness(delta)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act in ["decrease", "down"]:
+            delta = level if level > 0 else 10
+            res = brightness_manager.adjust_brightness(-delta)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        return ToolResult(success=False, error=f"Unknown brightness action '{action}'.")
+
+
+class ScreenCaptureTool(BaseTool):
+    name = "capture_screen"
+    description = (
+        "Captures a screenshot of the Windows desktop and prepares it for multimodal analysis."
+    )
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "target": {
+                "type": "string",
+                "description": "Capture target: 'full' (desktop) or 'active_window'.",
+                "default": "full",
+            },
+        },
+    }
+
+    async def execute(self, target: str = "full", **kwargs: Any) -> ToolResult:
+        res = screen_capture.capture(target=target)
+        if res.get("success"):
+            return ToolResult(success=True, data=res, message=res.get("message"))
+        return ToolResult(success=False, error=res.get("error", "Screen capture failed."))
+
+
+class QuickNotesTool(BaseTool):
+    name = "manage_notes"
+    description = (
+        "Manages local markdown daily notes: 'append' to today's note, 'search' notes, or 'read_today'."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "description": "Notes action: 'append', 'search', or 'read_today'.",
+                "enum": ["append", "search", "read_today"],
+            },
+            "text": {
+                "type": "string",
+                "description": "Note content to append (required for 'append').",
+            },
+            "query": {
+                "type": "string",
+                "description": "Search keyword (required for 'search').",
+            },
+        },
+        "required": ["action"],
+    }
+
+    async def execute(self, action: str, text: str = "", query: str = "", **kwargs: Any) -> ToolResult:
+        act = action.lower().strip()
+        if act == "append":
+            res = notes_manager.append_daily_note(text)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        elif act in ["read_today", "read"]:
+            res = notes_manager.get_today_notes()
+            return ToolResult(success=res.get("success", True), data=res, message=res.get("message"))
+        elif act == "search":
+            res = notes_manager.search_notes(query or text)
+            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+        return ToolResult(success=False, error=f"Unknown notes action '{action}'.")
 
 
 class GetSystemTelemetryTool(BaseTool):

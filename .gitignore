@@ -84,6 +84,8 @@ storage/*.sqlite3
 storage/vectors/
 storage/logs/
 storage/cache/
+storage/notes/
+storage/models/
 *.log
 !storage/.gitkeep
 

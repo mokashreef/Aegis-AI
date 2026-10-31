@@ -21,6 +21,17 @@ class MockAgentProvider(LLMProvider):
     async def list_models(self):
         return ["agent-model"]
 
+    async def probe_health(self):
+        return {
+            "server_running": True,
+            "installed_on_host": True,
+            "status": "ready",
+            "models": ["agent-model"],
+            "model_count": 1,
+            "host": "http://localhost:11434",
+            "recommended_models": [],
+        }
+
     async def generate_stream(self, messages, model=None, tools=None, temperature=0.7):
         yield LLMChunk(delta="Task completed successfully.", provider=self.name, model="agent-model")
 
@@ -64,4 +75,3 @@ async def test_agent_planner_direct_tool_execution(tmp_path):
     assert len(history) >= 2
     assert history[0]["role"] == "user"
     assert history[-1]["role"] == "assistant"
-

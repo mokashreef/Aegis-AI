@@ -15,3 +15,4 @@ Write-Host "Press Alt + Space anywhere in Windows to toggle Aegis AI." -Foregrou
 Write-Host "Press ESC or click the X button to dismiss." -ForegroundColor Yellow
 
 python aegis.py
+

@@ -15,3 +15,4 @@ Transforms Aegis AI from a browser-dependent web chat into a real native Windows
 - `flake8` linting passing with 0 warnings.
 - Frontend production bundle built with 0 TypeScript compiler errors.
 - Active monitor coordinate detection and Win32 hook installation verified on Windows 10/11 host.
+

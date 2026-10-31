@@ -4,8 +4,10 @@ Aegis AI - RESTful API Gateway.
 
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from aegis_core.agent.planner import agent_planner
+from aegis_core.ai_runtime.ollama_provider import OllamaProvider
 from aegis_core.ai_runtime.router import ai_router
 from aegis_core.config import settings
 from aegis_core.memory.session_manager import session_manager
@@ -32,6 +34,10 @@ class SpeakRequest(BaseModel):
     text: str = Field(description="Text to synthesize to speech")
 
 
+class PullModelRequest(BaseModel):
+    model: str = Field(default="qwen2.5:1.5b", description="Model identifier to pull from Ollama")
+
+
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
     """Basic health check and daemon metadata."""
@@ -56,6 +62,36 @@ async def system_status() -> Dict[str, Any]:
         "voice": voice_status,
         "version": settings.app_version,
     }
+
+
+@router.get("/runtime/health")
+async def runtime_health() -> Dict[str, Any]:
+    """Dedicated AI runtime diagnostic and model discovery."""
+    return await ai_router.get_system_status()
+
+
+@router.post("/ollama/start")
+async def start_ollama_server() -> Dict[str, Any]:
+    """Attempts to auto-launch local Ollama server if installed."""
+    ollama = OllamaProvider()
+    started = ollama.ensure_server_started()
+    return {"started": started, "installed": ollama.is_ollama_installed()}
+
+
+@router.post("/models/pull")
+async def pull_model(req: PullModelRequest):
+    """Streams model downloading progress from the Ollama library."""
+    ollama = OllamaProvider()
+
+    async def progress_generator():
+        import json
+        try:
+            async for progress in ollama.pull_model_stream(req.model):
+                yield f"data: {json.dumps(progress)}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps({'status': 'error', 'error': str(exc)})}\n\n"
+
+    return StreamingResponse(progress_generator(), media_type="text/event-stream")
 
 
 @router.get("/models")

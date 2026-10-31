@@ -22,3 +22,4 @@ Aegis AI currently behaves like a web chatbot running on `http://localhost:5173`
 3. **Zero Browser Dependency**:
    - Compiled React HUD (`apps/desktop-ui/dist`) served directly by the backend and embedded into native Windows WebView2.
    - User launches `python -m aegis_core.main` (or `aegis.py`) and Aegis is active in the background ready for `Alt+Space`.
+

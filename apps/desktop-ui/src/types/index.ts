@@ -44,16 +44,32 @@ export interface SystemTelemetry {
   };
 }
 
+export interface RecommendedModel {
+  id: string;
+  name: string;
+  size_mb: number;
+  description: string;
+}
+
+export interface OllamaHealth {
+  server_running: boolean;
+  installed_on_host: boolean;
+  status: "ready" | "needs_model" | "offline";
+  reason: string | null;
+  models: string[];
+  model_count: number;
+  host: string;
+  recommended_models: RecommendedModel[];
+}
+
 export interface AIRuntimeStatus {
   active_provider: string;
-  ollama: {
-    available: boolean;
-    host: string;
-    models: string[];
-  };
+  tokens_per_second: number;
+  ollama: OllamaHealth;
   pollinations_fallback: {
     available: boolean;
     enabled: boolean;
+    notice: string;
   };
   zero_api_keys_enforced: boolean;
 }
@@ -65,3 +81,11 @@ export interface VoiceStatus {
   piper_voice: string;
 }
 
+export interface PullProgress {
+  status: string;
+  digest?: string;
+  total_bytes?: number;
+  completed_bytes?: number;
+  percent: number;
+  model: string;
+}

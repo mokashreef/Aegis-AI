@@ -1,8 +1,9 @@
 """
 Aegis AI - AI Runtime Router & Intelligent Fallback Orchestrator.
-Maintains the Zero API Key Guarantee by prioritizing local Ollama and smoothly falling back.
+Maintains the Zero API Key Guarantee by prioritizing local Ollama and smoothly managing runtime states.
 """
 
+import time
 from typing import Any, AsyncGenerator, Dict, List, Optional
 from aegis_core.ai_runtime.base import LLMChunk, LLMMessage, LLMProvider, LLMResponse
 from aegis_core.ai_runtime.ollama_provider import OllamaProvider
@@ -17,37 +18,45 @@ class AIRuntimeRouter:
     def __init__(self):
         self.ollama = OllamaProvider()
         self.pollinations = PollinationsProvider()
+        self._last_tokens_per_second: float = 0.0
+
+    @property
+    def last_tokens_per_second(self) -> float:
+        return self._last_tokens_per_second
 
     async def get_active_provider(self) -> LLMProvider:
         """Determines the primary active inference provider."""
+        # Check if local Ollama is fully ready with installed models
         if await self.ollama.is_available():
             return self.ollama
 
+        # If Ollama has no models or is offline, check fallback
         if settings.enable_cloud_fallback and await self.pollinations.is_available():
-            logger.info("Local Ollama offline. Routing to free fallback provider: Pollinations AI.")
+            logger.info("Local Ollama has no models or is offline. Using emergency fallback (Pollinations AI).")
             return self.pollinations
 
-        # Default back to Ollama even if temporarily offline to trigger clear guidance
         return self.ollama
 
     async def get_system_status(self) -> Dict[str, Any]:
         """Returns health telemetry for AI runtime providers."""
-        ollama_ok = await self.ollama.is_available()
-        ollama_models = await self.ollama.list_models() if ollama_ok else []
+        ollama_health = await self.ollama.probe_health()
         pollinations_ok = await self.pollinations.is_available()
 
-        active_provider = "ollama" if ollama_ok else ("pollinations" if pollinations_ok else "offline")
+        if ollama_health["status"] == "ready":
+            active_provider = "ollama"
+        elif pollinations_ok:
+            active_provider = "pollinations_fallback"
+        else:
+            active_provider = "offline"
 
         return {
             "active_provider": active_provider,
-            "ollama": {
-                "available": ollama_ok,
-                "host": self.ollama.base_url,
-                "models": ollama_models,
-            },
+            "tokens_per_second": self._last_tokens_per_second,
+            "ollama": ollama_health,
             "pollinations_fallback": {
                 "available": pollinations_ok,
                 "enabled": settings.enable_cloud_fallback,
+                "notice": "Emergency fallback only (rate limited to 1 request / 45s).",
             },
             "zero_api_keys_enforced": True,
         }
@@ -59,8 +68,32 @@ class AIRuntimeRouter:
         tools: Optional[List[Dict[str, Any]]] = None,
         temperature: float = 0.7,
     ) -> AsyncGenerator[LLMChunk, None]:
-        """Streams responses from the optimal provider with automatic fallback failover."""
+        """Streams responses from the optimal provider with speed measurement and failover."""
         provider = await self.get_active_provider()
+        ollama_health = (
+            await self.ollama.probe_health()
+            if hasattr(self.ollama, "probe_health")
+            else {"status": "ready", "models": []}
+        )
+
+        # If Ollama is running but has no models, inform the user directly with action guidance
+        needs_model = provider.name == "ollama" and ollama_health["status"] == "needs_model"
+        if needs_model and not settings.enable_cloud_fallback:
+            yield LLMChunk(
+                delta=(
+                    "⚠️ **No local AI model installed.**\n\n"
+                    "Ollama is running, but you have not downloaded a model yet.\n"
+                    "Please click the **Install Model** button in the top banner or run:\n"
+                    "```powershell\nollama run qwen2.5:1.5b\n```\n"
+                ),
+                provider="system",
+                model="none",
+                finish_reason="stop",
+            )
+            return
+
+        start_time = time.perf_counter()
+        token_count = 0
 
         try:
             async for chunk in provider.generate_stream(
@@ -69,18 +102,23 @@ class AIRuntimeRouter:
                 tools=tools,
                 temperature=temperature,
             ):
+                if chunk.delta:
+                    token_count += 1
                 yield chunk
+
+            elapsed = time.perf_counter() - start_time
+            if elapsed > 0 and token_count > 0:
+                self._last_tokens_per_second = round(token_count / elapsed, 1)
+
         except Exception as exc:
             logger.warning(
-                "Inference stream failed on primary provider '%s': %s. Attempting fallback...",
+                "Inference stream failed on primary provider '%s': %s. Attempting emergency fallback...",
                 provider.name,
                 exc,
             )
-            # If Ollama failed and fallback is enabled, switch to Pollinations
             if provider.name == "ollama" and settings.enable_cloud_fallback:
-                logger.info("Switching to Pollinations fallback...")
                 yield LLMChunk(
-                    delta="*[Switching to free zero-key fallback provider...]*\n\n",
+                    delta="*[Local model unavailable; connecting to emergency fallback...]*\n\n",
                     provider="pollinations",
                     model="openai",
                 )
@@ -89,7 +127,13 @@ class AIRuntimeRouter:
                     model="openai",
                     temperature=temperature,
                 ):
+                    if chunk.delta:
+                        token_count += 1
                     yield chunk
+
+                elapsed = time.perf_counter() - start_time
+                if elapsed > 0 and token_count > 0:
+                    self._last_tokens_per_second = round(token_count / elapsed, 1)
             else:
                 raise
 
@@ -128,4 +172,3 @@ class AIRuntimeRouter:
 
 # Global AI runtime router instance
 ai_router = AIRuntimeRouter()
-

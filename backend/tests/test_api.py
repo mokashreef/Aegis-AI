@@ -9,7 +9,7 @@ from aegis_core.main import create_app
 
 @pytest.mark.asyncio
 async def test_health_and_system_endpoints():
-    """Verify /api/health and /api/system/status return healthy statuses."""
+    """Verify /api/health, /api/system/status, and /api/runtime/health."""
     app = create_app()
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -28,7 +28,14 @@ async def test_health_and_system_endpoints():
         assert "ai_runtime" in status_data
         assert "voice" in status_data
 
-        # 3. Tool Listing
+        # 3. Runtime Health (Phase 2 Diagnostic)
+        rt_res = await client.get("/api/runtime/health")
+        assert rt_res.status_code == 200
+        rt_data = rt_res.json()
+        assert "ollama" in rt_data
+        assert "tokens_per_second" in rt_data
+
+        # 4. Tool Listing
         tools_res = await client.get("/api/tools")
         assert tools_res.status_code == 200
         tools = tools_res.json()
@@ -52,4 +59,3 @@ async def test_session_lifecycle_api():
         assert list_res.status_code == 200
         sessions = list_res.json()
         assert any(s["id"] == session_id for s in sessions)
-

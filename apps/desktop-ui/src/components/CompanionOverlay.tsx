@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Send,
   Mic,
@@ -11,9 +11,11 @@ import {
   User,
   Volume2,
   X,
+  Zap,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
+import { ModelSetupBanner } from "./ModelSetupBanner";
 import { SystemTelemetryModal } from "./SystemTelemetryModal";
 import { useAegisWebSocket } from "../hooks/useAegisWebSocket";
 import { fetchSystemStatus, triggerVoiceSpeech } from "../services/api";
@@ -32,6 +34,16 @@ export const CompanionOverlay: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const refreshTelemetry = useCallback(() => {
+    fetchSystemStatus()
+      .then((res) => {
+        setTelemetry(res.telemetry);
+        setRuntimeStatus(res.ai_runtime);
+        setVoiceStatus(res.voice);
+      })
+      .catch((err) => console.error("Telemetry query error:", err));
+  }, []);
+
   const dismissOverlay = () => {
     // @ts-expect-error pywebview JS bridge
     if (window.pywebview?.api?.hide) {
@@ -43,7 +55,6 @@ export const CompanionOverlay: React.FC = () => {
   };
 
   useEffect(() => {
-    // Global ESC key to dismiss overlay
     const handleGlobalKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -52,17 +63,9 @@ export const CompanionOverlay: React.FC = () => {
     };
     window.addEventListener("keydown", handleGlobalKey);
 
-    // Initial fetch of telemetry
-    fetchSystemStatus()
-      .then((res) => {
-        setTelemetry(res.telemetry);
-        setRuntimeStatus(res.ai_runtime);
-        setVoiceStatus(res.voice);
-      })
-      .catch((err) => console.error("Telemetry query error:", err));
-
+    refreshTelemetry();
     return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, []);
+  }, [refreshTelemetry]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -91,8 +94,15 @@ export const CompanionOverlay: React.FC = () => {
     triggerVoiceSpeech(text);
   };
 
+  const activeModelDisplay =
+    runtimeStatus?.ollama?.models && runtimeStatus.ollama.models.length > 0
+      ? runtimeStatus.ollama.models[0]
+      : runtimeStatus?.ollama?.status === "needs_model"
+      ? "No Model Downloaded"
+      : "Pollinations (Emergency)";
+
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
+    <div className="w-full max-w-2xl mx-auto flex flex-col h-[620px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
       {/* Top Header Bar */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50 bg-slate-900/40">
         <div className="flex items-center gap-3">
@@ -113,11 +123,15 @@ export const CompanionOverlay: React.FC = () => {
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30">
                 Alt+Space
               </span>
+              {runtimeStatus?.tokens_per_second ? (
+                <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                  <Zap className="w-3 h-3" />
+                  {runtimeStatus.tokens_per_second} t/s
+                </span>
+              ) : null}
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              {runtimeStatus?.active_provider === "ollama"
-                ? "Ollama (Air-Gapped)"
-                : "Pollinations Free Fallback"}
+            <p className="text-[11px] text-slate-400 font-mono truncate max-w-xs">
+              {activeModelDisplay}
             </p>
           </div>
         </div>
@@ -145,6 +159,9 @@ export const CompanionOverlay: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Model Bootstrapper Banner (Shows only if models are missing or server needs starting) */}
+      <ModelSetupBanner ollama={runtimeStatus?.ollama || null} onRefresh={refreshTelemetry} />
 
       {/* Messages & Tool Activity Area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4">

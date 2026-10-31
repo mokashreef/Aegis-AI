@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-10-31T18:21:05.345694+00:00",
+  "status": "PASSED",
+  "benchmark": "in_process_screen_capture",
+  "baseline_latency_ms": 5031.0,
+  "iterations": 5,
+  "resolution": "1920x1080",
+  "png": {
+    "min_ms": 131.41,
+    "mean_ms": 153.3,
+    "max_ms": 212.49,
+    "speedup_factor": "32.8x",
+    "sample_size_bytes": 498110
+  },
+  "jpeg": {
+    "min_ms": 64.74,
+    "mean_ms": 66.81,
+    "max_ms": 68.85,
+    "speedup_factor": "75.3x",
+    "sample_size_bytes": 266673
+  },
+  "all_screens_supported": true,
+  "fallback_retained": true
+}

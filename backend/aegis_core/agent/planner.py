@@ -7,6 +7,7 @@ import json
 from typing import Any, AsyncGenerator, Callable, Dict, List, Optional
 from aegis_core.ai_runtime.base import LLMMessage
 from aegis_core.ai_runtime.router import AIRuntimeRouter, ai_router
+from aegis_core.automation.intent_router import IntentRouter
 from aegis_core.memory.session_manager import SessionManager, session_manager
 from aegis_core.plugins.registry import PluginRegistry, plugin_registry
 from aegis_core.utils.logger import logger
@@ -46,7 +47,7 @@ class AgentPlanner:
         self.memory = memory or session_manager
 
     def _extract_tool_call(self, text: str) -> Optional[Dict[str, Any]]:
-        """Parses tool calls from markdown tool_call code blocks or JSON."""
+        """Parses tool calls from markdown tool_call code blocks or natural language intents."""
         if "```tool_call" in text:
             try:
                 start = text.index("```tool_call") + len("```tool_call")
@@ -56,18 +57,10 @@ class AgentPlanner:
             except Exception as exc:
                 logger.debug("Failed parsing tool_call block: %s", exc)
 
-        # Fallback keyword matching for quick direct commands
-        text_lower = text.strip().lower()
-        if text_lower.startswith("open ") or text_lower.startswith("launch "):
-            app = text.strip().split(" ", 1)[1].strip()
-            # If user said 'open notepad', map to launch_application
-            return {"name": "launch_application", "arguments": {"app_name": app}}
-        elif text_lower == "get clipboard" or text_lower == "read clipboard":
-            return {"name": "get_clipboard", "arguments": {}}
-        elif text_lower == "list processes" or text_lower == "show processes":
-            return {"name": "list_processes", "arguments": {"limit": 15}}
-        elif text_lower == "list windows" or text_lower == "show windows":
-            return {"name": "list_windows", "arguments": {}}
+        # Natural language intent classification (handles "can you please open chrome", "snap left", etc.)
+        routed = IntentRouter.classify_and_route(text)
+        if routed:
+            return {"name": routed["name"], "arguments": routed["arguments"]}
 
         return None
 
@@ -151,6 +144,20 @@ class AgentPlanner:
                 }
 
         final_content = "".join(assistant_content_chunks)
+
+        # Fallback direct response if LLM produced no text but a direct tool was executed
+        if not final_content.strip() and immediate_tool:
+            if tool_res.success:
+                final_content = tool_res.message or f"Action '{tool_name}' completed successfully."
+            else:
+                final_content = f"Could not complete '{tool_name}': {tool_res.error}"
+            yield {
+                "type": "token",
+                "delta": final_content,
+                "provider": "local_direct",
+                "model": "rule_synthesizer",
+            }
+
         # 5. Persist assistant response
         self.memory.add_message(
             session_id=session_id,

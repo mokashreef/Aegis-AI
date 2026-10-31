@@ -12,6 +12,7 @@ import {
   Volume2,
   X,
   Zap,
+  Radio,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -19,8 +20,8 @@ import { ModelSetupBanner } from "./ModelSetupBanner";
 import { SystemTelemetryModal } from "./SystemTelemetryModal";
 import { useAegisWebSocket } from "../hooks/useAegisWebSocket";
 import { useMicrophoneCapture } from "../hooks/useMicrophoneCapture";
-import { fetchSystemStatus, triggerVoiceSpeech } from "../services/api";
-import { SystemTelemetry, AIRuntimeStatus, VoiceStatus } from "../types";
+import { fetchSystemStatus, fetchWakeWordStatus, toggleWakeWord, triggerVoiceSpeech } from "../services/api";
+import { SystemTelemetry, AIRuntimeStatus, VoiceStatus, WakeWordStatus } from "../types";
 
 export const CompanionOverlay: React.FC = () => {
   const [sessionId] = useState(() => "session-" + Math.random().toString(36).substring(7));
@@ -31,6 +32,16 @@ export const CompanionOverlay: React.FC = () => {
   const [telemetry, setTelemetry] = useState<SystemTelemetry | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<AIRuntimeStatus | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
+  const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus | null>(null);
+
+  const handleToggleWakeWord = async () => {
+    try {
+      const updated = await toggleWakeWord();
+      setWakeWordStatus(updated);
+    } catch (err) {
+      console.error("Failed to toggle wake word:", err);
+    }
+  };
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +60,7 @@ export const CompanionOverlay: React.FC = () => {
         setTelemetry(res.telemetry);
         setRuntimeStatus(res.ai_runtime);
         setVoiceStatus(res.voice);
+        fetchWakeWordStatus().then(setWakeWordStatus).catch(() => {});
       })
       .catch((err) => console.error("Telemetry query error:", err));
   }, []);
@@ -156,6 +168,21 @@ export const CompanionOverlay: React.FC = () => {
                 : "Ready"
             }
           />
+
+          <button
+            onClick={handleToggleWakeWord}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition border ${
+              wakeWordStatus?.is_running
+                ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-sm shadow-cyan-500/20"
+                : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-slate-200"
+            }`}
+            title={wakeWordStatus?.is_running ? "Wake Word Listening Active (Click to Pause)" : "Enable Wake Word Summoning"}
+          >
+            <Radio className={`w-3.5 h-3.5 ${wakeWordStatus?.is_running ? "text-cyan-400 animate-pulse" : ""}`} />
+            <span className="hidden sm:inline">
+              {wakeWordStatus?.is_running ? wakeWordStatus.active_model.replace("_", " ") : "Wake Word"}
+            </span>
+          </button>
 
           <button
             onClick={() => setShowTelemetry(true)}

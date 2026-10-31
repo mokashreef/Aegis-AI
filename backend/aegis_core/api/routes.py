@@ -16,8 +16,14 @@ from aegis_core.utils.logger import logger
 from aegis_core.utils.system_info import get_system_telemetry
 from aegis_core.voice.pipeline import voice_controller
 from aegis_core.voice.tts import VOICE_CATALOG, tts_engine
+from aegis_core.voice.wake_word import wake_word_listener
 
 router = APIRouter()
+
+
+class WakeWordConfigRequest(BaseModel):
+    wake_word: Optional[str] = Field(default=None, description="Active wake word model name (e.g. hey_jarvis, alexa)")
+    confidence_threshold: Optional[float] = Field(default=None, description="Confidence threshold [0.0 - 1.0]")
 
 
 class ChatRequest(BaseModel):
@@ -63,6 +69,7 @@ async def system_status() -> Dict[str, Any]:
         "telemetry": telemetry,
         "ai_runtime": ai_status,
         "voice": voice_status,
+        "wake_word": wake_word_listener.get_status(),
         "version": settings.app_version,
     }
 
@@ -208,3 +215,29 @@ async def speak_text(req: SpeakRequest) -> Dict[str, Any]:
     """Triggers voice speech output through Windows audio system."""
     success = await voice_controller.speak_text(req.text, req.voice)
     return {"success": success, "text": req.text}
+
+
+@router.get("/voice/wakeword/status")
+async def get_wakeword_status() -> Dict[str, Any]:
+    """Returns the live telemetry and state of the background wake word listener."""
+    return wake_word_listener.get_status()
+
+
+@router.post("/voice/wakeword/toggle")
+async def toggle_wakeword() -> Dict[str, Any]:
+    """Toggles background continuous wake word listening on or off."""
+    if wake_word_listener.is_running():
+        wake_word_listener.stop()
+    else:
+        wake_word_listener.start()
+    return wake_word_listener.get_status()
+
+
+@router.post("/voice/wakeword/config")
+async def configure_wakeword(req: WakeWordConfigRequest) -> Dict[str, Any]:
+    """Configures active wake word model name and detection confidence threshold."""
+    if req.wake_word:
+        wake_word_listener.wake_word = req.wake_word
+    if req.confidence_threshold is not None:
+        wake_word_listener.confidence_threshold = max(0.1, min(1.0, req.confidence_threshold))
+    return wake_word_listener.get_status()

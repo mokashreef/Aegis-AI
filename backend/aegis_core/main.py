@@ -89,9 +89,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         runtime_status["pollinations_fallback"]["enabled"],
     )
 
+    from aegis_core.voice.wake_word import wake_word_listener
+
+    if settings.wake_word_enabled:
+        wake_word_listener.wake_word = settings.wake_word_model
+        wake_word_listener.confidence_threshold = settings.wake_word_threshold
+        wake_word_listener.start()
+
     yield
 
     logger.info("Shutting down %s daemon...", settings.app_name)
+    from aegis_core.voice.wake_word import wake_word_listener
+    wake_word_listener.stop()
 
 
 def create_app() -> FastAPI:

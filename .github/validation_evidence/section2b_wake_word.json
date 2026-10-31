@@ -1,0 +1,31 @@
+{
+  "initialization": {
+    "success": true,
+    "latency_ms": 71.62,
+    "available_models": [
+      "alexa",
+      "hey_jarvis"
+    ]
+  },
+  "silence_gating": {
+    "iterations": 500,
+    "avg_latency_microseconds": 23.995,
+    "status": "PASS"
+  },
+  "acoustic_inference": {
+    "iterations": 100,
+    "avg_latency_ms": 4.35,
+    "frame_duration_ms": 80.0,
+    "realtime_factor": 0.0544,
+    "status": "PASS"
+  },
+  "listener_thread": {
+    "started": true,
+    "is_running_during_stream": true,
+    "stream_cycle_latency_ms": 838.74
+  },
+  "resource_telemetry": {
+    "rss_memory_mb": 86.62,
+    "cpu_percent": 0.0
+  }
+}

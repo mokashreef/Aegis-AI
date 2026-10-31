@@ -39,10 +39,10 @@ async def benchmark_model_system():
         "provider_available_gate": available,
         "recommendation": probe.get("recommendation"),
     }
-    installed = probe.get('installed')
-    reachable = probe.get('reachable')
-    count = probe.get('model_count')
-    print(f"Ollama Probe: Installed={installed}, Running={reachable}, Models={count}")
+    inst = probe.get('installed')
+    reach = probe.get('reachable')
+    m_count = probe.get('model_count')
+    print(f"Ollama Probe: Installed={inst}, Running={reach}, Models={m_count}")
 
     # 2. Simulate Ollama Empty Model (Crash Prevention Gate)
     simulated_empty_provider = OllamaProvider()
@@ -119,3 +119,4 @@ async def benchmark_model_system():
 
 if __name__ == "__main__":
     asyncio.run(benchmark_model_system())
+

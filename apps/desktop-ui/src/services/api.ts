@@ -1,4 +1,4 @@
-import { AIRuntimeStatus, PullProgress, SystemTelemetry, VoiceStatus } from "../types";
+import { AIRuntimeStatus, PullProgress, SystemTelemetry, VoiceStatus, WakeWordStatus } from "../types";
 
 const API_BASE = "http://127.0.0.1:8420/api";
 
@@ -6,6 +6,7 @@ export async function fetchSystemStatus(): Promise<{
   telemetry: SystemTelemetry;
   ai_runtime: AIRuntimeStatus;
   voice: VoiceStatus;
+  wake_word?: WakeWordStatus;
   version: string;
 }> {
   const response = await fetch(`${API_BASE}/system/status`);
@@ -86,4 +87,26 @@ export async function pullModelStream(
       }
     }
   }
+}
+
+export async function fetchWakeWordStatus(): Promise<WakeWordStatus> {
+  const response = await fetch(`${API_BASE}/voice/wakeword/status`);
+  return response.json();
+}
+
+export async function toggleWakeWord(): Promise<WakeWordStatus> {
+  const response = await fetch(`${API_BASE}/voice/wakeword/toggle`, { method: "POST" });
+  return response.json();
+}
+
+export async function configureWakeWord(config: {
+  wake_word?: string;
+  confidence_threshold?: number;
+}): Promise<WakeWordStatus> {
+  const response = await fetch(`${API_BASE}/voice/wakeword/config`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  return response.json();
 }

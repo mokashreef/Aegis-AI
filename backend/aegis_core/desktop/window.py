@@ -1,7 +1,7 @@
 """
 Aegis AI - Native Desktop Overlay Window Manager.
-Integrates Microsoft WebView2 through pywebview to provide a frameless,
-AlwaysOnTop, multi-monitor centered glassmorphic desktop companion.
+Integrates Microsoft WebView2 through pywebview to provide a draggable,
+repositionable, multi-monitor centered glassmorphic desktop companion.
 """
 
 import ctypes
@@ -78,6 +78,14 @@ class AegisDesktopBridge:
         """Toggles overlay visibility."""
         self.overlay_manager.toggle()
 
+    def toggle_on_top(self) -> bool:
+        """Toggles always-on-top window pin state."""
+        return self.overlay_manager.toggle_on_top()
+
+    def get_on_top(self) -> bool:
+        """Returns whether overlay is pinned always-on-top."""
+        return self.overlay_manager.is_on_top
+
     def ping(self) -> str:
         """Sanity ping from HUD."""
         return "pong"
@@ -91,14 +99,32 @@ class DesktopOverlayManager:
         self._window: Optional[webview.Window] = None
         self._is_visible = False
         self._quitting = False
+        self._is_on_top = True
         self._bridge = AegisDesktopBridge(self)
 
     @property
     def is_visible(self) -> bool:
         return self._is_visible
 
+    @property
+    def is_on_top(self) -> bool:
+        if self._window:
+            return getattr(self._window, "on_top", self._is_on_top)
+        return self._is_on_top
+
+    def toggle_on_top(self) -> bool:
+        """Toggles between pinned always-on-top and standard floating window."""
+        self._is_on_top = not self._is_on_top
+        if self._window:
+            try:
+                self._window.on_top = self._is_on_top
+            except Exception as exc:
+                logger.debug("Failed setting window on_top: %s", exc)
+        logger.info("Overlay always-on-top pin state toggled to: %s", self._is_on_top)
+        return self._is_on_top
+
     def create_window(self) -> webview.Window:
-        """Instantiates the frameless always-on-top window."""
+        """Instantiates the draggable, frameless, and optionally pinned window."""
         bounds = get_active_monitor_bounds(width=760, height=620)
 
         self._window = webview.create_window(
@@ -109,10 +135,11 @@ class DesktopOverlayManager:
             x=bounds["x"],
             y=bounds["y"],
             frameless=True,
-            on_top=True,
+            resizable=True,
+            on_top=self._is_on_top,
             transparent=False,
             js_api=self._bridge,
-            easy_drag=False,
+            easy_drag=True,
             shadow=True,
         )
 

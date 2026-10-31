@@ -1,21 +1,20 @@
 @echo off
 cd /d "%~dp0"
-echo ==========================================
-echo       Launching Aegis AI Desktop
-echo ==========================================
-echo.
 
 if not exist ".venv\Scripts\python.exe" (
-    echo [ERROR] Virtual environment not found in .venv!
-    echo Please run setup first.
+    echo ===================================================
+    echo  [ERROR] Virtual environment not found in .venv!
+    echo  Please run .\scripts\setup_env.ps1 first.
+    echo ===================================================
     pause
     exit /b 1
 )
 
-echo Starting native companion overlay...
-echo Press Alt + Space anywhere in Windows to toggle Aegis AI.
-echo Press ESC to hide.
-echo.
-".venv\Scripts\python.exe" aegis.py
-pause
-
+:: Launch Aegis AI detached in background mode without keeping a console window open
+if exist ".venv\Scripts\pythonw.exe" (
+    start "" ".venv\Scripts\pythonw.exe" aegis.py
+    exit
+) else (
+    start "" ".venv\Scripts\python.exe" aegis.py
+    exit
+)

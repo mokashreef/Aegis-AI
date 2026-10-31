@@ -1,1 +1,1 @@
-d98a0a5e2b0f3aedaf92a45d7a2dcdddf3687d134211972aadbdd0f60ecdbdc2  Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip
+c537e4256c4be89959e47135c29af5b85b036492bf513b0d667b461414c30aa1  Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip

@@ -89,3 +89,12 @@ export interface PullProgress {
   percent: number;
   model: string;
 }
+
+export interface WakeWordStatus {
+  is_running: boolean;
+  active_model: string;
+  available_models: string[];
+  confidence_threshold: number;
+  cooldown_seconds: number;
+  engine_initialized: boolean;
+}

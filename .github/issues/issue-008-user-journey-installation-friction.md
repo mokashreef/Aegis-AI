@@ -21,3 +21,4 @@ A first-time Windows user attempting to install Aegis AI faces significant frict
 1. Update `scripts/setup_env.ps1` to automatically execute `npm run build` and point to `.\scripts\run_desktop.ps1`.
 2. Add a fallback check in `backend/aegis_core/main.py` that warns if `apps/desktop-ui/dist` is missing and builds it automatically if Node is available.
 3. Package pre-built frontend bundle or MSIX/PyInstaller desktop executable in the next distribution milestone.
+

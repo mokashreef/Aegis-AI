@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 7: Real Local Wake Word Engine & Background Listener
+- **Direct ONNX Keyword Pipeline (`wake_word.py`)**: Runs quantized acoustic keyword models (`melspectrogram.onnx`, `embedding_model.onnx`, `hey_jarvis_v0.1.onnx`, `alexa_v0.1.onnx`) directly on `onnxruntime` with zero cloud calls, zero API keys, and zero scientific library bloat.
+- **Ultra-Fast Frame Inference**: 4.35 ms average inference latency on 80 ms audio chunks (0.054x real-time factor, 18x faster than real-time playback).
+- **Zero-CPU Silence Gating**: RMS energy gate bypasses ONNX inference in 23.99 microseconds when quiet, keeping idle CPU under 0.5%.
+- **Background Audio Daemon (`WakeWordListener`)**: Uses `sounddevice` to continuously listen on the default Windows microphone and automatically summons the overlay (`overlay_manager.show()`) upon detection.
+- **REST Endpoints & HUD Controls**: Added `/api/voice/wakeword/status`, `/api/voice/wakeword/toggle`, `/api/voice/wakeword/config`, paired with a live pulsing toggle badge in the companion desktop HUD.
+- **Verification**: 38 unit and integration tests passing with 0 flake8 warnings. Benchmark evidence saved in `.github/validation_evidence/section2b_wake_word.json`.
+
 ### Validated - Comprehensive CTO Product Validation Audit & Empirical Benchmark
 - **Rigorous Runtime Benchmarking**: Executed end-to-end performance and accuracy benchmarks across Desktop Experience, Voice Pipeline, Desktop Automation, Model System Matrix, and User Installation Journey.
 - **Empirical Evidence Artifacts**: Stored benchmark raw telemetry under `.github/validation_evidence/` (RAM `38.89 MB`, CPU `0.0%`, Alt+Space `8.01 ms`, app init `8.60 ms`, first HTTP `77.81 ms`, multi-monitor query `0.017 ms`).

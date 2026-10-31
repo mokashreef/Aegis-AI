@@ -35,3 +35,4 @@ This PR merges the empirical validation suite, benchmark evidence artifacts, and
 - Flake8 Linting: 0 warnings (`flake8 backend`).
 - Desktop UI Build: Vite production build passed in 13.29s (2,064 modules).
 - Benchmark evidence stored in `.github/validation_evidence/`.
+

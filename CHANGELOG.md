@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 12: 1-Click Offline Model Download Wizard with Live Byte Progress
+- **Interactive Model Selection Grid (`ModelSetupBanner.tsx`)**: Transparent multi-model selection card wizard displaying size, capabilities, and CPU recommendation badges for Qwen 2.5 (1.5B), Llama 3.2 (1B), and Llama 3.2 (3B).
+- **Streaming Byte Telemetry**: Real-time download progress displaying formatted bytes (`MB / GB`), percentage, and detailed phases ("pulling manifest", "downloading", "verifying sha256").
+- **Smart System Diagnostics**: Contextual recovery options directing users to download Ollama if missing, or auto-starting the local daemon with one click if stopped.
+- **Backend Streaming Test Suite (`test_ai_runtime.py`)**: Added integration tests verifying Ollama NDJSON progress streaming and FastAPI `/api/models/pull` Server-Sent Events.
+- **Quality Assurance**: Production frontend bundle compiled in 9.42s; 48 backend tests passing with 0 flake8 warnings.
+
 ### Added - Phase 11: Client-Side Voice Activity Detection (VAD) & Silence Auto-Stop
 - **Client-Side VAD Engine (`useMicrophoneCapture.ts`)**: Built-in real-time energy analysis via Web Audio API `AudioContext` and `AnalyserNode` automatically detects active speech onset and natural sentence pauses.
 - **Hands-Free Trailing Silence Auto-Stop**: Stops recording automatically after a 1.3-second trailing pause following speech, triggering Faster-Whisper transcription without requiring a second manual click.

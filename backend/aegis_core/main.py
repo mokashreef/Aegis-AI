@@ -85,7 +85,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info(
         "AI Runtime initialized. Active: %s (Ollama Available: %s, Fallbacks Enabled: %s)",
         runtime_status["active_provider"],
-        runtime_status["ollama"]["available"],
+        runtime_status["ollama"].get("server_running", False),
         runtime_status["pollinations_fallback"]["enabled"],
     )
 

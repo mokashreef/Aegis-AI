@@ -18,3 +18,4 @@ echo Press ESC to hide.
 echo.
 ".venv\Scripts\python.exe" aegis.py
 pause
+

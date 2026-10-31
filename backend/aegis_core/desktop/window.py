@@ -116,7 +116,6 @@ class DesktopOverlayManager:
         )
 
         self._window.events.shown += self._on_shown
-        self._window.events.hidden += self._on_hidden
         self._window.events.closed += self._on_closed
         return self._window
 

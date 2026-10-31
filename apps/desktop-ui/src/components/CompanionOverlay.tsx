@@ -18,6 +18,7 @@ import { ActionCard } from "./ActionCard";
 import { ModelSetupBanner } from "./ModelSetupBanner";
 import { SystemTelemetryModal } from "./SystemTelemetryModal";
 import { useAegisWebSocket } from "../hooks/useAegisWebSocket";
+import { useMicrophoneCapture } from "../hooks/useMicrophoneCapture";
 import { fetchSystemStatus, triggerVoiceSpeech } from "../services/api";
 import { SystemTelemetry, AIRuntimeStatus, VoiceStatus } from "../types";
 
@@ -26,13 +27,21 @@ export const CompanionOverlay: React.FC = () => {
   const { messages, activeTools, isStreaming, isConnected, sendMessage } = useAegisWebSocket(sessionId);
 
   const [input, setInput] = useState("");
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [showTelemetry, setShowTelemetry] = useState(false);
   const [telemetry, setTelemetry] = useState<SystemTelemetry | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<AIRuntimeStatus | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleTranscription = useCallback((text: string) => {
+    if (text.trim()) {
+      setInput(text.trim());
+      sendMessage(text.trim());
+    }
+  }, [sendMessage]);
+
+  const { isRecording, audioLevel, toggleRecording } = useMicrophoneCapture(handleTranscription);
 
   const refreshTelemetry = useCallback(() => {
     fetchSystemStatus()
@@ -138,8 +147,14 @@ export const CompanionOverlay: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <AudioWaveform
-            isActive={isVoiceActive || voiceStatus?.state === "speaking"}
-            statusText={voiceStatus?.state === "speaking" ? "Speaking..." : "Ready"}
+            isActive={isRecording || voiceStatus?.state === "speaking"}
+            statusText={
+              isRecording
+                ? "Listening..."
+                : voiceStatus?.state === "speaking"
+                ? "Speaking..."
+                : "Ready"
+            }
           />
 
           <button
@@ -174,7 +189,7 @@ export const CompanionOverlay: React.FC = () => {
               Windows Desktop Companion Active
             </h3>
             <p className="text-xs text-slate-400 max-w-sm mb-5">
-              Press Alt+Space anytime to toggle. Press ESC to dismiss.
+              Click the microphone to speak, or type commands below. Press ESC to dismiss.
             </p>
 
             <div className="grid grid-cols-2 gap-2 w-full max-w-md">
@@ -241,7 +256,7 @@ export const CompanionOverlay: React.FC = () => {
                   <button
                     onClick={() => handleSpeak(msg.content)}
                     className="p-1 hover:text-sky-300 transition"
-                    title="Speak text aloud"
+                    title="Speak text aloud with neural voice"
                   >
                     <Volume2 className="w-3.5 h-3.5" />
                   </button>
@@ -272,20 +287,21 @@ export const CompanionOverlay: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            placeholder="Ask Aegis or command Windows (e.g. 'open calc', 'read clipboard')..."
+            placeholder={isRecording ? "Listening to your voice..." : "Ask Aegis or command Windows..."}
             className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none"
           />
 
           <button
-            onClick={() => setIsVoiceActive(!isVoiceActive)}
-            className={`p-2 rounded-xl transition ${
-              isVoiceActive
-                ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+            onClick={toggleRecording}
+            style={{ transform: isRecording ? `scale(${1 + audioLevel * 0.25})` : undefined }}
+            className={`p-2 rounded-xl transition-transform ${
+              isRecording
+                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/50"
                 : "bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white"
             }`}
-            title="Voice Input"
+            title={isRecording ? "Click to stop recording" : "Click to speak"}
           >
-            {isVoiceActive ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </button>
 
           <button

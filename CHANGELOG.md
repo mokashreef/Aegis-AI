@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 3: Real Voice Pipeline (MVP Recovery)
+- **Faster-Whisper Offline STT**: Local speech-to-text powered by CTranslate2 INT8 quantization (`tiny.en`), integrated Silero VAD silence filtering, running 100% offline with zero cloud audio leakage.
+- **Natural Neural TTS**: Integrated Microsoft Edge Neural speech synthesis (`en-US-AriaNeural`, `en-US-GuyNeural`, `en-US-JennyNeural`, `en-GB-SoniaNeural`) delivering crystal-clear voices with zero paid API keys, backed by Windows SAPI5 offline fallback.
+- **Microphone Stream Capture**: Web Audio API and `MediaRecorder` hook with real-time waveform volume metering, driving dynamic voice-reactive UI feedback.
+- **Voice REST Endpoints**: Implemented `/api/voice/voices`, `/api/voice/transcribe`, `/api/voice/synthesize`, and `/api/voice/speak`.
+- **Full Verification**: Comprehensive test suite with 22 unit & integration tests passing and zero flake8 warnings.
+
 ### Added - Phase 2: Real AI Runtime & Model Bootstrapper (MVP Recovery)
 - **Deep Ollama Probing & Crash Prevention**: Replaced naive URL check with structured health inspection (`probe_health`). `is_available()` now strictly requires at least one installed model, completely eliminating unhandled 404 crashes.
 - **One-Click Local Model Bootstrapper**: Added `/api/models/pull` endpoint streaming real-time download progress, paired with an interactive in-app setup banner in the HUD for one-click installation of recommended lightweight models (`qwen2.5:1.5b`).

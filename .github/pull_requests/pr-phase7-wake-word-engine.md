@@ -34,3 +34,4 @@ This PR resolves [Issue #7](https://github.com/mokashreef/Aegis-AI/issues/7) by 
 - Test Suite: 38 passed in 17.48s (`pytest backend/tests -v`).
 - Flake8: 0 warnings (`flake8 backend`).
 - Frontend Build: Passed in 15.43s (2,064 modules).
+

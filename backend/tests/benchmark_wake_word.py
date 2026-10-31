@@ -98,3 +98,4 @@ def benchmark_wake_word():
 
 if __name__ == "__main__":
     benchmark_wake_word()
+

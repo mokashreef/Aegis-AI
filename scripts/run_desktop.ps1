@@ -14,5 +14,5 @@ Write-Host "Starting native desktop companion overlay..." -ForegroundColor Green
 Write-Host "Press Alt + Space anywhere in Windows to toggle Aegis AI." -ForegroundColor Yellow
 Write-Host "Press ESC or click the X button to dismiss." -ForegroundColor Yellow
 
-python aegis.py
+& ".\.venv\Scripts\python.exe" aegis.py
 

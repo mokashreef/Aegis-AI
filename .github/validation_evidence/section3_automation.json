@@ -1,0 +1,200 @@
+[
+  {
+    "command": "open chrome",
+    "status": "WORKING",
+    "expected_tool": "launch_application",
+    "dispatched_tool": "launch_application",
+    "arguments": {
+      "app_name": "chrome"
+    },
+    "success": true,
+    "message": "Successfully launched chrome.exe",
+    "error": null,
+    "data_summary": "{'launched': True, 'target': 'C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe', 'name': 'chrome.exe', 'score': 100.0, 'pid': None, 'error': None}",
+    "classification_latency_ms": 5.672,
+    "execution_latency_ms": 376.98
+  },
+  {
+    "command": "open notepad",
+    "status": "WORKING",
+    "expected_tool": "launch_application",
+    "dispatched_tool": "launch_application",
+    "arguments": {
+      "app_name": "notepad"
+    },
+    "success": true,
+    "message": "Successfully launched notepad",
+    "error": null,
+    "data_summary": "{'launched': True, 'target': 'notepad.exe', 'name': 'notepad', 'score': 100.0, 'pid': None, 'error': None}",
+    "classification_latency_ms": 0.112,
+    "execution_latency_ms": 222.39
+  },
+  {
+    "command": "launch vscode",
+    "status": "WORKING",
+    "expected_tool": "launch_application",
+    "dispatched_tool": "launch_application",
+    "arguments": {
+      "app_name": "vscode"
+    },
+    "success": true,
+    "message": "Successfully launched code.exe",
+    "error": null,
+    "data_summary": "{'launched': True, 'target': 'C:\\\\Program Files\\\\Microsoft VS Code\\\\Code.exe', 'name': 'code.exe', 'score': 85.0, 'pid': None, 'error': None}",
+    "classification_latency_ms": 0.073,
+    "execution_latency_ms": 103.44
+  },
+  {
+    "command": "open calculator",
+    "status": "WORKING",
+    "expected_tool": "launch_application",
+    "dispatched_tool": "launch_application",
+    "arguments": {
+      "app_name": "calculator"
+    },
+    "success": true,
+    "message": "Successfully launched calculator",
+    "error": null,
+    "data_summary": "{'launched': True, 'target': 'calc.exe', 'name': 'calculator', 'score': 100.0, 'pid': None, 'error': None}",
+    "classification_latency_ms": 0.141,
+    "execution_latency_ms": 109.18
+  },
+  {
+    "command": "maximize window",
+    "status": "PARTIAL",
+    "expected_tool": "snap_window",
+    "dispatched_tool": "snap_window",
+    "arguments": {
+      "side": "maximize"
+    },
+    "success": false,
+    "message": null,
+    "error": "No active window found to snap.",
+    "data_summary": null,
+    "classification_latency_ms": 0.104,
+    "execution_latency_ms": 0.15
+  },
+  {
+    "command": "snap window left",
+    "status": "PARTIAL",
+    "expected_tool": "snap_window",
+    "dispatched_tool": "snap_window",
+    "arguments": {
+      "side": "left"
+    },
+    "success": false,
+    "message": null,
+    "error": "No active window found to snap.",
+    "data_summary": null,
+    "classification_latency_ms": 0.104,
+    "execution_latency_ms": 0.07
+  },
+  {
+    "command": "snap window right",
+    "status": "PARTIAL",
+    "expected_tool": "snap_window",
+    "dispatched_tool": "snap_window",
+    "arguments": {
+      "side": "right"
+    },
+    "success": false,
+    "message": null,
+    "error": "No active window found to snap.",
+    "data_summary": null,
+    "classification_latency_ms": 0.058,
+    "execution_latency_ms": 0.04
+  },
+  {
+    "command": "mute sound",
+    "status": "WORKING",
+    "expected_tool": "control_volume",
+    "dispatched_tool": "control_volume",
+    "arguments": {
+      "action": "mute"
+    },
+    "success": true,
+    "message": "Audio muted.",
+    "error": null,
+    "data_summary": "{'success': True, 'is_muted': True, 'message': 'Audio muted.'}",
+    "classification_latency_ms": 0.015,
+    "execution_latency_ms": 1047.13
+  },
+  {
+    "command": "set volume to 20%",
+    "status": "WORKING",
+    "expected_tool": "control_volume",
+    "dispatched_tool": "control_volume",
+    "arguments": {
+      "action": "set",
+      "level": 20
+    },
+    "success": true,
+    "message": "Volume set to 20%.",
+    "error": null,
+    "data_summary": "{'success': True, 'level': 20, 'message': 'Volume set to 20%.'}",
+    "classification_latency_ms": 0.114,
+    "execution_latency_ms": 1601.22
+  },
+  {
+    "command": "set brightness to 50%",
+    "status": "WORKING",
+    "expected_tool": "control_brightness",
+    "dispatched_tool": "control_brightness",
+    "arguments": {
+      "action": "set",
+      "level": 50
+    },
+    "success": true,
+    "message": "Brightness set to 50%.",
+    "error": null,
+    "data_summary": "{'success': True, 'brightness': 50, 'message': 'Brightness set to 50%.'}",
+    "classification_latency_ms": 0.111,
+    "execution_latency_ms": 131.77
+  },
+  {
+    "command": "take a screenshot",
+    "status": "WORKING",
+    "expected_tool": "capture_screen",
+    "dispatched_tool": "capture_screen",
+    "arguments": {
+      "target": "full"
+    },
+    "success": true,
+    "message": "Generated snapshot (headless fallback).",
+    "error": null,
+    "data_summary": "{'success': True, 'path': 'D:\\\\Projects\\\\Aegis AI\\\\storage\\\\cache\\\\screenshots\\\\capture.png', 'size_bytes': 67, 'width': 1, 'height': 1, 'base64': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAA",
+    "classification_latency_ms": 0.162,
+    "execution_latency_ms": 5031.05
+  },
+  {
+    "command": "note down: meeting with engineering team at 4pm",
+    "status": "WORKING",
+    "expected_tool": "manage_notes",
+    "dispatched_tool": "manage_notes",
+    "arguments": {
+      "action": "append",
+      "text": "meeting with engineering team at 4pm"
+    },
+    "success": true,
+    "message": "Saved note to 2026-10-31.md",
+    "error": null,
+    "data_summary": "{'success': True, 'file': 'D:\\\\Projects\\\\Aegis AI\\\\storage\\\\notes\\\\2026-10-31.md', 'date': '2026-10-31', 'time': '19:19:08', 'text': 'meeting with engineering team at 4pm', 'message': 'Saved note to 2",
+    "classification_latency_ms": 0.904,
+    "execution_latency_ms": 14.73
+  },
+  {
+    "command": "show today's notes",
+    "status": "WORKING",
+    "expected_tool": "manage_notes",
+    "dispatched_tool": "manage_notes",
+    "arguments": {
+      "action": "read_today"
+    },
+    "success": true,
+    "message": "Retrieved 6 entries from today's notes.",
+    "error": null,
+    "data_summary": "{'success': True, 'date': '2026-10-31', 'content': '# Daily Notes - 2026-10-31\\n\\n- **[18:47:48]**: Aegis AI Phase 5 daily value test\\n- **[18:54:06]**: Aegis AI Automated Test Verification Note\\n- **",
+    "classification_latency_ms": 0.154,
+    "execution_latency_ms": 40.97
+  }
+]

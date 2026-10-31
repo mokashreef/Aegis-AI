@@ -49,8 +49,8 @@ class FasterWhisperEngine:
         finally:
             self._is_loading = False
 
-    def transcribe_file(self, audio_path: Path) -> str:
-        """Transcribes an audio waveform file into text using VAD filtering."""
+    def transcribe_file(self, audio_path: Path, language: Optional[str] = None) -> str:
+        """Transcribes an audio waveform file into text using VAD filtering and language detection."""
         if not audio_path.exists():
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
@@ -64,7 +64,7 @@ class FasterWhisperEngine:
         segments, info = self._model.transcribe(
             str(audio_path),
             beam_size=1,  # Greedy for maximum real-time speed
-            language="en",
+            language=language,
             vad_filter=True,
             vad_parameters=dict(min_silence_duration_ms=500),
         )
@@ -95,3 +95,4 @@ class FasterWhisperEngine:
 
 # Global STT engine singleton
 stt_engine = FasterWhisperEngine()
+

@@ -129,3 +129,4 @@ export function useMicrophoneCapture(onTranscriptionComplete?: (text: string) =>
     toggleRecording,
   };
 }
+

@@ -1,0 +1,30 @@
+{
+  "ollama_probe": {
+    "installed_binary": false,
+    "server_running": false,
+    "model_count": 0,
+    "installed_models": [],
+    "provider_available_gate": false,
+    "recommendation": null
+  },
+  "empty_model_crash_prevention": {
+    "scenario": "Server running but 0 models installed",
+    "gate_status": "BLOCKED",
+    "prevented_404_crash": true
+  },
+  "inference_telemetry": {
+    "active_provider": "pollinations",
+    "active_model": "openai",
+    "first_token_latency_ms": 7793.96,
+    "total_latency_ms": 7858.17,
+    "tokens_per_sec": 0.38,
+    "output_length_chars": 18,
+    "output_snippet": "Aegis System Ready",
+    "graceful_fallback": true
+  },
+  "bootstrapper_endpoint": {
+    "status_code": 200,
+    "content_type": "text/event-stream; charset=utf-8",
+    "success": true
+  }
+}

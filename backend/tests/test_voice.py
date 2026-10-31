@@ -89,3 +89,4 @@ async def test_voice_api_endpoints():
             data = trans_res.json()
             assert data["success"] is True
             assert data["text"] == "open notepad"
+

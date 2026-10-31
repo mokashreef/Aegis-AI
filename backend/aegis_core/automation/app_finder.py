@@ -277,3 +277,4 @@ class AppFinder:
 
 # Global app finder singleton
 app_finder = AppFinder()
+

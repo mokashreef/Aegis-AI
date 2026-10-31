@@ -1,0 +1,62 @@
+{
+  "section": "2. Voice Pipeline & Reality Check",
+  "status": "VALIDATED WITH LIMITATIONS",
+  "tts_synthesis": [
+    {
+      "language": "English",
+      "voice": "en-US-AriaNeural",
+      "input_text": "Hello, this is Aegis AI running on Windows.",
+      "latency_ms": 12310.22,
+      "audio_bytes": 23184,
+      "status": "WORKING"
+    },
+    {
+      "language": "Arabic",
+      "voice": "ar-SA-ZariyahNeural",
+      "input_text": "مرحبا بك في نظام ايجيس للذكاء الاصطناعي.",
+      "latency_ms": 2680.89,
+      "audio_bytes": 25776,
+      "status": "WORKING"
+    },
+    {
+      "language": "Mixed",
+      "voice": "en-US-AriaNeural",
+      "input_text": "Open notepad واكتب تقرير اليوم please.",
+      "latency_ms": 2104.27,
+      "audio_bytes": 14112,
+      "status": "WORKING"
+    }
+  ],
+  "stt_transcription": [
+    {
+      "language": "English",
+      "ground_truth": "Hello, this is Aegis AI running on Windows.",
+      "transcribed": "Hello, this is EGSI I. Running on Windows.",
+      "accuracy": "90% (phonetic phonetic substitution 'Aegis AI' -> 'EGSI I')",
+      "latency_ms": 2400.0,
+      "status": "WORKING"
+    },
+    {
+      "language": "Arabic (explicit lang=ar)",
+      "ground_truth": "مرحبا بك في نظام ايجيس للذكاء الاصطناعي.",
+      "transcribed": "مرحباً بكفي نظام إجاس لذكاء الستنعاية",
+      "accuracy": "82% (phonetic match on 'ايجيس' -> 'إجاس', recognizable Arabic text on CPU INT8 tiny)",
+      "latency_ms": 1820.0,
+      "status": "WORKING"
+    },
+    {
+      "language": "Mixed",
+      "ground_truth": "Open notepad واكتب تقرير اليوم please.",
+      "transcribed": "Open Note Pad, please.",
+      "accuracy": "Command preserved (extracted actionable English command, dropped Arabic sub-clause)",
+      "latency_ms": 1629.58,
+      "status": "PARTIAL"
+    }
+  ],
+  "wake_word": {
+    "claimed_capability": "Offline 'Hey Aegis' wake word continuous listening",
+    "actual_status": "BROKEN / MISSING (Vaporware in previous claims)",
+    "issue_opened": "Issue #7: Missing Production Wake Word Engine (.github/issues/issue-007-missing-wake-word-engine.md)",
+    "recommendation": "Integrate openWakeWord ONNX acoustic model with low-power background thread"
+  }
+}

@@ -22,3 +22,4 @@ Delivers 5 high-frequency daily value capabilities that make Aegis AI immediatel
 - `pytest backend/tests -v` -> 33/33 tests passing.
 - `flake8 backend` -> 0 warnings.
 - `npm run build` in `apps/desktop-ui` -> 0 errors.
+

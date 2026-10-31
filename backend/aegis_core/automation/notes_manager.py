@@ -111,3 +111,4 @@ class NotesManager:
 
 # Global notes manager singleton
 notes_manager = NotesManager()
+

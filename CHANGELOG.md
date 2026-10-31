@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Validated - Comprehensive CTO Product Validation Audit & Empirical Benchmark
+- **Rigorous Runtime Benchmarking**: Executed end-to-end performance and accuracy benchmarks across Desktop Experience, Voice Pipeline, Desktop Automation, Model System Matrix, and User Installation Journey.
+- **Empirical Evidence Artifacts**: Stored benchmark raw telemetry under `.github/validation_evidence/` (RAM `38.89 MB`, CPU `0.0%`, Alt+Space `8.01 ms`, app init `8.60 ms`, first HTTP `77.81 ms`, multi-monitor query `0.017 ms`).
+- **Voice Pipeline Reality Check**: Faster-Whisper CPU INT8 verified on English (90% accuracy), Arabic (auto-detected `ar` in 1.82s, 82% accuracy), and Mixed inputs. Edge TTS verified for English, Arabic (`ar-SA-ZariyahNeural`), and bilingual text.
+- **Vaporware Identification**: Audited and confirmed wake word ("Hey Aegis") was missing; formally tracked under Issue #7 (`.github/issues/issue-007-missing-wake-word-engine.md`).
+- **Friction Audit**: Formally documented 3-command CLI installation barrier under Issue #8 (`.github/issues/issue-008-user-journey-installation-friction.md`).
+- **Dead Code Elimination**: Purged abandoned `src-tauri` directory from git, removing dead Rust/Cargo scaffolding in favor of the lightweight native PyWebView + FastAPI desktop architecture.
+- **Build & Quality Hardening**: Added automated `npm run build` step to `scripts/setup_env.ps1`. Fixed `ToolResult.message` attribute and multi-lingual `stt.py` parameter. 33 tests passing with 0 flake8 warnings.
+
 ### Added - Phase 5: Daily Value Features (MVP Recovery)
 - **CoreAudio Volume Control (`volume_manager.py`)**: Master audio volume adjustment (0-100%), mute, unmute, and relative step tuning via `pycaw`.
 - **WMI Display Brightness (`brightness_manager.py`)**: Native monitor brightness queries and adjustments via Windows WMI `WmiMonitorBrightnessMethods`.

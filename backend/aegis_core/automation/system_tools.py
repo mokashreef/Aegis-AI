@@ -1,10 +1,12 @@
 """
 Aegis AI - Built-in Desktop Automation Tools.
-Wraps Windows process, window, volume, brightness, screen capture, and quick notes
-as BaseTool implementations.
+Wraps Windows process, window, volume, brightness, screen capture, quick notes,
+and URL/browser opening as BaseTool implementations.
 """
 
 from typing import Any
+import urllib.parse
+import webbrowser
 from aegis_core.automation.brightness_manager import brightness_manager
 from aegis_core.automation.clipboard_manager import ClipboardManager
 from aegis_core.automation.notes_manager import notes_manager
@@ -13,6 +15,7 @@ from aegis_core.automation.screen_capture import screen_capture
 from aegis_core.automation.volume_manager import volume_manager
 from aegis_core.automation.window_manager import WindowManager
 from aegis_core.plugins.base import BaseTool, RiskLevel, ToolResult
+from aegis_core.utils.logger import logger
 from aegis_core.utils.system_info import get_system_telemetry
 
 
@@ -49,6 +52,103 @@ class LaunchAppTool(BaseTool):
         )
 
 
+class OpenUrlTool(BaseTool):
+    name = "open_url"
+    description = (
+        "Opens a website URL, domain, or web search query in a desktop browser (e.g. Chrome, Edge, Brave, Comet). "
+        "Automatically ensures https:// protocol."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "url": {
+                "type": "string",
+                "description": "Website URL, domain, or search query (e.g. 'https://youtube.com', 'google.com').",
+            },
+            "browser": {
+                "type": "string",
+                "description": "Optional specific browser name (e.g. 'chrome', 'msedge', 'brave', 'comet', 'firefox').",
+            },
+        },
+        "required": ["url"],
+    }
+
+    async def execute(self, url: str, browser: str = "", **kwargs: Any) -> ToolResult:
+        target_url = url.strip()
+        low = target_url.lower()
+
+        KNOWN_URLS = {
+            "youtube": "https://www.youtube.com",
+            "يوتيوب": "https://www.youtube.com",
+            "google": "https://www.google.com",
+            "جوجل": "https://www.google.com",
+            "غوغل": "https://www.google.com",
+            "github": "https://www.github.com",
+            "جيت هاب": "https://www.github.com",
+            "غيتهاب": "https://www.github.com",
+            "twitter": "https://x.com",
+            "تويتر": "https://x.com",
+            "facebook": "https://www.facebook.com",
+            "فيسبوك": "https://www.facebook.com",
+            "chatgpt": "https://chatgpt.com",
+            "شات جي بي تي": "https://chatgpt.com",
+            "gmail": "https://mail.google.com",
+            "جيميل": "https://mail.google.com",
+        }
+
+        if low in KNOWN_URLS:
+            target_url = KNOWN_URLS[low]
+        elif not target_url.startswith("http://") and not target_url.startswith("https://"):
+            if "." in target_url and " " not in target_url:
+                target_url = f"https://{target_url}"
+            else:
+                target_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(target_url)}"
+
+        browser_choice = browser.strip().lower()
+        BROWSER_MAP = {
+            "chrome": "chrome",
+            "كروم": "chrome",
+            "جوجل كروم": "chrome",
+            "edge": "msedge",
+            "msedge": "msedge",
+            "ايدج": "msedge",
+            "مايكروسوفت ايدج": "msedge",
+            "brave": "brave",
+            "بريف": "brave",
+            "comet": "comet",
+            "كومت": "comet",
+            "firefox": "firefox",
+            "فايرفوكس": "firefox",
+        }
+        target_browser = BROWSER_MAP.get(browser_choice, browser_choice)
+
+        opened = False
+        method = "default_browser"
+
+        if target_browser:
+            try:
+                launch_res = ProcessManager.launch_app(target_browser, [target_url])
+                if launch_res.get("launched"):
+                    opened = True
+                    method = f"browser_{target_browser}"
+            except Exception as exc:
+                logger.debug("Specific browser launch failed: %s", exc)
+
+        if not opened:
+            try:
+                webbrowser.open(target_url)
+                opened = True
+            except Exception as exc:
+                return ToolResult(success=False, error=f"Failed to open URL '{target_url}': {exc}")
+
+        return ToolResult(
+            success=True,
+            data={"url": target_url, "browser": target_browser or "default", "method": method},
+            message=f"Opened {target_url} in {target_browser or 'default browser'}",
+        )
+
+
 class CloseAppTool(BaseTool):
     name = "close_application"
     description = "Terminates a running Windows desktop application by executable name or process ID."
@@ -73,175 +173,186 @@ class CloseAppTool(BaseTool):
         res = ProcessManager.terminate_process(pid=p_id, name=p_name)
         if res.get("success"):
             return ToolResult(success=True, data=res)
-        return ToolResult(success=False, error="Could not locate or terminate the requested process.", data=res)
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"Failed to terminate process {name or pid}."),
+            data=res,
+        )
 
 
 class ListProcessesTool(BaseTool):
     name = "list_processes"
-    description = "Lists active running desktop applications and system processes with RAM and CPU usage."
+    description = "Retrieves currently active Windows desktop processes sorted by memory usage."
     risk_level = RiskLevel.READ_ONLY
     parameters_schema = {
         "type": "object",
         "properties": {
             "filter_name": {
                 "type": "string",
-                "description": "Optional search string to filter processes by name.",
+                "description": "Optional string filter to match process names.",
             },
             "limit": {
                 "type": "integer",
-                "description": "Maximum number of processes to return (default: 20).",
+                "description": "Maximum number of processes to return (default 25).",
             },
         },
     }
 
-    async def execute(self, filter_name: str = "", limit: int = 20, **kwargs: Any) -> ToolResult:
-        procs = ProcessManager.list_processes(filter_name=filter_name or None, limit=limit)
-        return ToolResult(success=True, data=procs)
+    async def execute(self, filter_name: str = "", limit: int = 25, **kwargs: Any) -> ToolResult:
+        fname = filter_name if filter_name else None
+        procs = ProcessManager.list_processes(filter_name=fname, limit=limit)
+        return ToolResult(success=True, data={"processes": procs, "count": len(procs)})
 
 
 class GetClipboardTool(BaseTool):
     name = "get_clipboard"
-    description = "Reads and returns the current text content copied to the Windows system clipboard."
+    description = "Reads current text content from the Windows clipboard."
     risk_level = RiskLevel.READ_ONLY
     parameters_schema = {"type": "object", "properties": {}}
 
     async def execute(self, **kwargs: Any) -> ToolResult:
         text = ClipboardManager.get_text()
-        return ToolResult(success=True, data={"text": text, "length": len(text)})
+        return ToolResult(
+            success=True,
+            data={"text": text, "length": len(text)},
+            message=f"Clipboard content: {text[:100]}..." if len(text) > 100 else f"Clipboard: {text}",
+        )
 
 
 class SetClipboardTool(BaseTool):
     name = "set_clipboard"
-    description = "Copies the provided text content onto the Windows system clipboard."
+    description = "Overwrites the Windows clipboard with the provided text."
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
             "text": {
                 "type": "string",
-                "description": "Text content to write to the clipboard.",
+                "description": "Text to write to the clipboard.",
             },
         },
         "required": ["text"],
     }
 
     async def execute(self, text: str, **kwargs: Any) -> ToolResult:
-        ok = ClipboardManager.set_text(text)
-        if ok:
-            return ToolResult(success=True, data={"copied": True, "length": len(text)})
-        return ToolResult(success=False, error="Failed to set clipboard data.")
+        success = ClipboardManager.set_text(text)
+        return ToolResult(success=success, data={"length": len(text)})
 
 
 class ListWindowsTool(BaseTool):
     name = "list_windows"
-    description = "Enumerates currently visible desktop windows and titles."
+    description = "Lists all visible, top-level application windows on the desktop."
     risk_level = RiskLevel.READ_ONLY
-    parameters_schema = {
-        "type": "object",
-        "properties": {
-            "title_filter": {
-                "type": "string",
-                "description": "Optional keyword to filter window titles.",
-            },
-        },
-    }
+    parameters_schema = {"type": "object", "properties": {}}
 
-    async def execute(self, title_filter: str = "", **kwargs: Any) -> ToolResult:
-        windows = WindowManager.list_windows(title_filter=title_filter or None)
-        return ToolResult(success=True, data=windows)
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        wins = WindowManager.list_windows()
+        return ToolResult(success=True, data={"windows": wins, "count": len(wins)})
 
 
 class FocusWindowTool(BaseTool):
     name = "focus_window"
-    description = "Brings a specific window to the foreground by its window handle (hwnd)."
+    description = "Brings a window into the foreground using its HWND window handle."
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
             "hwnd": {
                 "type": "integer",
-                "description": "Window handle integer ID to focus.",
+                "description": "Window handle integer identifier.",
             },
         },
         "required": ["hwnd"],
     }
 
     async def execute(self, hwnd: int, **kwargs: Any) -> ToolResult:
-        ok = WindowManager.focus_window(hwnd)
-        if ok:
-            return ToolResult(success=True, data={"focused": True, "hwnd": hwnd})
-        return ToolResult(success=False, error=f"Failed to focus window handle {hwnd}.")
+        success = WindowManager.focus_window(hwnd)
+        return ToolResult(success=success, data={"hwnd": hwnd})
 
 
 class FocusWindowByTitleTool(BaseTool):
     name = "focus_window_by_title"
-    description = "Searches for an open window by application or title name and brings it to the foreground."
+    description = "Finds and brings an application window into the foreground using fuzzy title matching."
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
-            "title_query": {
+            "title": {
                 "type": "string",
-                "description": "The name or title of the window to focus (e.g. 'chrome', 'notepad').",
+                "description": "App or window title to match (e.g. 'Notepad', 'Chrome', 'Visual Studio Code').",
             },
         },
-        "required": ["title_query"],
+        "required": ["title"],
     }
 
-    async def execute(self, title_query: str, **kwargs: Any) -> ToolResult:
-        res = WindowManager.focus_window_by_title(title_query)
-        if res.get("success"):
-            return ToolResult(success=True, data=res, message=f"Focused window: {res.get('title')}")
-        return ToolResult(success=False, error=res.get("error", "Window not found."))
+    async def execute(self, title: str = "", title_query: str = "", **kwargs: Any) -> ToolResult:
+        query = title or title_query
+        res = WindowManager.focus_window_by_title(query)
+        if res.get("focused") or res.get("success"):
+            return ToolResult(
+                success=True,
+                data=res,
+                message=f"Brought window '{res.get('title')}' to front.",
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"No window matching '{query}' was found."),
+            data=res,
+        )
 
 
 class MinimizeAllWindowsTool(BaseTool):
     name = "minimize_all_windows"
-    description = "Minimizes all desktop application windows to show the clean desktop (Win+D)."
+    description = "Simulates Show Desktop (Win+D) to minimize all open application windows."
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {"type": "object", "properties": {}}
 
     async def execute(self, **kwargs: Any) -> ToolResult:
-        ok = WindowManager.minimize_all()
-        return ToolResult(success=ok, data={"minimized": ok})
+        success = WindowManager.minimize_all()
+        return ToolResult(success=success, message="All windows minimized (Show Desktop triggered).")
 
 
 class SnapWindowTool(BaseTool):
     name = "snap_window"
-    description = (
-        "Snaps or tiles the currently active window to 'left', 'right', 'maximize', "
-        "'minimize', or 'restore' using monitor work area dimensions."
-    )
+    description = "Snaps the foreground active window to the 'left' or 'right' half of the monitor, or maximizes it."
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
             "side": {
                 "type": "string",
-                "description": "Position to snap: 'left', 'right', 'maximize', 'minimize', or 'restore'.",
-                "enum": ["left", "right", "maximize", "minimize", "restore"],
+                "enum": ["left", "right", "maximize", "restore"],
+                "description": "Placement layout target.",
             },
             "hwnd": {
                 "type": "integer",
-                "description": "Optional window handle (defaults to active foreground window).",
+                "description": "Optional specific window handle to snap. If omitted, uses current foreground window.",
             },
         },
         "required": ["side"],
     }
 
     async def execute(self, side: str, hwnd: int = 0, **kwargs: Any) -> ToolResult:
-        target_hwnd = hwnd if hwnd > 0 else None
-        res = WindowManager.snap_window(side=side, hwnd=target_hwnd)
-        if res.get("success"):
-            return ToolResult(success=True, data=res)
-        return ToolResult(success=False, error=res.get("error", "Window snapping failed."))
+        h = hwnd if hwnd > 0 else None
+        res = WindowManager.snap_window(side=side, hwnd=h)
+        if res.get("snapped") or res.get("success"):
+            return ToolResult(
+                success=True,
+                data=res,
+                message=f"Snapped window to {side}.",
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"Failed to snap window to {side}."),
+            data=res,
+        )
 
 
 class VolumeControlTool(BaseTool):
     name = "control_volume"
     description = (
-        "Controls Windows master audio volume: 'set' (0-100), 'mute', 'unmute', "
-        "'increase', 'decrease', or 'get'."
+        "Controls Windows master audio volume: set level (0-100), mute, unmute, "
+        "or relatively adjust volume up/down."
     )
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
@@ -249,12 +360,12 @@ class VolumeControlTool(BaseTool):
         "properties": {
             "action": {
                 "type": "string",
-                "description": "The volume action: 'set', 'mute', 'unmute', 'increase', 'decrease', or 'get'.",
-                "enum": ["set", "mute", "unmute", "increase", "decrease", "get"],
+                "enum": ["set", "mute", "unmute", "increase", "decrease", "status"],
+                "description": "Volume action to perform.",
             },
             "level": {
                 "type": "integer",
-                "description": "Target volume percentage (0 to 100) for 'set', or delta for adjust.",
+                "description": "Target volume percentage (0-100) or step amount for increase/decrease.",
             },
         },
         "required": ["action"],
@@ -262,33 +373,33 @@ class VolumeControlTool(BaseTool):
 
     async def execute(self, action: str, level: int = 0, **kwargs: Any) -> ToolResult:
         act = action.lower().strip()
-        if act == "get":
-            res = volume_manager.get_status()
-            return ToolResult(success=res.get("success", True), data=res)
-        elif act == "set":
+        if act == "set":
             res = volume_manager.set_volume(level)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
         elif act == "mute":
-            res = volume_manager.set_mute(True)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
+            res = volume_manager.mute()
         elif act == "unmute":
-            res = volume_manager.set_mute(False)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
-        elif act in ["increase", "up"]:
-            delta = level if level > 0 else 10
-            res = volume_manager.adjust_volume(delta)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
-        elif act in ["decrease", "down"]:
-            delta = level if level > 0 else 10
-            res = volume_manager.adjust_volume(-delta)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
-        return ToolResult(success=False, error=f"Unknown volume action '{action}'.")
+            res = volume_manager.unmute()
+        elif act == "increase":
+            res = volume_manager.change_volume(step=level if level > 0 else 10)
+        elif act == "decrease":
+            res = volume_manager.change_volume(step=-(level if level > 0 else 10))
+        elif act == "status":
+            res = volume_manager.get_status()
+        else:
+            return ToolResult(success=False, error=f"Unknown volume action '{action}'.")
+
+        return ToolResult(
+            success=res.get("success", True),
+            data=res,
+            message=res.get("message", f"Volume action {action} completed."),
+        )
 
 
 class BrightnessControlTool(BaseTool):
     name = "control_brightness"
     description = (
-        "Controls Windows display brightness: 'set' (0-100), 'increase', 'decrease', or 'get'."
+        "Controls primary display brightness on supported Windows laptops/monitors: "
+        "set percentage (0-100), increase, decrease, or query current level."
     )
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
@@ -296,12 +407,12 @@ class BrightnessControlTool(BaseTool):
         "properties": {
             "action": {
                 "type": "string",
-                "description": "Brightness action: 'set', 'increase', 'decrease', or 'get'.",
-                "enum": ["set", "increase", "decrease", "get"],
+                "enum": ["set", "increase", "decrease", "status"],
+                "description": "Brightness action to perform.",
             },
             "level": {
                 "type": "integer",
-                "description": "Target brightness percentage (0-100) or delta.",
+                "description": "Target percentage (0-100) or step amount for relative adjustment.",
             },
         },
         "required": ["action"],
@@ -309,27 +420,31 @@ class BrightnessControlTool(BaseTool):
 
     async def execute(self, action: str, level: int = 0, **kwargs: Any) -> ToolResult:
         act = action.lower().strip()
-        if act == "get":
-            res = brightness_manager.get_brightness()
-            return ToolResult(success=res.get("success", True), data=res)
-        elif act == "set":
+        if act == "set":
             res = brightness_manager.set_brightness(level)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
         elif act in ["increase", "up"]:
             delta = level if level > 0 else 10
             res = brightness_manager.adjust_brightness(delta)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
         elif act in ["decrease", "down"]:
             delta = level if level > 0 else 10
             res = brightness_manager.adjust_brightness(-delta)
-            return ToolResult(success=res.get("success", False), data=res, message=res.get("message"))
-        return ToolResult(success=False, error=f"Unknown brightness action '{action}'.")
+        elif act in ["get", "status"]:
+            res = brightness_manager.get_brightness()
+        else:
+            return ToolResult(success=False, error=f"Unknown brightness action '{action}'.")
+
+        return ToolResult(
+            success=res.get("success", False),
+            data=res,
+            message=res.get("message", f"Brightness action {action} completed."),
+        )
 
 
 class ScreenCaptureTool(BaseTool):
     name = "capture_screen"
     description = (
-        "Captures a screenshot of the Windows desktop and prepares it for multimodal analysis."
+        "Captures the Windows desktop screen and encodes the result in base64 "
+        "for instant multimodal agent context."
     )
     risk_level = RiskLevel.READ_ONLY
     parameters_schema = {
@@ -337,8 +452,8 @@ class ScreenCaptureTool(BaseTool):
         "properties": {
             "target": {
                 "type": "string",
-                "description": "Capture target: 'full' (desktop) or 'active_window'.",
-                "default": "full",
+                "enum": ["full", "window"],
+                "description": "Target capture boundary.",
             },
         },
     }
@@ -346,8 +461,19 @@ class ScreenCaptureTool(BaseTool):
     async def execute(self, target: str = "full", **kwargs: Any) -> ToolResult:
         res = screen_capture.capture(target=target)
         if res.get("success"):
-            return ToolResult(success=True, data=res, message=res.get("message"))
-        return ToolResult(success=False, error=res.get("error", "Screen capture failed."))
+            return ToolResult(
+                success=True,
+                data={
+                    "path": res.get("path"),
+                    "size_bytes": res.get("size_bytes"),
+                    "latency_ms": res.get("latency_ms"),
+                    "width": res.get("width"),
+                    "height": res.get("height"),
+                    "base64_preview": res.get("base64", "")[:60] + "...",
+                },
+                message=res.get("message", "Screen captured successfully."),
+            )
+        return ToolResult(success=False, error="Screen capture failed.", data=res)
 
 
 class QuickNotesTool(BaseTool):
@@ -361,16 +487,16 @@ class QuickNotesTool(BaseTool):
         "properties": {
             "action": {
                 "type": "string",
-                "description": "Notes action: 'append', 'search', or 'read_today'.",
-                "enum": ["append", "search", "read_today"],
+                "enum": ["append", "read_today", "search"],
+                "description": "Notes operation to perform.",
             },
             "text": {
                 "type": "string",
-                "description": "Note content to append (required for 'append').",
+                "description": "Note content to append or search text.",
             },
             "query": {
                 "type": "string",
-                "description": "Search keyword (required for 'search').",
+                "description": "Search keyword when action is 'search'.",
             },
         },
         "required": ["action"],

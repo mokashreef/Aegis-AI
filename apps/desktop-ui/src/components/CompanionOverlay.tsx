@@ -13,6 +13,12 @@ import {
   X,
   Zap,
   Radio,
+  GripHorizontal,
+  Pin,
+  PinOff,
+  Globe,
+  Camera,
+  Layers,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -33,6 +39,39 @@ export const CompanionOverlay: React.FC = () => {
   const [runtimeStatus, setRuntimeStatus] = useState<AIRuntimeStatus | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
   const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus | null>(null);
+  const [isPinned, setIsPinned] = useState(true);
+
+  const fetchPinStatus = useCallback(() => {
+    // @ts-expect-error pywebview JS bridge
+    if (window.pywebview?.api?.get_on_top) {
+      // @ts-expect-error pywebview JS bridge
+      window.pywebview.api.get_on_top().then((status: boolean) => setIsPinned(status));
+    } else {
+      fetch("http://127.0.0.1:8420/api/desktop/pin")
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.is_on_top === "boolean") setIsPinned(data.is_on_top);
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  const handleTogglePin = async () => {
+    // @ts-expect-error pywebview JS bridge
+    if (window.pywebview?.api?.toggle_on_top) {
+      // @ts-expect-error pywebview JS bridge
+      const newStatus = await window.pywebview.api.toggle_on_top();
+      setIsPinned(newStatus);
+    } else {
+      try {
+        const res = await fetch("http://127.0.0.1:8420/api/desktop/pin", { method: "POST" });
+        const data = await res.json();
+        if (typeof data.is_on_top === "boolean") setIsPinned(data.is_on_top);
+      } catch (err) {
+        console.error("Failed to toggle pin state:", err);
+      }
+    }
+  };
 
   const handleToggleWakeWord = async () => {
     try {
@@ -91,8 +130,9 @@ export const CompanionOverlay: React.FC = () => {
     window.addEventListener("keydown", handleGlobalKey);
 
     refreshTelemetry();
+    fetchPinStatus();
     return () => window.removeEventListener("keydown", handleGlobalKey);
-  }, [refreshTelemetry]);
+  }, [refreshTelemetry, fetchPinStatus]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -130,15 +170,24 @@ export const CompanionOverlay: React.FC = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col h-[620px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50 bg-slate-900/40">
+      {/* Top Header Bar with Draggable Handle & Always-on-Top Toggle */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-700/50 bg-slate-900/50">
         <div className="flex items-center gap-3">
+          {/* Native Drag Handle */}
+          <div
+            className="pywebview-drag-region flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 cursor-move border border-slate-700/50 transition-colors shadow-sm select-none"
+            title="Drag window anywhere on screen (اضغط واسحب لتحريك النافذة)"
+          >
+            <GripHorizontal className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-mono tracking-tight font-medium">Move</span>
+          </div>
+
           <div className="relative">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
-              <Sparkles className="w-5 h-5 text-slate-950 fill-current" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
+              <Sparkles className="w-4 h-4 text-slate-950 fill-current" />
             </div>
             <span
-              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-900 ${
+              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${
                 isConnected ? "bg-emerald-400" : "bg-rose-400"
               }`}
             />
@@ -195,6 +244,18 @@ export const CompanionOverlay: React.FC = () => {
           </button>
 
           <button
+            onClick={handleTogglePin}
+            className={`p-2 rounded-xl transition border ${
+              isPinned
+                ? "bg-sky-500/15 border-sky-500/40 text-sky-300 shadow-sm shadow-sky-500/20"
+                : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-slate-200"
+            }`}
+            title={isPinned ? "Always-on-top active (Click to allow other windows over Aegis)" : "Unpinned (Click to keep on top)"}
+          >
+            {isPinned ? <Pin className="w-4 h-4 fill-current" /> : <PinOff className="w-4 h-4" />}
+          </button>
+
+          <button
             onClick={() => setShowTelemetry(true)}
             className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition"
             title="System Telemetry"
@@ -231,6 +292,22 @@ export const CompanionOverlay: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-2 w-full max-w-md">
               <button
+                onClick={() => handleQuickAction("افتح موقع يوتيوب بمتصفح كروم")}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
+              >
+                <Globe className="w-4 h-4 text-rose-400 shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="truncate">YouTube in Chrome</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickAction("افتح جوجل بمتصفح كومت")}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
+              >
+                <Globe className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="truncate">Google in Comet</span>
+              </button>
+
+              <button
                 onClick={() => handleQuickAction("open notepad")}
                 className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
               >
@@ -239,27 +316,27 @@ export const CompanionOverlay: React.FC = () => {
               </button>
 
               <button
+                onClick={() => handleQuickAction("صور الشاشة")}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
+              >
+                <Camera className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Take Screenshot</span>
+              </button>
+
+              <button
+                onClick={() => handleQuickAction("صغر كل النوافذ")}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
+              >
+                <Layers className="w-4 h-4 text-purple-400 shrink-0" />
+                <span>Show Desktop</span>
+              </button>
+
+              <button
                 onClick={() => handleQuickAction("get clipboard")}
                 className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
               >
                 <Clipboard className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>Read Clipboard</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("show processes")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <Activity className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>List Top Tasks</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("system specs")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>System Health</span>
               </button>
             </div>
           </div>

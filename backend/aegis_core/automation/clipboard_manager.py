@@ -5,6 +5,7 @@ Provides direct, thread-safe access to the Windows system clipboard using ctypes
 
 import ctypes
 import os
+import time
 from aegis_core.utils.logger import logger
 
 # Win32 Constants
@@ -41,7 +42,14 @@ class ClipboardManager:
         if not user32.IsClipboardFormatAvailable(CF_UNICODETEXT):
             return ""
 
-        if not user32.OpenClipboard(None):
+        opened = False
+        for _ in range(10):
+            if user32.OpenClipboard(None):
+                opened = True
+                break
+            time.sleep(0.02)
+
+        if not opened:
             logger.warning("Could not open Windows clipboard for reading.")
             return ""
 
@@ -87,7 +95,14 @@ class ClipboardManager:
         kernel32.GlobalUnlock.argtypes = [ctypes.c_void_p]
         kernel32.GlobalUnlock.restype = ctypes.c_bool
 
-        if not user32.OpenClipboard(None):
+        opened = False
+        for _ in range(10):
+            if user32.OpenClipboard(None):
+                opened = True
+                break
+            time.sleep(0.02)
+
+        if not opened:
             logger.warning("Could not open Windows clipboard for writing.")
             return False
 

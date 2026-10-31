@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 13: Arabic Voice Command Routing, Targeted URL/Browser Opening, Draggable Companion & Native Background Mode
+- **Zero-Latency Arabic Voice Intent Routing (`intent_router.py`)**: Real-time regex-based natural language intent router supporting Arabic spoken requests for launching applications (`المفكرة`, `الرسام`, `كروم`, `كومت`), opening websites, muting/unmuting/adjusting volume (`كتم الصوت`, `علي الصوت`), capturing screenshots (`صور الشاشة`), minimizing all windows (`صغر كل النوافذ`), and taking daily notes (`اكتب ملاحظة`).
+- **First-Class Browser & URL Navigation Tool (`system_tools.py`)**: Added `OpenUrlTool` (`open_url`) supporting targeted browser execution (`chrome`, `msedge`, `brave`, `comet`, `firefox`, default) with automatic `https://` protocol resolution and common domain expansion.
+- **Draggable Companion Window (`window.py`, `CompanionOverlay.tsx`)**: Configured native `easy_drag=True` and `resizable=True` on PyWebView with dedicated `pywebview-drag-region` header handle (`GripHorizontal`), allowing fluid repositioning anywhere across multiple displays.
+- **Always-on-Top Toggle / Pin Button**: Added interactive Pin button in overlay header with `/api/desktop/pin` REST endpoint and JS bridge method (`toggle_on_top`) to permit other windows to be viewed alongside or over Aegis smoothly.
+- **Silent Background App Launchers (`run.bat`, `AegisAI.vbs`)**: Updated `run.bat` to launch `pythonw.exe` detached with `start ""`, immediately closing the command prompt. Added `AegisAI.vbs` for 100% windowless double-click execution directly from Windows Explorer.
+- **Quality Assurance**: Added full test suite in `backend/tests/test_arabic_voice_tools.py` (54 total passing tests across full codebase, 0 flake8 warnings). Built updated portable distribution archive with SHA-256 validation.
+
 ### Added - Phase 12: 1-Click Offline Model Download Wizard with Live Byte Progress
 - **Interactive Model Selection Grid (`ModelSetupBanner.tsx`)**: Transparent multi-model selection card wizard displaying size, capabilities, and CPU recommendation badges for Qwen 2.5 (1.5B), Llama 3.2 (1B), and Llama 3.2 (3B).
 - **Streaming Byte Telemetry**: Real-time download progress displaying formatted bytes (`MB / GB`), percentage, and detailed phases ("pulling manifest", "downloading", "verifying sha256").

@@ -26,6 +26,7 @@ from aegis_core.automation.system_tools import (
     ListProcessesTool,
     ListWindowsTool,
     MinimizeAllWindowsTool,
+    OpenUrlTool,
     QuickNotesTool,
     ScreenCaptureTool,
     SetClipboardTool,
@@ -43,6 +44,7 @@ def register_default_tools() -> None:
     """Registers core desktop automation tools into the registry idempotently."""
     tools = [
         LaunchAppTool(),
+        OpenUrlTool(),
         CloseAppTool(),
         ListProcessesTool(),
         GetClipboardTool(),
@@ -100,6 +102,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     logger.info("Shutting down %s daemon...", settings.app_name)
     from aegis_core.voice.wake_word import wake_word_listener
+
     wake_word_listener.stop()
 
 
@@ -132,6 +135,15 @@ def create_app() -> FastAPI:
         overlay_manager.hide()
         return {"visible": False}
 
+    @app.post("/api/desktop/pin")
+    async def toggle_desktop_pin():
+        new_state = overlay_manager.toggle_on_top()
+        return {"on_top": new_state, "is_on_top": new_state}
+
+    @app.get("/api/desktop/pin")
+    async def get_desktop_pin():
+        return {"on_top": overlay_manager.is_on_top, "is_on_top": overlay_manager.is_on_top}
+
     # Mount REST and WebSocket routers
     app.include_router(api_router, prefix="/api")
     app.include_router(ws_router)
@@ -163,7 +175,7 @@ def create_app() -> FastAPI:
     <title>Aegis AI - Desktop Companion</title>
     <style>
         body { margin: 0; background: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif;
-               display: flex; align-items: center; justify-content: center; height: 100vh; }
+               display: flex align-items: center; justify-content: center; height: 100vh; }
         .card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1);
                 border-radius: 20px; padding: 32px; max-width: 480px; text-align: center; }
         h1 { margin-top: 0; color: #38bdf8; font-size: 22px; }

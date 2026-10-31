@@ -2,23 +2,32 @@
 Aegis AI - Windows Automation Package.
 """
 
-from aegis_core.automation.process_manager import ProcessManager
+from aegis_core.automation.app_finder import AppFinder, app_finder
 from aegis_core.automation.clipboard_manager import ClipboardManager
-from aegis_core.automation.window_manager import WindowManager
+from aegis_core.automation.intent_router import IntentRouter, UserIntent
+from aegis_core.automation.process_manager import ProcessManager
 from aegis_core.automation.system_tools import (
-    LaunchAppTool,
     CloseAppTool,
-    ListProcessesTool,
-    GetClipboardTool,
-    SetClipboardTool,
-    ListWindowsTool,
+    FocusWindowByTitleTool,
     FocusWindowTool,
+    GetClipboardTool,
     GetSystemTelemetryTool,
+    LaunchAppTool,
+    ListProcessesTool,
+    ListWindowsTool,
+    MinimizeAllWindowsTool,
+    SetClipboardTool,
+    SnapWindowTool,
 )
+from aegis_core.automation.window_manager import WindowManager
 
 __all__ = [
-    "ProcessManager",
+    "AppFinder",
+    "app_finder",
     "ClipboardManager",
+    "IntentRouter",
+    "UserIntent",
+    "ProcessManager",
     "WindowManager",
     "LaunchAppTool",
     "CloseAppTool",
@@ -27,6 +36,8 @@ __all__ = [
     "SetClipboardTool",
     "ListWindowsTool",
     "FocusWindowTool",
+    "FocusWindowByTitleTool",
+    "MinimizeAllWindowsTool",
+    "SnapWindowTool",
     "GetSystemTelemetryTool",
 ]
-

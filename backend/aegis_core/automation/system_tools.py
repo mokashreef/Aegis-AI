@@ -13,14 +13,17 @@ from aegis_core.utils.system_info import get_system_telemetry
 
 class LaunchAppTool(BaseTool):
     name = "launch_application"
-    description = "Launches a Windows desktop application or utility (e.g. 'notepad.exe', 'calc.exe', 'explorer.exe')."
+    description = (
+        "Launches a Windows desktop application or utility using fuzzy matching "
+        "(e.g. 'chrome', 'google chrome', 'notepad', 'calculator', 'terminal', 'vs code')."
+    )
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
             "app_name": {
                 "type": "string",
-                "description": "The executable name or command to launch (e.g., 'notepad.exe', 'calc.exe').",
+                "description": "The application name or command (e.g., 'chrome', 'notepad', 'calculator').",
             },
         },
         "required": ["app_name"],
@@ -29,8 +32,16 @@ class LaunchAppTool(BaseTool):
     async def execute(self, app_name: str, **kwargs: Any) -> ToolResult:
         res = ProcessManager.launch_app(app_name)
         if res.get("launched"):
-            return ToolResult(success=True, data=res)
-        return ToolResult(success=False, error=res.get("error", "Failed to launch application."))
+            return ToolResult(
+                success=True,
+                data=res,
+                message=f"Successfully launched {res.get('name', app_name)}",
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"Failed to launch application '{app_name}'."),
+            data=res,
+        )
 
 
 class CloseAppTool(BaseTool):
@@ -42,7 +53,7 @@ class CloseAppTool(BaseTool):
         "properties": {
             "name": {
                 "type": "string",
-                "description": "Process name to terminate (e.g. 'notepad.exe', 'calc.exe').",
+                "description": "Process name to terminate (e.g. 'notepad.exe', 'calc.exe', 'chrome.exe').",
             },
             "pid": {
                 "type": "integer",
@@ -155,6 +166,70 @@ class FocusWindowTool(BaseTool):
         if ok:
             return ToolResult(success=True, data={"focused": True, "hwnd": hwnd})
         return ToolResult(success=False, error=f"Failed to focus window handle {hwnd}.")
+
+
+class FocusWindowByTitleTool(BaseTool):
+    name = "focus_window_by_title"
+    description = "Searches for an open window by application or title name and brings it to the foreground."
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "title_query": {
+                "type": "string",
+                "description": "The name or title of the window to focus (e.g. 'chrome', 'notepad').",
+            },
+        },
+        "required": ["title_query"],
+    }
+
+    async def execute(self, title_query: str, **kwargs: Any) -> ToolResult:
+        res = WindowManager.focus_window_by_title(title_query)
+        if res.get("success"):
+            return ToolResult(success=True, data=res, message=f"Focused window: {res.get('title')}")
+        return ToolResult(success=False, error=res.get("error", "Window not found."))
+
+
+class MinimizeAllWindowsTool(BaseTool):
+    name = "minimize_all_windows"
+    description = "Minimizes all desktop application windows to show the clean desktop (Win+D)."
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {"type": "object", "properties": {}}
+
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        ok = WindowManager.minimize_all()
+        return ToolResult(success=ok, data={"minimized": ok})
+
+
+class SnapWindowTool(BaseTool):
+    name = "snap_window"
+    description = (
+        "Snaps or tiles the currently active window to 'left', 'right', 'maximize', "
+        "'minimize', or 'restore' using monitor work area dimensions."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "side": {
+                "type": "string",
+                "description": "Position to snap: 'left', 'right', 'maximize', 'minimize', or 'restore'.",
+                "enum": ["left", "right", "maximize", "minimize", "restore"],
+            },
+            "hwnd": {
+                "type": "integer",
+                "description": "Optional window handle (defaults to active foreground window).",
+            },
+        },
+        "required": ["side"],
+    }
+
+    async def execute(self, side: str, hwnd: int = 0, **kwargs: Any) -> ToolResult:
+        target_hwnd = hwnd if hwnd > 0 else None
+        res = WindowManager.snap_window(side=side, hwnd=target_hwnd)
+        if res.get("success"):
+            return ToolResult(success=True, data=res)
+        return ToolResult(success=False, error=res.get("error", "Window snapping failed."))
 
 
 class GetSystemTelemetryTool(BaseTool):

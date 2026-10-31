@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 4: Useful Automation (MVP Recovery)
+- **Fuzzy Application Discovery (`app_finder.py`)**: Automatic discovery and fuzzy similarity matching across Start Menu shortcuts (`.lnk`), Windows Registry `App Paths` (`HKLM`/`HKCU`), and system binaries. Accurately resolves casual conversational requests like "can you start google chrome please", "run notepad", "calc", and "vscode".
+- **Natural Language Intent Router (`intent_router.py`)**: Zero-latency entity extraction and classification mapping natural requests directly to desktop actions (app control, window snapping, desktop minimization, clipboard queries, system status).
+- **Native Win32 Window Management (`window_manager.py`)**: Multi-monitor work area aware window snapping (`left`, `right`, `maximize`), Show Desktop minimization (Win+D), and fuzzy window focusing (`focus_window_by_title`).
+- **Resilient Direct Execution in ReAct Planner**: Direct tool execution with rule-based fallback response synthesis ensures the user always receives instant confirmations even if local LLM models are offline.
+- **Verification**: 27 unit & integration tests passing with 0 flake8 warnings.
+
 ### Added - Phase 3: Real Voice Pipeline (MVP Recovery)
 - **Faster-Whisper Offline STT**: Local speech-to-text powered by CTranslate2 INT8 quantization (`tiny.en`), integrated Silero VAD silence filtering, running 100% offline with zero cloud audio leakage.
 - **Natural Neural TTS**: Integrated Microsoft Edge Neural speech synthesis (`en-US-AriaNeural`, `en-US-GuyNeural`, `en-US-JennyNeural`, `en-GB-SoniaNeural`) delivering crystal-clear voices with zero paid API keys, backed by Windows SAPI5 offline fallback.

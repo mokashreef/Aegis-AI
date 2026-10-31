@@ -17,13 +17,16 @@ from aegis_core.api.routes import router as api_router
 from aegis_core.api.websocket import ws_router
 from aegis_core.automation.system_tools import (
     CloseAppTool,
+    FocusWindowByTitleTool,
     FocusWindowTool,
     GetClipboardTool,
     GetSystemTelemetryTool,
     LaunchAppTool,
     ListProcessesTool,
     ListWindowsTool,
+    MinimizeAllWindowsTool,
     SetClipboardTool,
+    SnapWindowTool,
 )
 from aegis_core.config import settings
 from aegis_core.desktop.window import overlay_manager
@@ -42,6 +45,9 @@ def register_default_tools() -> None:
         SetClipboardTool(),
         ListWindowsTool(),
         FocusWindowTool(),
+        FocusWindowByTitleTool(),
+        MinimizeAllWindowsTool(),
+        SnapWindowTool(),
         GetSystemTelemetryTool(),
     ]
     for t in tools:

@@ -40,7 +40,21 @@ class ProcessManager:
 
     @staticmethod
     def launch_app(app_name_or_path: str, arguments: Optional[List[str]] = None) -> Dict[str, Any]:
-        """Launches a desktop executable or document safely."""
+        """Launches a desktop executable or document safely using fuzzy app resolution."""
+        from aegis_core.automation.app_finder import app_finder
+
+        # If no extra command-line flags provided, leverage AppFinder's deep registry + Start Menu resolution
+        if not arguments:
+            res = app_finder.launch(app_name_or_path)
+            return {
+                "launched": res.get("success", False),
+                "target": res.get("target", app_name_or_path),
+                "name": res.get("name", app_name_or_path),
+                "score": res.get("score", 0.0),
+                "pid": res.get("pid"),
+                "error": res.get("error"),
+            }
+
         args = arguments or []
         command = [app_name_or_path] + args
 

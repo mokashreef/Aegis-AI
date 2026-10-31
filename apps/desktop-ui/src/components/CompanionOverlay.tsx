@@ -52,7 +52,13 @@ export const CompanionOverlay: React.FC = () => {
     }
   }, [sendMessage]);
 
-  const { isRecording, audioLevel, toggleRecording } = useMicrophoneCapture(handleTranscription);
+  const {
+    isRecording,
+    isTranscribing,
+    isSpeaking,
+    audioLevel,
+    toggleRecording,
+  } = useMicrophoneCapture(handleTranscription);
 
   const refreshTelemetry = useCallback(() => {
     fetchSystemStatus()
@@ -159,12 +165,16 @@ export const CompanionOverlay: React.FC = () => {
 
         <div className="flex items-center gap-2">
           <AudioWaveform
-            isActive={isRecording || voiceStatus?.state === "speaking"}
+            isActive={isRecording || isTranscribing || voiceStatus?.state === "speaking"}
             statusText={
-              isRecording
-                ? "Listening..."
+              isTranscribing
+                ? "Transcribing..."
+                : isRecording
+                ? isSpeaking
+                  ? "Speaking..."
+                  : "Listening..."
                 : voiceStatus?.state === "speaking"
-                ? "Speaking..."
+                ? "Voice Output"
                 : "Ready"
             }
           />
@@ -314,26 +324,50 @@ export const CompanionOverlay: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             autoFocus
-            placeholder={isRecording ? "Listening to your voice..." : "Ask Aegis or command Windows..."}
-            className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none"
+            disabled={isTranscribing}
+            placeholder={
+              isTranscribing
+                ? "Transcribing speech with Whisper..."
+                : isRecording
+                ? isSpeaking
+                  ? "Listening... (speech detected)"
+                  : "Listening... (speak now, pauses auto-submit)"
+                : "Ask Aegis or command Windows..."
+            }
+            className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
           />
 
           <button
             onClick={toggleRecording}
+            disabled={isTranscribing}
             style={{ transform: isRecording ? `scale(${1 + audioLevel * 0.25})` : undefined }}
-            className={`p-2 rounded-xl transition-transform ${
-              isRecording
+            className={`p-2 rounded-xl transition-all ${
+              isTranscribing
+                ? "bg-amber-500/80 text-slate-950 animate-pulse cursor-wait"
+                : isRecording
                 ? "bg-rose-500 text-white shadow-lg shadow-rose-500/50"
                 : "bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white"
             }`}
-            title={isRecording ? "Click to stop recording" : "Click to speak"}
+            title={
+              isTranscribing
+                ? "Transcribing audio..."
+                : isRecording
+                ? "Recording (auto-stops on silence, or click to stop)"
+                : "Click to speak (auto-detects silence)"
+            }
           >
-            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isTranscribing ? (
+              <Activity className="w-4 h-4 animate-spin" />
+            ) : isRecording ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
           </button>
 
           <button
             onClick={handleSend}
-            disabled={!input.trim() || isStreaming}
+            disabled={!input.trim() || isStreaming || isTranscribing}
             className="p-2 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-semibold transition shadow-md shadow-sky-500/20"
             title="Send (Enter)"
           >

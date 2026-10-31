@@ -3,7 +3,7 @@ Aegis AI - RESTful API Gateway.
 """
 
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, File, Query, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from aegis_core.agent.planner import agent_planner
@@ -12,8 +12,10 @@ from aegis_core.ai_runtime.router import ai_router
 from aegis_core.config import settings
 from aegis_core.memory.session_manager import session_manager
 from aegis_core.plugins.registry import plugin_registry
+from aegis_core.utils.logger import logger
 from aegis_core.utils.system_info import get_system_telemetry
 from aegis_core.voice.pipeline import voice_controller
+from aegis_core.voice.tts import VOICE_CATALOG, tts_engine
 
 router = APIRouter()
 
@@ -32,6 +34,7 @@ class ToolExecuteRequest(BaseModel):
 
 class SpeakRequest(BaseModel):
     text: str = Field(description="Text to synthesize to speech")
+    voice: Optional[str] = Field(default=None, description="Neural voice identifier")
 
 
 class PullModelRequest(BaseModel):
@@ -158,8 +161,50 @@ async def execute_tool(req: ToolExecuteRequest) -> Dict[str, Any]:
     return res.to_dict()
 
 
+# -------------------------------------------------------------
+# Real Voice Endpoints (Faster-Whisper STT & Edge Neural TTS)
+# -------------------------------------------------------------
+
+@router.get("/voice/voices")
+async def get_available_voices() -> List[Dict[str, Any]]:
+    """Returns available natural neural voices."""
+    return VOICE_CATALOG
+
+
+@router.post("/voice/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)) -> Dict[str, Any]:
+    """Transcribes uploaded microphone audio using local Faster-Whisper."""
+    cache_dir = settings.storage_dir / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    temp_path = cache_dir / f"upload_{file.filename or 'input.webm'}"
+
+    try:
+        content = await file.read()
+        temp_path.write_bytes(content)
+        text = await voice_controller.transcribe_audio_file(temp_path)
+        return {"text": text, "length": len(text), "success": True}
+    except Exception as exc:
+        logger.error("Audio upload transcription failed: %s", exc)
+        return {"text": "", "error": str(exc), "success": False}
+    finally:
+        if temp_path.exists():
+            try:
+                temp_path.unlink()
+            except Exception:
+                pass
+
+
+@router.post("/voice/synthesize")
+async def synthesize_speech(req: SpeakRequest):
+    """Generates natural neural speech audio bytes (MP3) for browser/webview playback."""
+    audio_bytes = await tts_engine.synthesize_to_bytes(req.text, req.voice)
+    if not audio_bytes:
+        return Response(status_code=500, content="Failed to synthesize neural audio.")
+    return Response(content=audio_bytes, media_type="audio/mpeg")
+
+
 @router.post("/voice/speak")
 async def speak_text(req: SpeakRequest) -> Dict[str, Any]:
-    """Triggers local voice speech synthesis."""
-    success = await voice_controller.speak_text(req.text)
+    """Triggers voice speech output through Windows audio system."""
+    success = await voice_controller.speak_text(req.text, req.voice)
     return {"success": success, "text": req.text}

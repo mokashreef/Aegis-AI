@@ -74,10 +74,11 @@ class GlobalHotkeyManager:
         if nCode >= 0 and wParam in (WM_KEYDOWN, WM_SYSKEYDOWN):
             kbd = KBDLLHOOKSTRUCT.from_address(lParam)
             is_space = kbd.vkCode == VK_SPACE
-            is_alt = bool(kbd.flags & LLKHF_ALTDOWN)
+            is_alt = bool(kbd.flags & LLKHF_ALTDOWN) or bool(user32.GetAsyncKeyState(VK_MENU) & 0x8000)
+            is_ctrl = bool(user32.GetAsyncKeyState(0x11) & 0x8000)
 
-            if is_space and is_alt:
-                logger.info("Global Alt+Space intercepted. Summoning Aegis AI overlay.")
+            if is_space and (is_alt or is_ctrl):
+                logger.info("Global shortcut (Alt/Ctrl+Space) intercepted. Summoning Aegis AI overlay.")
                 if self.on_hotkey_pressed:
                     try:
                         self.on_hotkey_pressed()

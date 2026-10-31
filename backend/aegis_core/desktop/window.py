@@ -109,7 +109,7 @@ class DesktopOverlayManager:
             y=bounds["y"],
             frameless=True,
             on_top=True,
-            transparent=True,
+            transparent=False,
             js_api=self._bridge,
             easy_drag=False,
             shadow=True,

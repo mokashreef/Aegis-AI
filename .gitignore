@@ -108,3 +108,9 @@ tmp/
 temp/
 scratch/
 
+# Release binary archives
+releases/*.zip
+releases/*.exe
+releases/*.msi
+!releases/SHA256SUMS.txt
+

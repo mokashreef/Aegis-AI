@@ -11,12 +11,12 @@ from pathlib import Path
 backend_dir = Path(__file__).resolve().parent.parent / "backend"
 sys.path.insert(0, str(backend_dir))
 
-from aegis_core.ai_runtime.router import ai_router
-from aegis_core.automation.clipboard_manager import ClipboardManager
-from aegis_core.automation.process_manager import ProcessManager
-from aegis_core.config import settings
-from aegis_core.memory.db import db_engine
-from aegis_core.utils.system_info import get_system_telemetry
+from aegis_core.ai_runtime.router import ai_router  # noqa: E402
+from aegis_core.automation.clipboard_manager import ClipboardManager  # noqa: E402
+from aegis_core.automation.process_manager import ProcessManager  # noqa: E402
+from aegis_core.config import settings  # noqa: E402
+from aegis_core.memory.db import db_engine  # noqa: E402
+from aegis_core.utils.system_info import get_system_telemetry  # noqa: E402
 
 
 async def run_diagnostics():
@@ -28,7 +28,7 @@ async def run_diagnostics():
     print("\n[1] Configuration & Storage:")
     print(f"    - Storage Directory: {settings.storage_dir} (Exists: {settings.storage_dir.exists()})")
     print(f"    - Database Path:     {settings.db_path} (Exists: {settings.db_path.exists()})")
-    print(f"    - Zero API Keys:     Enforced (Default)")
+    print("    - Zero API Keys:     Enforced (Default)")
 
     # 2. Database Connectivity
     print("\n[2] Database Engine:")
@@ -69,9 +69,12 @@ async def run_diagnostics():
     # 5. System Specs
     print("\n[5] Host Telemetry:")
     specs = get_system_telemetry()
-    print(f"    - OS:                {specs['os']['system']} {specs['os']['release']} (Build {specs['os']['version']})")
+    os_str = f"{specs['os']['system']} {specs['os']['release']} (Build {specs['os']['version']})"
+    print(f"    - OS:                {os_str}")
     print(f"    - CPU:               {specs['cpu']['physical_cores']} Cores / Usage: {specs['cpu']['usage_percent']}%")
-    print(f"    - RAM:               {specs['memory']['available_gb']} GB Free / {specs['memory']['total_gb']} GB Total")
+    ram_free = specs['memory']['available_gb']
+    ram_total = specs['memory']['total_gb']
+    print(f"    - RAM:               {ram_free} GB Free / {ram_total} GB Total")
 
     print("\n" + "=" * 60)
     print("✅ Health diagnostics complete.")

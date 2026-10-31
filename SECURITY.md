@@ -48,3 +48,4 @@ Instead, please report the vulnerability privately via:
 - **Initial Acknowledgment**: Within 48 hours.
 - **Triage & Assessment**: Within 5 business days.
 - **Fix & Advisory Release**: Coordinated disclosure within 30 days of validation.
+

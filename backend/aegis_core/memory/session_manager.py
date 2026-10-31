@@ -161,3 +161,4 @@ class SessionManager:
 
 # Global session manager instance
 session_manager = SessionManager()
+

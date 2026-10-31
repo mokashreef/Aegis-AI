@@ -106,3 +106,4 @@ flowchart LR
 ## Evaluation & Progress Tracking
 
 Every milestone corresponds to a designated tracking directory in `docs/milestones/` and associated GitHub Project boards. Releases are tagged and published with full changelog provenance.
+

@@ -98,3 +98,4 @@ class DatabaseEngine:
 
 # Global database engine instance
 db_engine = DatabaseEngine()
+

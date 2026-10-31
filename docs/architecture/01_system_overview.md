@@ -53,3 +53,4 @@ Aegis AI is an open-source, local-first Windows AI companion designed to provide
 2. **Zero API Key Requirement**: Operates out of the box with zero subscriptions, accounts, or paid credentials.
 3. **Graceful Fallback**: Automatically cascades to free anonymous endpoints if local models are offline.
 4. **Safety by Default**: Destructive operations (process termination, file manipulation) require explicit visual confirmation.
+

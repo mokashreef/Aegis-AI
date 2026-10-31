@@ -70,3 +70,4 @@ jobs:
       - name: Build Frontend Production Artifact
         working-directory: apps/desktop-ui
         run: npm run build
+

@@ -52,4 +52,5 @@ python_files = ["test_*.py"]
 [tool.flake8]
 max-line-length = 120
 exclude = [".venv", "venv", "__pycache__", ".git", "build", "dist"]
-ignore = ["E203", "W503"]
+ignore = ["E203", "W503", "W391"]
+

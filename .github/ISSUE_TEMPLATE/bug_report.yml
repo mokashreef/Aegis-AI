@@ -67,3 +67,4 @@ body:
       label: "Logs & Console Output"
       description: "Paste relevant backend logs from `storage/logs/aegis.log` or frontend console logs."
       render: shell
+

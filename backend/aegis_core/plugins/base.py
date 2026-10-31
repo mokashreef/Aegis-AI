@@ -54,3 +54,4 @@ class BaseTool(ABC):
                 "parameters": self.parameters_schema,
             },
         }
+

@@ -46,3 +46,4 @@ def get_system_telemetry() -> Dict[str, Any]:
         },
     }
     return telemetry
+

@@ -77,3 +77,4 @@ class LLMProvider(ABC):
     ) -> LLMResponse:
         """Aggregates a complete generation response."""
         pass
+

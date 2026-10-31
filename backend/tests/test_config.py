@@ -21,3 +21,4 @@ def test_settings_storage_resolution():
     s = Settings()
     assert s.storage_dir.exists()
     assert s.logs_dir.exists()
+

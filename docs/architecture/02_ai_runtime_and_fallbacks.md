@@ -41,3 +41,4 @@ flowchart TD
 - In the catastrophic event of zero local LLM and zero network connectivity, Aegis AI continues running:
   - Direct keyword-based desktop automation (e.g., "open notepad", "close calc", "get clipboard").
   - System diagnostics and helpful troubleshooting instructions to guide the user in starting Ollama.
+

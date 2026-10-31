@@ -64,3 +64,4 @@ export const ActionCard: React.FC<ActionCardProps> = ({ activity, onConfirm }) =
     </div>
   );
 };
+

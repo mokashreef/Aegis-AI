@@ -33,3 +33,4 @@ If Ollama is not installed or temporarily offline:
 1. The engine checks local Ollama endpoint (`http://localhost:11434`).
 2. If unreachable, the engine gracefully transitions to Pollinations AI (`https://text.pollinations.ai/`) or HuggingFace free inference.
 3. The user is presented with a non-intrusive warning indicating offline fallback mode.
+

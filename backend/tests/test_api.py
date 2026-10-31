@@ -52,3 +52,4 @@ async def test_session_lifecycle_api():
         assert list_res.status_code == 200
         sessions = list_res.json()
         assert any(s["id"] == session_id for s in sessions)
+

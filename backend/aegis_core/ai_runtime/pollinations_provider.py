@@ -119,3 +119,4 @@ class PollinationsProvider(LLMProvider):
             provider=self.name,
             model=model or "openai",
         )
+

@@ -110,3 +110,4 @@ npm run build
 3. Ensure CI passes on all matrices (Ubuntu and Windows).
 4. A maintainer will review your code for architectural consistency, safety, and performance.
 5. Once approved, commits are squash-merged or rebased into `main`.
+

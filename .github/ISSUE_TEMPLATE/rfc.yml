@@ -35,3 +35,4 @@ body:
       description: "How does this proposal ensure 100% operation without mandatory paid services or proprietary cloud requirements?"
     validations:
       required: true
+

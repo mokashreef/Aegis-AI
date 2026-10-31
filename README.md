@@ -128,31 +128,21 @@ git clone git@github.com:mokashreef/Aegis-AI.git
 cd "Aegis AI"
 ```
 
-### 2. Setup Python Core Daemon
+### 2. Setup & Install Dependencies
 ```powershell
-# Create virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# Install dependencies
-pip install --upgrade pip
-pip install -r backend/requirements.txt
+# Run the automated setup script
+.\scripts\setup_env.ps1
 ```
 
-### 3. Setup Frontend HUD
+### 3. Launch Aegis AI Desktop Companion
 ```powershell
-cd apps/desktop-ui
-npm install
-npm run dev
-```
+# One-click launcher (starts native overlay & registers Alt+Space)
+.\scripts\run_desktop.ps1
 
-### 4. Run the Daemon & Start Chatting
-In a new terminal window:
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m backend.aegis_core.main
+# Or run directly via Python:
+python aegis.py
 ```
-Navigate your browser to `http://localhost:5173` or launch the Tauri desktop wrapper. Aegis AI is now running and ready to assist you!
+Press **`Alt + Space`** anywhere in Windows to summon or dismiss the companion! Press **`ESC`** to close instantly.
 
 ---
 
@@ -189,3 +179,4 @@ You are free to use, modify, distribute, and integrate this software in commerci
 <div align="center">
   <sub>Built with pride for the global open-source community. Aegis AI is maintained by Mokashreef and contributors.</sub>
 </div>
+

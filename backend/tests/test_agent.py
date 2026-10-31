@@ -64,3 +64,4 @@ async def test_agent_planner_direct_tool_execution(tmp_path):
     assert len(history) >= 2
     assert history[0]["role"] == "user"
     assert history[-1]["role"] == "assistant"
+

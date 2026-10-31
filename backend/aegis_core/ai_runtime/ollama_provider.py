@@ -115,3 +115,4 @@ class OllamaProvider(LLMProvider):
             provider=self.name,
             model=target_model,
         )
+

@@ -10,6 +10,7 @@ import {
   Bot,
   User,
   Volume2,
+  X,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -31,7 +32,26 @@ export const CompanionOverlay: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const dismissOverlay = () => {
+    // @ts-expect-error pywebview JS bridge
+    if (window.pywebview?.api?.hide) {
+      // @ts-expect-error pywebview JS bridge
+      window.pywebview.api.hide();
+    } else {
+      fetch("http://127.0.0.1:8420/api/desktop/hide", { method: "POST" }).catch(() => {});
+    }
+  };
+
   useEffect(() => {
+    // Global ESC key to dismiss overlay
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        dismissOverlay();
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKey);
+
     // Initial fetch of telemetry
     fetchSystemStatus()
       .then((res) => {
@@ -40,6 +60,8 @@ export const CompanionOverlay: React.FC = () => {
         setVoiceStatus(res.voice);
       })
       .catch((err) => console.error("Telemetry query error:", err));
+
+    return () => window.removeEventListener("keydown", handleGlobalKey);
   }, []);
 
   useEffect(() => {
@@ -70,7 +92,7 @@ export const CompanionOverlay: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col h-[650px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
+    <div className="w-full max-w-2xl mx-auto flex flex-col h-[600px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
       {/* Top Header Bar */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50 bg-slate-900/40">
         <div className="flex items-center gap-3">
@@ -89,7 +111,7 @@ export const CompanionOverlay: React.FC = () => {
             <div className="flex items-center gap-2">
               <h1 className="font-bold text-sm tracking-wide text-slate-100">Aegis AI</h1>
               <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30">
-                Local-First
+                Alt+Space
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-mono">
@@ -113,6 +135,14 @@ export const CompanionOverlay: React.FC = () => {
           >
             <Activity className="w-4 h-4" />
           </button>
+
+          <button
+            onClick={dismissOverlay}
+            className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition"
+            title="Dismiss Overlay (ESC)"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -127,7 +157,7 @@ export const CompanionOverlay: React.FC = () => {
               Windows Desktop Companion Active
             </h3>
             <p className="text-xs text-slate-400 max-w-sm mb-5">
-              Summoned via Alt+Space. Ask questions, launch applications, or automate tasks with zero API keys.
+              Press Alt+Space anytime to toggle. Press ESC to dismiss.
             </p>
 
             <div className="grid grid-cols-2 gap-2 w-full max-w-md">
@@ -224,6 +254,7 @@ export const CompanionOverlay: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            autoFocus
             placeholder="Ask Aegis or command Windows (e.g. 'open calc', 'read clipboard')..."
             className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none"
           />

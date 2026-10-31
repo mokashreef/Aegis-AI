@@ -41,3 +41,4 @@ export async function triggerVoiceSpeech(text: string): Promise<boolean> {
   const data = await response.json();
   return Boolean(data.success);
 }
+

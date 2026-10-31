@@ -26,3 +26,4 @@ Destructive operations cannot be executed autonomously by the AI planner without
    - The user is shown an **Action Confirmation Card** describing the target application, PID, or path.
    - The action is only dispatched upon receiving an explicit `user_confirmed` response.
 2. File deletions route to the Windows Recycle Bin (via `shell32.SHFileOperationW`) rather than permanent unlinking (`os.remove`), preventing accidental data loss.
+

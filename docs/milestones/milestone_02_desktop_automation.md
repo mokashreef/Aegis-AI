@@ -30,3 +30,4 @@ Unlike brittle mouse coordinates that fail when window scales change, M2-AUTO-01
 
 ### Local Multimodal Vision (Zero API Keys)
 Aegis AI will integrate Moondream and LLaVA through Ollama (`ollama run moondream`), giving the assistant visual reasoning over desktop windows without uploading screenshots to the cloud.
+

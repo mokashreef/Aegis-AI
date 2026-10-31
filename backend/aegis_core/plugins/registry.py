@@ -87,3 +87,4 @@ class PluginRegistry:
 
 # Global plugin registry singleton
 plugin_registry = PluginRegistry()
+

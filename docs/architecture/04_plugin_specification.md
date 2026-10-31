@@ -39,3 +39,4 @@ class BaseTool(ABC):
 2. **Schema Generation**: Each tool's parameter specification is converted to standard JSON Schema compatible with LLM function-calling protocols (OpenAI, Ollama, etc.).
 3. **Execution Guardrails**: The executor checks the `risk_level` before running `execute()`.
 4. **Error Isolation**: Plugin crashes or exceptions are intercepted, wrapped in structured JSON error responses, and fed back to the agent planner without crashing the main daemon.
+

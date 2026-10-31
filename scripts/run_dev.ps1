@@ -26,3 +26,4 @@ try {
         Stop-Process -Id $backendProcess.Id -Force
     }
 }
+

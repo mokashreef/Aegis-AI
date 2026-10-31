@@ -64,3 +64,4 @@ export interface VoiceStatus {
   whisper_model: string;
   piper_voice: string;
 }
+

@@ -119,3 +119,4 @@ export function useAegisWebSocket(sessionId: string) {
     sendMessage,
   };
 }
+

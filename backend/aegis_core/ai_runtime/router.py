@@ -128,3 +128,4 @@ class AIRuntimeRouter:
 
 # Global AI runtime router instance
 ai_router = AIRuntimeRouter()
+

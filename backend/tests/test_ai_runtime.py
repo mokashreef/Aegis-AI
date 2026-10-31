@@ -54,3 +54,4 @@ async def test_router_fallback_resolution():
     res = await router.chat([LLMMessage(role="user", content="Hi")])
     assert res.content == "Hello from Aegis AI!"
     assert res.provider == "mock_healthy"
+

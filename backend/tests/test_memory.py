@@ -47,3 +47,4 @@ def test_database_init_and_session_lifecycle():
         mgr.set_preference("theme", "glassmorphic_dark")
         pref = mgr.get_preference("theme")
         assert pref == "glassmorphic_dark"
+

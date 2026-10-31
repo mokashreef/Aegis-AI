@@ -63,3 +63,4 @@ async def test_plugin_registry_risk_interception():
     res_allowed = await registry.execute_tool("mock_dangerous", {}, user_confirmed=True)
     assert res_allowed.success is True
     assert res_allowed.data["deleted"] is True
+

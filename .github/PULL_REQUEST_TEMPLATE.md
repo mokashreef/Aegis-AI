@@ -48,3 +48,4 @@ Closes # (issue number if applicable)
 - [ ] I have commented my code, particularly explaining "why" rather than just "what".
 - [ ] I have updated the documentation in `docs/` and `CHANGELOG.md` accordingly.
 - [ ] All new and existing tests pass.
+

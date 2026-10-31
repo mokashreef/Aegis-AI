@@ -45,3 +45,4 @@ if ($ollamaCmd) {
 Write-Host "`n==========================================" -ForegroundColor Green
 Write-Host "Setup Completed! Run '.\scripts\run_dev.ps1' to launch Aegis AI." -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Green
+

@@ -29,3 +29,4 @@ Playwright drives an isolated Chromium instance configured with:
 - Headless execution with screenshot state dumps
 - DOM accessibility tree extraction rather than raw HTML to minimize token consumption
 - Safety confirmation when navigating to authenticated domains or executing purchase flows.
+

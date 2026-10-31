@@ -87,3 +87,4 @@ To ensure desktop safety, all tools registered with Aegis AI carry a risk classi
 ## 5. Conclusion & Implementation Plan
 This RFC serves as the binding blueprint for Milestone 1 through Milestone 4.
 Implementation begins with the Python Core Daemon, local fallback engine, SQLite persistence, and React HUD.
+

@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 5: Daily Value Features (MVP Recovery)
+- **CoreAudio Volume Control (`volume_manager.py`)**: Master audio volume adjustment (0-100%), mute, unmute, and relative step tuning via `pycaw`.
+- **WMI Display Brightness (`brightness_manager.py`)**: Native monitor brightness queries and adjustments via Windows WMI `WmiMonitorBrightnessMethods`.
+- **Desktop Screen Capture (`screen_capture.py`)**: Local PNG screenshot capture with automated base64 data URL encoding for multimodal AI reasoning.
+- **Persistent Daily Notes (`notes_manager.py`)**: Local Markdown daily logs (`YYYY-MM-DD.md`) with timestamped entries, read-today summaries, and keyword search.
+- **Natural Language Intent Expansion**: Direct routing for volume, brightness, screenshots, and daily note manipulation in microseconds.
+- **Verification**: 33 unit and integration tests passing with 0 flake8 warnings.
+
 ### Added - Phase 4: Useful Automation (MVP Recovery)
 - **Fuzzy Application Discovery (`app_finder.py`)**: Automatic discovery and fuzzy similarity matching across Start Menu shortcuts (`.lnk`), Windows Registry `App Paths` (`HKLM`/`HKCU`), and system binaries. Accurately resolves casual conversational requests like "can you start google chrome please", "run notepad", "calc", and "vscode".
 - **Natural Language Intent Router (`intent_router.py`)**: Zero-latency entity extraction and classification mapping natural requests directly to desktop actions (app control, window snapping, desktop minimization, clipboard queries, system status).

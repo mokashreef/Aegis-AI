@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 10: Native System Tray Icon, Background Daemon Mode & Minimization
+- **Windows System Tray Icon (`tray.py`)**: Dedicated notification area companion icon running detached on a background daemon thread with quick-action right-click context menu via `pystray`.
+- **Hide-to-Tray on Window Close**: Intercepted PyWebView `closing` event in `window.py` to prevent accidental process termination. Clicking close, pressing `ESC`, or `Alt+F4` minimizes the overlay to the tray while keeping background wake-word and API servers active.
+- **Dynamic Tray Menu Actions**: Instant overlay summon ("Show Aegis AI (Alt+Space)", double-click default), live checkmark toggle for wake word listening ("Wake Word: Hey Aegis"), quick web HUD launcher, and graceful application exit.
+- **Official Brand Assets**: Added procedural shield icon generator and multi-resolution Windows icon bundle (`assets/icon.ico`, `assets/icon.png`) integrated into Inno Setup and distribution packager.
+- **Quality Assurance**: Added full test suite in `backend/tests/test_tray.py` (46 total passing tests, 0 flake8 warnings).
+
 ### Added - Phase 9: High-Performance In-Process Screen Capture (< 100ms)
 - **Direct Win32 Station Attachment (`_ensure_interactive_desktop()`)**: Connects process and calling thread to `winsta0\default` to unlock GDI desktop capture across background agent threads and worker processes.
 - **In-Process Ultra-Fast Capture**: Swapped slow external PowerShell subprocess (`5,031 ms`) for native Pillow `ImageGrab` with in-memory `io.BytesIO` encoding, achieving **153.3 ms** mean PNG capture (**32.8x speedup**) and **66.8 ms** mean JPEG capture (**75.3x speedup**).

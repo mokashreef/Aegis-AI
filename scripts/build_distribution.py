@@ -46,6 +46,7 @@ def ensure_models_present() -> None:
         if not model_file.exists():
             log(f"Warning: {name} not found in {models_dir}. Ensuring model presence via engine...")
             from aegis_core.voice.wake_word import wake_word_engine
+
             wake_word_engine.ensure_models_downloaded()
             break
     log("Acoustic wake-word models verified.")
@@ -82,6 +83,11 @@ def stage_distribution_files() -> Path:
     models_src = PROJECT_ROOT / "data" / "models" / "wakeword"
     if models_src.exists():
         shutil.copytree(models_src, BUILD_DIR / "data" / "models" / "wakeword")
+
+    # Assets & Icons
+    assets_src = PROJECT_ROOT / "assets"
+    if assets_src.exists():
+        shutil.copytree(assets_src, BUILD_DIR / "assets")
 
     # Scripts
     scripts_dest = BUILD_DIR / "scripts"

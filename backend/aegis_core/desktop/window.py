@@ -90,6 +90,7 @@ class DesktopOverlayManager:
         self.url = url or f"http://{settings.host}:{settings.port}/"
         self._window: Optional[webview.Window] = None
         self._is_visible = False
+        self._quitting = False
         self._bridge = AegisDesktopBridge(self)
 
     @property
@@ -116,6 +117,7 @@ class DesktopOverlayManager:
         )
 
         self._window.events.shown += self._on_shown
+        self._window.events.closing += self._on_closing
         self._window.events.closed += self._on_closed
         return self._window
 
@@ -126,6 +128,18 @@ class DesktopOverlayManager:
     def _on_hidden(self):
         self._is_visible = False
         logger.debug("Overlay window hidden.")
+
+    def _on_closing(self) -> bool:
+        """
+        Called when the window close event is triggered (e.g. user clicks close or Alt+F4).
+        If not explicitly quitting, cancels destruction and minimizes/hides to the system tray.
+        Returning False in pywebview cancels the window close event.
+        """
+        if not self._quitting:
+            logger.info("Window close event intercepted - minimizing/hiding overlay to system tray.")
+            self.hide()
+            return False
+        return True
 
     def _on_closed(self):
         self._is_visible = False
@@ -163,6 +177,16 @@ class DesktopOverlayManager:
             self.hide()
         else:
             self.show()
+
+    def quit(self) -> None:
+        """Explicitly shuts down the overlay and allows window destruction."""
+        logger.info("Overlay manager quitting application...")
+        self._quitting = True
+        if self._window:
+            try:
+                self._window.destroy()
+            except Exception as exc:
+                logger.debug("Notice on window destroy: %s", exc)
 
     def start_gui_loop(self) -> None:
         """Starts the pywebview UI loop on the main thread."""

@@ -12,15 +12,18 @@ python-multipart>=0.0.9
 
 # Desktop UI & OS Automation
 pywebview>=6.0.0
+pystray>=0.19.5
 psutil>=5.9.8
 pycaw>=2024.0.0
 comtypes>=1.4.0
 Pillow>=10.0.0
 mss>=9.0.0
 
-# Real Voice Pipeline (Zero Cloud Lock-in)
+# Real Voice Pipeline & Wake Word (Zero Cloud Lock-in)
 faster-whisper>=1.0.0
 edge-tts>=6.1.0
+sounddevice>=0.5.0
+onnxruntime>=1.18.0
 
 # Testing & Quality Assurance
 pytest>=8.0.0

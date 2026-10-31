@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 8: Zero-Friction Windows Distribution & Release Packaging
+- **Double-Click Desktop Launcher (`run.bat`)**: Zero-command execution directly from Windows Explorer, targeting the isolated virtual environment and bypassing global Python collisions.
+- **Automated Release Packager (`scripts/build_distribution.py`)**: Assembles production distribution bundles, compiles the frontend bundle if missing, includes local acoustic ONNX models, and outputs compressed portable release archives (`Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip`, 5.22 MB).
+- **Cryptographic Release Verification**: Generates SHA-256 hashes (`releases/SHA256SUMS.txt`) for integrity validation.
+- **Inno Setup Windows Installer (`installer/aegis_setup.iss`)**: Modern Windows setup wizard with Desktop & Start Menu shortcuts, uninstaller registration, and optional startup autostart.
+- **Resilient UI Fallback**: Embedded branded HTML status page in `main.py` prevents blank 404 screens if frontend build artifacts are missing.
+- **Quality Assurance**: 41 unit and integration tests passing with 0 flake8 warnings.
+
 ### Added - Phase 7: Real Local Wake Word Engine & Background Listener
 - **Direct ONNX Keyword Pipeline (`wake_word.py`)**: Runs quantized acoustic keyword models (`melspectrogram.onnx`, `embedding_model.onnx`, `hey_jarvis_v0.1.onnx`, `alexa_v0.1.onnx`) directly on `onnxruntime` with zero cloud calls, zero API keys, and zero scientific library bloat.
 - **Ultra-Fast Frame Inference**: 4.35 ms average inference latency on 80 ms audio chunks (0.054x real-time factor, 18x faster than real-time playback).

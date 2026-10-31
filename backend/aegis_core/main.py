@@ -10,7 +10,7 @@ from typing import AsyncGenerator
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from aegis_core.ai_runtime.router import ai_router
 from aegis_core.api.routes import router as api_router
@@ -151,6 +151,35 @@ def create_app() -> FastAPI:
             return FileResponse(frontend_dist / "index.html")
 
         logger.info("Mounted static desktop UI bundle from: %s", frontend_dist)
+    else:
+        logger.warning("Desktop UI bundle missing at: %s. Serving fallback status page.", frontend_dist)
+
+        @app.get("/{full_path:path}")
+        async def serve_fallback(full_path: str):
+            fallback_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aegis AI - Desktop Companion</title>
+    <style>
+        body { margin: 0; background: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif;
+               display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 20px; padding: 32px; max-width: 480px; text-align: center; }
+        h1 { margin-top: 0; color: #38bdf8; font-size: 22px; }
+        p { color: #94a3b8; font-size: 14px; line-height: 1.6; }
+        code { background: #1e293b; padding: 4px 8px; border-radius: 6px; color: #38bdf8; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🛡️ Aegis AI Companion</h1>
+        <p>The compiled desktop UI bundle was not found at <code>apps/desktop-ui/dist</code>.</p>
+        <p>To build the UI, run <code>npm run build</code> inside <code>apps/desktop-ui</code>.</p>
+    </div>
+</body>
+</html>"""
+            return HTMLResponse(content=fallback_html, status_code=200)
 
     return app
 

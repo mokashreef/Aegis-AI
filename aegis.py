@@ -11,6 +11,15 @@ import threading
 import time
 from pathlib import Path
 
+# Explicitly register Windows AppUserModelID so Taskbar groups under Aegis AI instead of python.exe
+if sys.platform == "win32":
+    try:
+        import ctypes
+
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AegisAI.Desktop.Companion.2026")
+    except Exception:
+        pass
+
 # Add backend directory to path
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "backend"))

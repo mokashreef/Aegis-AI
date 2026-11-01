@@ -13,6 +13,13 @@ from aegis_core.utils.logger import logger
 
 user32 = ctypes.windll.user32
 
+# Set Windows AppUserModelID on Windows so the shell groups the window under Aegis AI
+if ctypes and hasattr(ctypes, "windll"):
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AegisAI.Desktop.Companion.2026")
+    except Exception:
+        pass
+
 
 class POINT(ctypes.Structure):
     _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
@@ -151,7 +158,54 @@ class DesktopOverlayManager:
 
     def _on_shown(self):
         self._is_visible = True
+        self._apply_native_window_icon()
         logger.debug("Overlay window shown.")
+
+    def _apply_native_window_icon(self) -> None:
+        """Applies the official Aegis shield icon to the native Win32 window handles."""
+        try:
+            import os
+            from pathlib import Path
+
+            app_id = "AegisAI.Desktop.Companion.2026"
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
+            icon_path = str(Path(settings.base_dir) / "assets" / "icon.ico")
+            if not os.path.isfile(icon_path):
+                return
+
+            IMAGE_ICON = 1
+            LR_LOADFROMFILE = 0x00000010
+            LR_DEFAULTSIZE = 0x00000040
+            WM_SETICON = 0x0080
+            ICON_SMALL = 0
+            ICON_BIG = 1
+
+            hicon_big = user32.LoadImageW(
+                None, icon_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE
+            )
+            hicon_small = user32.LoadImageW(
+                None, icon_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE
+            )
+
+            hwnd = None
+            if self._window and hasattr(self._window, "native") and self._window.native:
+                try:
+                    hwnd = int(self._window.native.Handle.ToInt64())
+                except Exception:
+                    pass
+
+            if not hwnd:
+                hwnd = user32.FindWindowW(None, "Aegis AI")
+
+            if hwnd:
+                if hicon_big:
+                    user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
+                if hicon_small:
+                    user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
+                logger.info("Applied native application shield icon to HWND %s", hwnd)
+        except Exception as exc:
+            logger.debug("Notice applying native window icon: %s", exc)
 
     def _on_hidden(self):
         self._is_visible = False
@@ -219,7 +273,13 @@ class DesktopOverlayManager:
     def start_gui_loop(self) -> None:
         """Starts the pywebview UI loop on the main thread."""
         logger.info("Starting native Windows desktop overlay GUI loop (WebView2)...")
-        webview.start(debug=settings.debug)
+        import os
+        from pathlib import Path
+
+        icon_path = str(Path(settings.base_dir) / "assets" / "icon.ico")
+        if not os.path.isfile(icon_path):
+            icon_path = None
+        webview.start(debug=settings.debug, icon=icon_path)
 
 
 # Global overlay singleton

@@ -99,7 +99,7 @@ class DesktopOverlayManager:
         self._window: Optional[webview.Window] = None
         self._is_visible = False
         self._quitting = False
-        self._is_on_top = True
+        self._is_on_top = False
         self._bridge = AegisDesktopBridge(self)
 
     @property
@@ -123,9 +123,9 @@ class DesktopOverlayManager:
         logger.info("Overlay always-on-top pin state toggled to: %s", self._is_on_top)
         return self._is_on_top
 
-    def create_window(self) -> webview.Window:
+    def create_window(self, hidden: bool = False) -> webview.Window:
         """Instantiates the draggable, frameless, and optionally pinned window."""
-        bounds = get_active_monitor_bounds(width=760, height=620)
+        bounds = get_active_monitor_bounds(width=780, height=640)
 
         self._window = webview.create_window(
             title="Aegis AI",
@@ -141,6 +141,7 @@ class DesktopOverlayManager:
             js_api=self._bridge,
             easy_drag=True,
             shadow=True,
+            hidden=hidden,
         )
 
         self._window.events.shown += self._on_shown

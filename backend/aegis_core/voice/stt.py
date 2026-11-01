@@ -39,7 +39,7 @@ class FasterWhisperEngine:
                 device="cpu",
                 compute_type="int8",
                 download_root=str(models_dir),
-                cpu_threads=4,
+                cpu_threads=max(4, min(8, __import__("os").cpu_count() or 4)),
             )
             logger.info("Faster-Whisper model '%s' loaded successfully.", self.model_size)
         except Exception as exc:
@@ -65,8 +65,8 @@ class FasterWhisperEngine:
             str(audio_path),
             beam_size=1,  # Greedy for maximum real-time speed
             language=language,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=500),
+            condition_on_previous_text=False,
+            vad_filter=False,
         )
 
         text_pieces = []

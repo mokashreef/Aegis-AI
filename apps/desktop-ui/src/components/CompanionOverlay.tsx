@@ -39,7 +39,7 @@ export const CompanionOverlay: React.FC = () => {
   const [runtimeStatus, setRuntimeStatus] = useState<AIRuntimeStatus | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
   const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus | null>(null);
-  const [isPinned, setIsPinned] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
 
   const fetchPinStatus = useCallback(() => {
     // @ts-expect-error pywebview JS bridge
@@ -169,7 +169,7 @@ export const CompanionOverlay: React.FC = () => {
       : "Pollinations (Emergency)";
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col h-[620px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
+    <div className="w-full max-w-3xl mx-auto flex flex-col h-[640px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
       {/* Top Header Bar with Draggable Handle & Always-on-Top Toggle */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-700/50 bg-slate-900/50">
         <div className="flex items-center gap-3">

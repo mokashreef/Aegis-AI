@@ -41,15 +41,37 @@ ARABIC_APP_TRANSLATIONS = {
     "كود": "code",
     "في اس كود": "code",
     "فيجوال ستوديو كود": "code",
+    "فيجوال استديو كود": "code",
+    "فيجوال ستوديو": "code",
+    "فيجوال استديو": "code",
+    "فيجوال استوديو": "code",
+    "فيجوال كود": "code",
     "كومت": "comet",
     "متصفح كومت": "comet",
     "المتصفح": "chrome",
     "متصفح": "chrome",
+    "متصفح كروم": "chrome",
     "ايدج": "msedge",
     "إيدج": "msedge",
+    "متصفح ايدج": "msedge",
     "مايكروسوفت ايدج": "msedge",
     "بريف": "brave",
+    "متصفح بريف": "brave",
     "فايرفوكس": "firefox",
+    "متصفح فايرفوكس": "firefox",
+    "تيليجرام": "telegram",
+    "تليجرام": "telegram",
+    "واتساب": "whatsapp",
+    "واتس اب": "whatsapp",
+    "ديسكورد": "discord",
+    "سبوتيفاي": "spotify",
+    "ستيم": "steam",
+    "وورد": "winword",
+    "اكسل": "excel",
+    "إكسل": "excel",
+    "باوربوينت": "powerpnt",
+    "بوربوينت": "powerpnt",
+    "فوتوشوب": "photoshop",
     "مدير المهام": "taskmgr",
     "التاسك مانجر": "taskmgr",
     "الاعدادات": "ms-settings:",
@@ -57,6 +79,8 @@ ARABIC_APP_TRANSLATIONS = {
     "الملفات": "explorer",
     "الطرفية": "cmd",
     "تيرمينال": "wt",
+    "باورشيل": "powershell",
+    "باور شيل": "powershell",
 }
 
 # Arabic and shortcut website friendly names
@@ -270,8 +294,8 @@ class IntentRouter:
         # 0.4 Direct Known Web Domains or URLs
         m_ar_url = re.match(
             r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)?(?:\s+لي)?\s*(?:موقع|صفحة)?\s*"
-            r"(?P<target>https?://\S+|.+\.(?:net|com|org|io|ai|co|dev|app|me)|[a-zA-Z0-9_-]+|يوتيوب|جوجل|غوغل|غيتهاب|"
-            r"جيت\s*هاب|تويتر|فيسبوك|شات\s*جي\s*بي\s*تي|جيميل|واتساب)"
+            r"(?P<target>https?://\S+|.+\.(?:net|com|org|io|ai|co|dev|app|me)|يوتيوب|جوجل|غوغل|غيتهاب|"
+            r"جيت\s*هاب|تويتر|فيسبوك|شات\s*جي\s*بي\s*تي|جيميل|واتساب|reddit|github|youtube|google|chatgpt|twitter)"
             r"(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
             norm_raw,
             re.IGNORECASE,

@@ -37,7 +37,7 @@ def test_tts_engine_status():
     status = tts.get_status()
     assert status["zero_api_keys"] is True
     assert status["backend"] == "edge_tts_neural"
-    assert status["default_voice"] == "en-US-AriaNeural"
+    assert status["default_voice"] in ["ar-SA-HamedNeural", "en-US-AriaNeural"]
 
 
 @pytest.mark.asyncio

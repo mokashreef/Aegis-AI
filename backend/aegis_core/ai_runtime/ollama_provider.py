@@ -46,17 +46,27 @@ class OllamaProvider(LLMProvider):
         self.base_url = (base_url or settings.ollama_host).rstrip("/")
 
     @staticmethod
-    def is_ollama_installed() -> bool:
-        """Checks whether ollama executable exists on the Windows host."""
-        if shutil.which("ollama"):
-            return True
-        # Standard Windows AppData location
+    def get_ollama_executable() -> Optional[str]:
+        """Finds absolute path to the Ollama executable on the system."""
+        p = shutil.which("ollama")
+        if p:
+            return p
         local_app_data = os.environ.get("LOCALAPPDATA", "")
         if local_app_data:
             standard_path = os.path.join(local_app_data, "Programs", "Ollama", "ollama.exe")
             if os.path.exists(standard_path):
-                return True
-        return False
+                return standard_path
+        program_files = os.environ.get("ProgramFiles", "")
+        if program_files:
+            pf_path = os.path.join(program_files, "Ollama", "ollama.exe")
+            if os.path.exists(pf_path):
+                return pf_path
+        return None
+
+    @staticmethod
+    def is_ollama_installed() -> bool:
+        """Checks whether ollama executable exists on the Windows host."""
+        return OllamaProvider.get_ollama_executable() is not None
 
     async def probe_health(self) -> Dict[str, Any]:
         """Performs deep health inspection of the Ollama server and installed models."""
@@ -107,14 +117,15 @@ class OllamaProvider(LLMProvider):
 
     def ensure_server_started(self) -> bool:
         """Attempts to launch 'ollama serve' in background if not running."""
-        if not self.is_ollama_installed():
+        exe = self.get_ollama_executable()
+        if not exe:
             return False
 
         try:
-            logger.info("Attempting to auto-start 'ollama serve' in background...")
+            logger.info("Attempting to auto-start Ollama daemon (%s) in background...", exe)
             subprocess.Popen(
-                ["ollama", "serve"],
-                shell=True,
+                [exe, "serve"],
+                shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,

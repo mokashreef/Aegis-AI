@@ -1,4 +1,12 @@
-import { AIRuntimeStatus, PullProgress, SystemTelemetry, VoiceStatus, WakeWordStatus } from "../types";
+import {
+  AIRuntimeStatus,
+  PullProgress,
+  SystemTelemetry,
+  VoiceStatus,
+  WakeWordStatus,
+  UserSettings,
+  VoiceCatalogItem,
+} from "../types";
 
 const API_BASE = "http://127.0.0.1:8420/api";
 
@@ -33,11 +41,15 @@ export async function executeToolDirectly(
   return response.json();
 }
 
-export async function triggerVoiceSpeech(text: string): Promise<boolean> {
+export async function triggerVoiceSpeech(
+  text: string,
+  voice?: string,
+  rate?: string
+): Promise<boolean> {
   const response = await fetch(`${API_BASE}/voice/speak`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, voice, rate }),
   });
   const data = await response.json();
   return Boolean(data.success);
@@ -109,4 +121,68 @@ export async function configureWakeWord(config: {
     body: JSON.stringify(config),
   });
   return response.json();
+}
+
+export async function fetchSettings(): Promise<UserSettings> {
+  const response = await fetch(`${API_BASE}/settings`);
+  if (!response.ok) {
+    throw new Error("Failed fetching user settings");
+  }
+  return response.json();
+}
+
+export async function updateSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
+  const response = await fetch(`${API_BASE}/settings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+  if (!response.ok) {
+    throw new Error("Failed updating user settings");
+  }
+  return response.json();
+}
+
+export async function fetchVoiceCatalog(): Promise<VoiceCatalogItem[]> {
+  const response = await fetch(`${API_BASE}/voice/catalog`);
+  if (!response.ok) {
+    throw new Error("Failed fetching voice catalog");
+  }
+  return response.json();
+}
+
+let activePreviewAudio: HTMLAudioElement | null = null;
+
+export async function playVoicePreview(voice: string, rate = "+0%", text?: string): Promise<void> {
+  if (activePreviewAudio) {
+    activePreviewAudio.pause();
+    activePreviewAudio = null;
+  }
+
+  const response = await fetch(`${API_BASE}/voice/preview`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voice, rate, text }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed synthesizing voice preview");
+  }
+
+  const blob = await response.blob();
+  const audioUrl = URL.createObjectURL(blob);
+  const audio = new Audio(audioUrl);
+  activePreviewAudio = audio;
+  audio.onended = () => {
+    URL.revokeObjectURL(audioUrl);
+    activePreviewAudio = null;
+  };
+  await audio.play();
+}
+
+export async function clearSessionHistory(sessionId: string): Promise<boolean> {
+  const response = await fetch(`${API_BASE}/sessions/${sessionId}/clear`, {
+    method: "POST",
+  });
+  return response.ok;
 }

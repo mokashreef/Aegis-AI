@@ -40,7 +40,9 @@ class VoicePipelineController:
             "tts": self.tts.get_status(),
         }
 
-    async def speak_text(self, text: str, voice: Optional[str] = None) -> bool:
+    async def speak_text(
+        self, text: str, voice: Optional[str] = None, rate: Optional[str] = None
+    ) -> bool:
         """Synthesizes text using Edge Neural TTS, falling back to local SAPI if offline."""
         if not self.enabled or not text.strip():
             return False
@@ -50,7 +52,7 @@ class VoicePipelineController:
 
         try:
             # 1. Attempt natural neural synthesis
-            audio_bytes = await self.tts.synthesize_to_bytes(text, voice)
+            audio_bytes = await self.tts.synthesize_to_bytes(text, voice=voice, rate=rate)
             if audio_bytes:
                 # Save to temporary file for Windows playback
                 temp_audio = settings.storage_dir / "cache" / "speech_output.mp3"

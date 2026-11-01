@@ -60,11 +60,14 @@ class LaunchAppTool(BaseTool):
                     break
             clean_url = app_name
             tokens_to_clean = [
-                "افتح", "شغل", "متصفح", "كروم", "كومت", "ايدج", "بريف", "فايرفوكس", "موقع", "صفحة", " و ", "وافتح",
+                "المتصفح", "متصفح", "موقع", "صفحة", "وافتح", "افتح", "شغل",
+                "كروم", "كومت", "ايدج", "بريف", "فايرفوكس", " و ", " و", "و ",
             ]
             for rm in tokens_to_clean:
                 clean_url = clean_url.replace(rm, " ")
             clean_url = clean_url.strip()
+            if clean_url.startswith("ال "):
+                clean_url = clean_url[3:].strip()
             from aegis_core.automation.intent_router import normalize_spoken_arabic_text
 
             clean_url = normalize_spoken_arabic_text(clean_url)
@@ -132,6 +135,16 @@ class OpenUrlTool(BaseTool):
                 target_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(target_url)}"
 
         browser_choice = browser.strip().lower()
+        if not browser_choice:
+            try:
+                from aegis_core.memory.session_manager import session_manager
+
+                pref_browser = session_manager.get_preference("default_browser", "chrome")
+                if pref_browser and pref_browser != "default":
+                    browser_choice = pref_browser.strip().lower()
+            except Exception:
+                pass
+
         BROWSER_MAP = {
             "chrome": "chrome",
             "كروم": "chrome",
@@ -152,7 +165,7 @@ class OpenUrlTool(BaseTool):
         opened = False
         method = "default_browser"
 
-        if target_browser:
+        if target_browser and target_browser != "default":
             try:
                 launch_res = ProcessManager.launch_app(target_browser, [target_url])
                 if launch_res.get("launched"):

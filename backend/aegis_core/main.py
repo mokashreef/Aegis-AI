@@ -144,6 +144,19 @@ def create_app() -> FastAPI:
     async def get_desktop_pin():
         return {"on_top": overlay_manager.is_on_top, "is_on_top": overlay_manager.is_on_top}
 
+    @app.get("/api/desktop/startup")
+    async def get_startup_status():
+        from aegis_core.desktop.startup import WindowsStartupManager
+
+        return {"enabled": WindowsStartupManager.is_enabled()}
+
+    @app.post("/api/desktop/startup/toggle")
+    async def toggle_startup_status():
+        from aegis_core.desktop.startup import WindowsStartupManager
+
+        new_state = WindowsStartupManager.toggle()
+        return {"enabled": new_state}
+
     # Mount REST and WebSocket routers
     app.include_router(api_router, prefix="/api")
     app.include_router(ws_router)

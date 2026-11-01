@@ -90,6 +90,29 @@ ARABIC_URL_TRANSLATIONS = {
 }
 
 
+def normalize_spoken_arabic_text(text: str) -> str:
+    """
+    Normalizes spoken Arabic phonetics into internet standards:
+    - Spoken domain suffixes: "دوت نت" -> ".net", "دوت كوم" -> ".com", "دوت اورج" -> ".org", etc.
+    - Spoken "نقطة" -> "."
+    """
+    t = text.strip()
+    domain_map = [
+        (r"\s*(?:دوت|نقطة)\s*(?:نت|net)\b", ".net"),
+        (r"\s*(?:دوت|نقطة)\s*(?:كوم|com)\b", ".com"),
+        (r"\s*(?:دوت|نقطة)\s*(?:اورج|org)\b", ".org"),
+        (r"\s*(?:دوت|نقطة)\s*(?:اي\s*او|io)\b", ".io"),
+        (r"\s*(?:دوت|نقطة)\s*(?:ايه\s*اي|اي|ai)\b", ".ai"),
+        (r"\s*(?:دوت|نقطة)\s*(?:كو|co)\b", ".co"),
+        (r"\s*(?:دوت|نقطة)\s*(?:ديف|dev)\b", ".dev"),
+        (r"\s*(?:دوت|نقطة)\s*(?:اب|app)\b", ".app"),
+        (r"\s*(?:دوت|نقطة)\s*(?:مي|me)\b", ".me"),
+    ]
+    for pat, repl in domain_map:
+        t = re.sub(pat, repl, t, flags=re.IGNORECASE)
+    return t
+
+
 class IntentRouter:
     """Fast, zero-latency natural language intent classifier supporting English & Arabic."""
 
@@ -186,27 +209,78 @@ class IntentRouter:
         """
         raw = text.strip()
         low = raw.lower()
+        norm_raw = normalize_spoken_arabic_text(raw)
 
         # 0. First-Class Web / URL Opening (Arabic & English)
-        # Arabic URL pattern: e.g. "افتح لي موقع يوتيوب بمتصفح كروم", "افتح جوجل بمتصفح كومت", "افتح يوتيوب"
-        m_ar_url = re.match(
-            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s+(?:موقع|صفحة)?\s*"
-            r"(?P<target>https?://\S+|\S+\.\S+|[a-zA-Z0-9_-]+|يوتيوب|جوجل|غوغل|غيتهاب|"
-            r"جيت\s*هاب|تويتر|فيسبوك|شات\s*جي\s*بي\s*تي|جيميل|واتساب)"
-            r"(?:\s+(?:ب|في|عبر|بمتصفح|في\s+متصفح)\s+"
-            r"(?P<browser>كروم|جوجل\s+كروم|ايدج|إيدج|كومت|بريف|فايرفوكس|المتصفح|\S+))?"
-            r"(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
-            raw,
+        # 0.1 Arabic Compound Browser-First (e.g. "كروم و افتح موقع كود التطور دوت نت", "افتح كروم وافتح موقع ...")
+        m_ar_compound = re.match(
+            r"^(?:ممكن\s+)?(?:افتح|شغل)?\s*(?:متصفح\s+)?(?P<browser>كروم|جوجل\s+كروم|كومت|ايدج|إيدج|بريف|فايرفوكس)\s+"
+            r"(?:و\s*|ثم\s*)?(?:افتح|شغل|روّح|اذهب|تصفح)?(?:\s+لي)?\s+(?:موقع|صفحة)?\s*"
+            r"(?P<target>.+?)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            norm_raw,
+            re.IGNORECASE,
         )
-        if m_ar_url:
-            tgt = m_ar_url.group("target").strip()
-            br = (m_ar_url.group("browser") or "").strip()
+        if m_ar_compound:
+            tgt = m_ar_compound.group("target").strip()
+            br = m_ar_compound.group("browser").strip()
             resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
             resolved_browser = ARABIC_APP_TRANSLATIONS.get(br, br)
             return {
                 "intent": UserIntent.OPEN_URL,
                 "name": "open_url",
                 "arguments": {"url": resolved_url, "browser": resolved_browser},
+            }
+
+        # 0.2 Arabic Target-First with Browser (e.g. "افتح موقع كود التطور دوت نت بمتصفح كروم")
+        m_ar_target_br = re.match(
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s+(?:موقع|صفحة)?\s*"
+            r"(?P<target>.+?)\s+(?:ب|في|عبر|بمتصفح|في\s+متصفح)\s+"
+            r"(?P<browser>كروم|جوجل\s+كروم|كومت|ايدج|إيدج|بريف|فايرفوكس)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            norm_raw,
+            re.IGNORECASE,
+        )
+        if m_ar_target_br:
+            tgt = m_ar_target_br.group("target").strip()
+            br = m_ar_target_br.group("browser").strip()
+            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_browser = ARABIC_APP_TRANSLATIONS.get(br, br)
+            return {
+                "intent": UserIntent.OPEN_URL,
+                "name": "open_url",
+                "arguments": {"url": resolved_url, "browser": resolved_browser},
+            }
+
+        # 0.3 Arabic Site-only (e.g. "افتح موقع كود التطور دوت نت", "افتح موقع يوتيوب")
+        m_ar_site = re.match(
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s+(?:موقع|صفحة)\s+"
+            r"(?P<target>.+?)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            norm_raw,
+            re.IGNORECASE,
+        )
+        if m_ar_site:
+            tgt = m_ar_site.group("target").strip()
+            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            return {
+                "intent": UserIntent.OPEN_URL,
+                "name": "open_url",
+                "arguments": {"url": resolved_url, "browser": ""},
+            }
+
+        # 0.4 Direct Known Web Domains or URLs
+        m_ar_url = re.match(
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s*(?:موقع|صفحة)?\s*"
+            r"(?P<target>https?://\S+|\S+\.\S+|[a-zA-Z0-9_-]+|يوتيوب|جوجل|غوغل|غيتهاب|"
+            r"جيت\s*هاب|تويتر|فيسبوك|شات\s*جي\s*بي\s*تي|جيميل|واتساب)"
+            r"(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            norm_raw,
+        )
+        if m_ar_url:
+            tgt = m_ar_url.group("target").strip()
+            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            return {
+                "intent": UserIntent.OPEN_URL,
+                "name": "open_url",
+                "arguments": {"url": resolved_url, "browser": ""},
             }
 
         # English URL pattern: e.g. "open youtube in chrome", "open https://google.com in comet", "go to github.com"

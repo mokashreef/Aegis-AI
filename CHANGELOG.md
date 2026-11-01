@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 14: Native Windows Binary (`AegisAI.exe`), Auto-Startup Integration, Arabic Spoken NLP & Modern UI Overhaul
+- **Native Windows Desktop Binary (`AegisAI.exe`, `launcher.cs`)**: Compiled via native Roslyn `csc.exe` into a fast, single-instance (`Global\AegisAI_Desktop_Mutex_2026`) GUI binary (`winexe`) with embedded official shield icon. Launches detached with zero console windows.
+- **Windows Startup Integration (`startup.py`)**: Integrated with `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` to launch Aegis AI automatically on Windows logon in silent background mode (`--background`). Controlled via system tray right-click menu ("Start with Windows") and REST API (`/api/desktop/startup`).
+- **Arabic Spoken NLP & Phonetic Normalization (`intent_router.py`)**: Automatic phonetic conversion of Arabic spoken domains ("دوت نت" -> `.net`, "دوت كوم" -> `.com`, "دوت اورج" -> `.org`) and robust compound browser routing ("كروم وافتح موقع كود التطور دوت نت"). Added defensive web-intent redirection inside `LaunchAppTool`.
+- **Natural Z-Order Window Layering (`window.py`, `CompanionOverlay.tsx`)**: Unpinned by default (`is_on_top = False`), allowing Aegis to smoothly drop behind Chrome, VSCode/Codex, and other applications when clicking outside, with full pin-on-top toggle support.
+- **Spacious & Modern UI Overhaul (`ActionCard.tsx`, `window.py`)**: Expanded window size (780x640) and completely redesigned action cards with human-readable titles, tool-specific icons, browser badges, and collapsible execution details, eliminating cramped layouts and raw JSON dumps.
+- **Whisper & VAD Performance Optimizations**: Configured `condition_on_previous_text=False` and optimized CPU thread allocation for faster STT response.
+- **Quality Assurance**: Added full test suite in `backend/tests/test_arabic_voice_tools.py` (58 total passing tests across full codebase, 0 flake8 warnings). Built updated portable distribution archive with SHA-256 validation.
+
 ### Added - Phase 13: Arabic Voice Command Routing, Targeted URL/Browser Opening, Draggable Companion & Native Background Mode
 - **Zero-Latency Arabic Voice Intent Routing (`intent_router.py`)**: Real-time regex-based natural language intent router supporting Arabic spoken requests for launching applications (`المفكرة`, `الرسام`, `كروم`, `كومت`), opening websites, muting/unmuting/adjusting volume (`كتم الصوت`, `علي الصوت`), capturing screenshots (`صور الشاشة`), minimizing all windows (`صغر كل النوافذ`), and taking daily notes (`اكتب ملاحظة`).
 - **First-Class Browser & URL Navigation Tool (`system_tools.py`)**: Added `OpenUrlTool` (`open_url`) supporting targeted browser execution (`chrome`, `msedge`, `brave`, `comet`, `firefox`, default) with automatic `https://` protocol resolution and common domain expansion.

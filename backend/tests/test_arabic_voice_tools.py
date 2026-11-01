@@ -189,3 +189,75 @@ def test_overlay_manager_toggle_on_top():
     assert new_state2 is True
     assert mgr.is_on_top is True
     mock_window.on_top = True
+
+
+def test_arabic_spoken_phonetic_domains_and_compound_phrases():
+    """Verify Issue #14: spoken domains (دوت نت -> .net) and compound browser phrases."""
+    # 1. "كروم و افتح موقع كود التطور دوت نت"
+    r1 = IntentRouter.classify_and_route("كروم و افتح موقع كود التطور دوت نت")
+    assert r1 is not None
+    assert r1["intent"] == UserIntent.OPEN_URL
+    assert r1["name"] == "open_url"
+    assert r1["arguments"]["browser"] == "chrome"
+    assert "كود التطور.net" in r1["arguments"]["url"]
+
+    # 2. "افتح كروم و افتح موقع كود التطور دوت نت"
+    r2 = IntentRouter.classify_and_route("افتح كروم و افتح موقع كود التطور دوت نت")
+    assert r2 is not None
+    assert r2["arguments"]["browser"] == "chrome"
+    assert "كود التطور.net" in r2["arguments"]["url"]
+
+    # 3. "كومت وافتح موقع جوجل دوت كوم"
+    r3 = IntentRouter.classify_and_route("كومت وافتح موقع جوجل دوت كوم")
+    assert r3 is not None
+    assert r3["arguments"]["browser"] == "comet"
+    assert "جوجل.com" in r3["arguments"]["url"]
+
+    # 4. "افتح موقع كود التطور دوت نت"
+    r4 = IntentRouter.classify_and_route("افتح موقع كود التطور دوت نت")
+    assert r4 is not None
+    assert "كود التطور.net" in r4["arguments"]["url"]
+
+
+@pytest.mark.asyncio
+async def test_launch_app_tool_website_fallback():
+    """Verify LaunchAppTool intercepts website commands and redirects to OpenUrlTool."""
+    from aegis_core.automation.system_tools import LaunchAppTool
+
+    import urllib.parse
+    tool = LaunchAppTool()
+    with patch("webbrowser.open", return_value=True):
+        res = await tool.execute(app_name="كروم و افتح موقع كود التطور دوت نت")
+        assert res.success is True
+        assert "كود التطور.net" in urllib.parse.unquote_plus(res.data["url"])
+
+
+def test_windows_startup_manager():
+    """Verify WindowsStartupManager registration, enable, disable, and toggle."""
+    from aegis_core.desktop.startup import WindowsStartupManager
+
+    with patch("winreg.OpenKey"), patch("winreg.QueryValueEx", return_value=("cmd", 1)):
+        assert WindowsStartupManager.is_enabled() is True
+
+    with patch("winreg.OpenKey"), patch("winreg.SetValueEx"):
+        assert WindowsStartupManager.enable() is True
+
+    with patch("winreg.OpenKey"), patch("winreg.DeleteValue"):
+        assert WindowsStartupManager.disable() is True
+
+
+def test_desktop_startup_api_endpoints():
+    """Verify GET and POST /api/desktop/startup endpoints."""
+    from aegis_core.desktop.startup import WindowsStartupManager
+
+    client = TestClient(app)
+
+    with patch.object(WindowsStartupManager, "is_enabled", return_value=True):
+        resp_get = client.get("/api/desktop/startup")
+        assert resp_get.status_code == 200
+        assert resp_get.json() == {"enabled": True}
+
+    with patch.object(WindowsStartupManager, "toggle", return_value=False):
+        resp_toggle = client.post("/api/desktop/startup/toggle")
+        assert resp_toggle.status_code == 200
+        assert resp_toggle.json() == {"enabled": False}

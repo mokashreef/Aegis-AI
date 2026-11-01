@@ -61,7 +61,7 @@ def stage_distribution_files() -> Path:
     log(f"Staging release files in {BUILD_DIR}...")
 
     # Root files
-    for f in ["aegis.py", "run.bat", "README.md", "CHANGELOG.md", "LICENSE"]:
+    for f in ["AegisAI.exe", "aegis.py", "run.bat", "AegisAI.vbs", "README.md", "CHANGELOG.md", "LICENSE"]:
         src = PROJECT_ROOT / f
         if src.exists():
             shutil.copy2(src, BUILD_DIR / f)

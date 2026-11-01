@@ -14,7 +14,7 @@ export function useMicrophoneCapture(
 ) {
   const {
     silenceThreshold = 0.04,
-    silenceDurationMs = 1300,
+    silenceDurationMs = 900,
     minSpeechDurationMs = 500,
     maxDurationMs = 20000,
     autoStopEnabled = true,

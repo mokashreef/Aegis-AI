@@ -97,6 +97,14 @@ class TrayIconManager:
         except Exception:
             return False
 
+    def _is_startup_enabled(self) -> bool:
+        try:
+            from aegis_core.desktop.startup import WindowsStartupManager
+
+            return WindowsStartupManager.is_enabled()
+        except Exception:
+            return False
+
     def _on_show(self, icon=None, item=None) -> None:
         logger.info("Tray menu: Showing Aegis AI overlay.")
         if self.overlay_manager:
@@ -117,6 +125,16 @@ class TrayIconManager:
                 self._icon.update_menu()
         except Exception as exc:
             logger.error("Error toggling wake word from tray: %s", exc)
+
+    def _on_toggle_startup(self, icon=None, item=None) -> None:
+        try:
+            from aegis_core.desktop.startup import WindowsStartupManager
+
+            WindowsStartupManager.toggle()
+            if self._icon:
+                self._icon.update_menu()
+        except Exception as exc:
+            logger.error("Error toggling startup from tray: %s", exc)
 
     def _on_open_web(self, icon=None, item=None) -> None:
         web_url = f"http://{settings.host}:{settings.port}/"
@@ -146,6 +164,11 @@ class TrayIconManager:
                 "Wake Word: Hey Aegis",
                 self._on_toggle_wake_word,
                 checked=lambda item: self._is_wake_word_active(),
+            ),
+            pystray.MenuItem(
+                "Start with Windows",
+                self._on_toggle_startup,
+                checked=lambda item: self._is_startup_enabled(),
             ),
             pystray.MenuItem("Open Companion Web HUD", self._on_open_web),
             pystray.Menu.SEPARATOR,

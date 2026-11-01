@@ -6,7 +6,7 @@
 #define MyAppVersion "0.2.0-alpha"
 #define MyAppPublisher "Aegis AI Open Source Contributors"
 #define MyAppURL "https://github.com/mokashreef/Aegis-AI"
-#define MyAppExeName "run.bat"
+#define MyAppExeName "AegisAI.exe"
 
 [Setup]
 AppId={{8B41D886-B94F-4C82-9657-6A32F5DA5B1E}

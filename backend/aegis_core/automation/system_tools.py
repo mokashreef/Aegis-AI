@@ -45,6 +45,32 @@ class LaunchAppTool(BaseTool):
                 data=res,
                 message=f"Successfully launched {res.get('name', app_name)}",
             )
+
+        # Defensive fallback: If app_name contains website keywords, redirect to OpenUrlTool
+        web_indicators = [
+            "موقع", "صفحة", "دوت", ".com", ".net", ".org", " و افتح ", "وافتح", "http://", "https://",
+        ]
+        lower_app = app_name.lower()
+        if any(ind in lower_app for ind in web_indicators):
+            logger.info("LaunchAppTool intercepted website intent in '%s' - redirecting to OpenUrlTool.", app_name)
+            browser = ""
+            for b_name in ["chrome", "كروم", "comet", "كومت", "edge", "ايدج", "brave", "بريف", "firefox", "فايرفوكس"]:
+                if b_name in lower_app:
+                    browser = b_name
+                    break
+            clean_url = app_name
+            tokens_to_clean = [
+                "افتح", "شغل", "متصفح", "كروم", "كومت", "ايدج", "بريف", "فايرفوكس", "موقع", "صفحة", " و ", "وافتح",
+            ]
+            for rm in tokens_to_clean:
+                clean_url = clean_url.replace(rm, " ")
+            clean_url = clean_url.strip()
+            from aegis_core.automation.intent_router import normalize_spoken_arabic_text
+
+            clean_url = normalize_spoken_arabic_text(clean_url)
+            url_tool = OpenUrlTool()
+            return await url_tool.execute(url=clean_url or app_name, browser=browser)
+
         return ToolResult(
             success=False,
             error=res.get("error", f"Failed to launch application '{app_name}'."),

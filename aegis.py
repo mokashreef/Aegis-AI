@@ -38,6 +38,22 @@ def run_daemon_thread():
 
 
 def main():
+    if "--install-startup" in sys.argv:
+        from aegis_core.desktop.startup import WindowsStartupManager
+
+        ok = WindowsStartupManager.enable()
+        print("Aegis AI registered for Windows startup." if ok else "Failed registering startup.")
+        sys.exit(0 if ok else 1)
+
+    if "--remove-startup" in sys.argv:
+        from aegis_core.desktop.startup import WindowsStartupManager
+
+        ok = WindowsStartupManager.disable()
+        print("Aegis AI removed from Windows startup." if ok else "Failed removing startup.")
+        sys.exit(0 if ok else 1)
+
+    is_background = "--background" in sys.argv
+
     print("=" * 60)
     print("🛡️  Aegis AI - Native Windows Companion")
     print("=" * 60)
@@ -74,7 +90,7 @@ def main():
 
     # 4. Create native overlay window and start GUI loop
     try:
-        overlay_manager.create_window()
+        overlay_manager.create_window(hidden=is_background)
         overlay_manager.start_gui_loop()
     finally:
         logger.info("Aegis AI shutting down...")

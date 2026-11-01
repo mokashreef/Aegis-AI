@@ -24,3 +24,4 @@
 ### 4. Native Launcher Recompilation (`AegisAI.exe`)
 - Recompiled `scripts/launcher.cs` using Windows native `csc.exe` with embedded icon `/win32icon:assets\icon.ico`.
 - Rebuilt distribution archive `Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip`.
+

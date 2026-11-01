@@ -101,6 +101,17 @@ def main():
     # Wait for daemon to bind
     time.sleep(0.5)
 
+    # Auto-start local Ollama if installed on user PC
+    try:
+        from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+
+        ollama_p = OllamaProvider()
+        if ollama_p.get_ollama_executable():
+            logger.info("Local Ollama detected; ensuring background service is online...")
+            ollama_p.ensure_server_started()
+    except Exception as exc:
+        logger.debug("Ollama background start check: %s", exc)
+
     # 2. Setup native Windows Alt+Space global hotkey
     def on_hotkey():
         overlay_manager.toggle()

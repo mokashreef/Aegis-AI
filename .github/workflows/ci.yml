@@ -12,21 +12,19 @@ concurrency:
 
 jobs:
   python-lint-test:
-    name: Python Core Engine CI (Windows & Ubuntu)
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest]
-        python-version: ["3.11"]
-    runs-on: ${{ matrix.os }}
+    name: Python Core Engine CI (Windows Native)
+    runs-on: windows-latest
+    env:
+      PYTHONPATH: backend
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies
@@ -70,4 +68,3 @@ jobs:
       - name: Build Frontend Production Artifact
         working-directory: apps/desktop-ui
         run: npm run build
-

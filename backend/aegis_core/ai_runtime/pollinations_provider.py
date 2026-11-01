@@ -69,11 +69,12 @@ class PollinationsProvider(LLMProvider):
                         res_text = direct_res.text
                         if "Free limit reached" in res_text or direct_res.status_code == 429:
                             from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+
                             OllamaProvider().ensure_server_started()
                             res_text = (
-                                "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد المعدل).\n"
+                                "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد 45 ثانية).\n"
                                 "تم تشغيل محرك الذكاء المحلي (Ollama) تلقائياً على جهازك "
-                                "لتوفير ردود سريعة ومجانية بدون إنترنت وبلا حدود."
+                                "لتوفير ردود فورية ومجانية بالكامل وبلا أي قيود أو انتظار."
                             )
                         yield LLMChunk(
                             delta=res_text,
@@ -96,6 +97,21 @@ class PollinationsProvider(LLMProvider):
                                 if choices:
                                     delta = choices[0].get("delta", {}).get("content", "")
                                     if delta:
+                                        if "Free limit reached" in delta or "pollen key" in delta:
+                                            from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+
+                                            OllamaProvider().ensure_server_started()
+                                            yield LLMChunk(
+                                                delta=(
+                                                    "⚠️ تم الوصول للحد المؤقت للمزود السحابي المجاني (حد 45 ثانية).\n"
+                                                    "تم تشغيل محرك الذكاء المحلي (Ollama) تلقائياً على جهازك "
+                                                    "لتوفير ردود فورية ومجانية بالكامل وبلا أي قيود أو انتظار."
+                                                ),
+                                                finish_reason="stop",
+                                                provider=self.name,
+                                                model=target_model,
+                                            )
+                                            return
                                         yield LLMChunk(
                                             delta=delta,
                                             provider=self.name,
@@ -106,12 +122,13 @@ class PollinationsProvider(LLMProvider):
                         else:
                             if "Free limit reached" in line:
                                 from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+
                                 OllamaProvider().ensure_server_started()
                                 yield LLMChunk(
                                     delta=(
-                                        "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد المعدل).\n"
+                                        "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد 45 ثانية).\n"
                                         "تم تشغيل محرك الذكاء المحلي (Ollama) تلقائياً على جهازك "
-                                        "لتوفير ردود سريعة ومجانية بدون إنترنت وبلا حدود."
+                                        "لتوفير ردود فورية ومجانية بالكامل وبلا أي قيود أو انتظار."
                                     ),
                                     provider=self.name,
                                     model=target_model,
@@ -141,4 +158,3 @@ class PollinationsProvider(LLMProvider):
             provider=self.name,
             model=model or "openai",
         )
-

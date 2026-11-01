@@ -1,0 +1,12 @@
+[tool.pytest.ini_options]
+minversion = "7.0"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+python_files = ["test_*.py"]
+
+[tool.flake8]
+max-line-length = 120
+exclude = [".venv", "venv", "__pycache__", ".git", "build", "dist", "apps/desktop-ui/node_modules"]
+ignore = ["E203", "W503", "W391"]

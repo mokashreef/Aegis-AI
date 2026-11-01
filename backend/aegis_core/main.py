@@ -84,10 +84,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # 3. Probe AI Runtime Matrix and ensure local Ollama daemon starts if installed
     try:
-        from aegis_core.ai_runtime.providers.ollama import OllamaProvider
+        from aegis_core.ai_runtime.ollama_provider import OllamaProvider
 
         ollama_p = OllamaProvider()
-        if ollama_p.is_ollama_installed() and not ollama_p.is_server_running():
+        health = await ollama_p.probe_health()
+        if ollama_p.is_ollama_installed() and not health.get("server_running"):
             logger.info("Ollama is installed on host; auto-launching daemon in background...")
             ollama_p.ensure_server_started()
     except Exception as ex:

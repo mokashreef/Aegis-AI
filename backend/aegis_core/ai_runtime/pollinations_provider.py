@@ -66,8 +66,17 @@ class PollinationsProvider(LLMProvider):
                         # Fallback to direct prompt endpoint if stream isn't accepted
                         last_prompt = messages[-1].content if messages else "Hello"
                         direct_res = await client.get(f"{self.BASE_URL}/{httpx.URL(last_prompt)}")
+                        res_text = direct_res.text
+                        if "Free limit reached" in res_text or direct_res.status_code == 429:
+                            from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+                            OllamaProvider().ensure_server_started()
+                            res_text = (
+                                "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد المعدل).\n"
+                                "تم تشغيل محرك الذكاء المحلي (Ollama) تلقائياً على جهازك "
+                                "لتوفير ردود سريعة ومجانية بدون إنترنت وبلا حدود."
+                            )
                         yield LLMChunk(
-                            delta=direct_res.text,
+                            delta=res_text,
                             finish_reason="stop",
                             provider=self.name,
                             model=target_model,
@@ -95,6 +104,19 @@ class PollinationsProvider(LLMProvider):
                             except json.JSONDecodeError:
                                 pass
                         else:
+                            if "Free limit reached" in line:
+                                from aegis_core.ai_runtime.ollama_provider import OllamaProvider
+                                OllamaProvider().ensure_server_started()
+                                yield LLMChunk(
+                                    delta=(
+                                        "⚠️ خادم الذكاء السحابي المجاني يواجه ضغطاً مؤقتاً (حد المعدل).\n"
+                                        "تم تشغيل محرك الذكاء المحلي (Ollama) تلقائياً على جهازك "
+                                        "لتوفير ردود سريعة ومجانية بدون إنترنت وبلا حدود."
+                                    ),
+                                    provider=self.name,
+                                    model=target_model,
+                                )
+                                return
                             yield LLMChunk(delta=line, provider=self.name, model=target_model)
 
             except Exception as exc:

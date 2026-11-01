@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ChatMessage, ToolActivity } from "../types";
 
-export function useAegisWebSocket(sessionId: string) {
+export function useAegisWebSocket(
+  sessionId: string,
+  onStreamEnd?: (fullText: string) => void
+) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeTools, setActiveTools] = useState<ToolActivity[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
+  const onStreamEndRef = useRef(onStreamEnd);
+  onStreamEndRef.current = onStreamEnd;
+  const lastAssistantTextRef = useRef<string>("");
 
   useEffect(() => {
     const wsUrl = `ws://127.0.0.1:8420/ws/chat/${sessionId}`;
@@ -41,6 +47,7 @@ export function useAegisWebSocket(sessionId: string) {
             },
           ]);
         } else if (data.type === "token") {
+          lastAssistantTextRef.current += data.delta || "";
           setMessages((prev) => {
             if (prev.length === 0) return prev;
             const updated = [...prev];
@@ -75,6 +82,10 @@ export function useAegisWebSocket(sessionId: string) {
           );
         } else if (data.type === "stream_end") {
           setIsStreaming(false);
+          if (lastAssistantTextRef.current && onStreamEndRef.current) {
+            onStreamEndRef.current(lastAssistantTextRef.current);
+          }
+          lastAssistantTextRef.current = "";
         }
       } catch (err) {
         console.error("Failed to parse websocket message:", err);
@@ -111,12 +122,18 @@ export function useAegisWebSocket(sessionId: string) {
     );
   }, []);
 
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setActiveTools([]);
+  }, []);
+
   return {
     messages,
     activeTools,
     isStreaming,
     isConnected,
     sendMessage,
+    clearMessages,
   };
 }
 

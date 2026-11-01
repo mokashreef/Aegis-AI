@@ -98,3 +98,34 @@ export interface WakeWordStatus {
   cooldown_seconds: number;
   engine_initialized: boolean;
 }
+
+export interface QuickActionItem {
+  id: string;
+  title: string;
+  title_ar: string;
+  command: string;
+  icon: "globe" | "app" | "camera" | "layers" | "terminal" | "volume" | "clipboard";
+  enabled: boolean;
+}
+
+export interface VoiceCatalogItem {
+  id: string;
+  name: string;
+  name_en: string;
+  gender: "Male" | "Female";
+  lang: string;
+  lang_name: string;
+  sample_text: string;
+}
+
+export interface UserSettings {
+  theme: "dark" | "light" | "system";
+  language: "auto" | "ar" | "en";
+  auto_speak: boolean;
+  tts_voice: string;
+  tts_rate: string;
+  default_browser: "chrome" | "comet" | "msedge" | "brave" | "firefox" | "default";
+  start_with_windows: boolean;
+  wake_word_enabled?: boolean;
+  quick_actions: QuickActionItem[];
+}

@@ -56,14 +56,19 @@ class ProcessManager:
             }
 
         args = arguments or []
-        command = [app_name_or_path] + args
+        # Resolve target executable using AppFinder (e.g. 'chrome' -> full path to chrome.exe)
+        resolved_match = app_finder.find_app(app_name_or_path)
+        target = resolved_match["target"] if resolved_match else app_name_or_path
+        matched_name = resolved_match["name"] if resolved_match else app_name_or_path
+
+        command = [target] + args
 
         logger.info("Launching desktop application: %s", command)
         try:
-            # On Windows, use shell invocation or standard popen
+            # On Windows, launch target directly when absolute path is known
             proc = subprocess.Popen(
                 command,
-                shell=True,
+                shell=False if os.path.isabs(target) else True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
@@ -71,7 +76,8 @@ class ProcessManager:
             )
             return {
                 "launched": True,
-                "target": app_name_or_path,
+                "target": target,
+                "name": matched_name,
                 "pid": proc.pid,
             }
         except Exception as exc:

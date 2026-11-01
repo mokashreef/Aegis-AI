@@ -158,6 +158,78 @@ class SessionManager:
             except Exception:
                 return val
 
+    def get_all_preferences(self) -> Dict[str, Any]:
+        """Retrieves all user preferences merged with sensible default values."""
+        prefs = dict(DEFAULT_USER_PREFERENCES)
+        with self.engine.get_connection() as conn:
+            cursor = conn.execute("SELECT key, value FROM user_preferences;")
+            for row in cursor.fetchall():
+                k = row["key"]
+                v = row["value"]
+                try:
+                    prefs[k] = json.loads(v)
+                except Exception:
+                    prefs[k] = v
+        return prefs
+
+    def update_preferences(self, updates: Dict[str, Any]) -> Dict[str, Any]:
+        """Bulk updates user preferences and returns the updated state."""
+        for key, value in updates.items():
+            self.set_preference(key, value)
+        return self.get_all_preferences()
+
+
+DEFAULT_USER_PREFERENCES: Dict[str, Any] = {
+    "theme": "dark",
+    "language": "auto",
+    "auto_speak": False,
+    "tts_voice": "ar-SA-HamedNeural",
+    "tts_rate": "+0%",
+    "default_browser": "chrome",
+    "start_with_windows": False,
+    "quick_actions": [
+        {
+            "id": "yt",
+            "title": "YouTube in Chrome",
+            "title_ar": "يوتيوب في كروم",
+            "command": "افتح موقع يوتيوب بمتصفح كروم",
+            "icon": "globe",
+            "enabled": True,
+        },
+        {
+            "id": "google",
+            "title": "Google in Comet",
+            "title_ar": "جوجل في كومت",
+            "command": "افتح جوجل بمتصفح كومت",
+            "icon": "globe",
+            "enabled": True,
+        },
+        {
+            "id": "notepad",
+            "title": "Launch Notepad",
+            "title_ar": "فتح المفكرة",
+            "command": "افتح المفكرة",
+            "icon": "app",
+            "enabled": True,
+        },
+        {
+            "id": "screenshot",
+            "title": "Take Screenshot",
+            "title_ar": "أخذ لقطة شاشة",
+            "command": "صور الشاشة",
+            "icon": "camera",
+            "enabled": True,
+        },
+        {
+            "id": "minimize",
+            "title": "Show Desktop",
+            "title_ar": "إظهار سطح المكتب",
+            "command": "صغر كل النوافذ",
+            "icon": "layers",
+            "enabled": True,
+        },
+    ],
+}
 
 # Global session manager instance
 session_manager = SessionManager()

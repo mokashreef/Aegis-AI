@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 15: Comprehensive User Personalization & Customization Settings, Reliable App Launching & Auto-Ollama Resilience
+- **Interactive Personalization Settings Modal (`SettingsModal.tsx`, `CompanionOverlay.tsx`)**: Full-featured settings dialog accessible via header gear icon with 4 comprehensive tabs:
+  1. *General*: Theme switcher (Dark / Light / System) with daytime CSS styles, Forced Language Lock (Auto / Arabic / English), Default browser preference (Chrome, Comet, Edge, Brave, Firefox, System Default), and Windows Startup auto-run toggle.
+  2. *Voice & Audio*: Auto voice response toggle (`auto_speak`), speech rate speed control (-15%, 0%, +15%, +30%), and rich 13-voice neural catalog with instant live MP3 sample preview.
+  3. *Quick Actions*: Customize and toggle welcome screen action tiles, add custom shortcut cards with command and title.
+  4. *System*: Global summoning shortcut reference (`Alt + Space`), local storage diagnostics, and 1-click active session chat history wipe.
+- **Persistent User Preferences Store (`session_manager.py`)**: SQLite `user_preferences` table persisting user configuration across app restarts with automatic migration.
+- **Forced Language Enforcement (`router.py`)**: System instruction prompt injection ensuring that when Arabic is locked, the AI always answers in Arabic even if the user writes in English, and vice versa.
+- **Multilingual Neural Voice Catalog & Preview API (`tts.py`, `routes.py`)**: Expanded edge-tts neural voice catalog to 13 regional accents (Saudi, Egyptian, Emirati, Jordanian, US, UK) with live `/api/voice/preview` MP3 synthesis.
+- **Reliable Process & Browser Launching with Arguments (`process_manager.py`)**: Fixed critical bug where commands with arguments (e.g. opening URLs in Chrome or Comet) bypassed `AppFinder`, resolving exact executables (`chrome.exe`, `comet.exe`) directly from registry/install paths.
+- **Expanded Arabic Application Translations (`intent_router.py`)**: Added friendly Arabic mappings for VS Code / Visual Studio (`فيجوال استديو`, `فيجوال ستوديو`, `كود`), browsers (`متصفح كروم`, `متصفح كومت`, `متصفح ايدج`), Telegram, WhatsApp, Discord, Spotify, Steam, Office apps, and PowerShell.
+- **Resilient Ollama Auto-Start & Pollinations Rate Limit Guard (`main.py`, `ollama_provider.py`, `pollinations_provider.py`)**: Automatically detects and launches local Ollama daemon on Windows host startup using full path resolution, and intercepts cloud rate limits with friendly status messages and instant local model wake-up.
+- **Quality Assurance**: 64 passing unit and integration tests (100% pass rate in `backend/tests`), 0 Flake8 lint warnings, clean Vite production bundle, and verified distribution package.
+
 ### Added - Phase 14: Native Windows Binary (`AegisAI.exe`), Auto-Startup Integration, Arabic Spoken NLP & Modern UI Overhaul
 - **Native Windows Desktop Binary (`AegisAI.exe`, `launcher.cs`)**: Compiled via native Roslyn `csc.exe` into a fast, single-instance (`Global\AegisAI_Desktop_Mutex_2026`) GUI binary (`winexe`) with embedded official shield icon. Launches detached with zero console windows.
 - **Windows Startup Integration (`startup.py`)**: Integrated with `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` to launch Aegis AI automatically on Windows logon in silent background mode (`--background`). Controlled via system tray right-click menu ("Start with Windows") and REST API (`/api/desktop/startup`).

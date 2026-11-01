@@ -92,12 +92,43 @@ class AIRuntimeRouter:
             )
             return
 
+        # Enforce user language lock preference (e.g. Always Arabic or Always English)
+        from aegis_core.memory.session_manager import session_manager
+        lang_pref = session_manager.get_preference("language", "auto")
+        effective_messages = list(messages)
+        if lang_pref == "ar":
+            ar_inst = (
+                "توجيه إلزامي ومحدد: لقد حدد المستخدم لغة الرد لتكون اللغة العربية دائماً. "
+                "يجب عليك دوماً صياغة كامل ردك باللغة العربية الفصحى، "
+                "حتى لو كتب المستخدم أو تحدث بالإنجليزية أو أي لغة أخرى."
+            )
+            if effective_messages and effective_messages[0].role == "system":
+                effective_messages[0] = LLMMessage(
+                    role="system",
+                    content=f"{effective_messages[0].content}\n\n{ar_inst}",
+                )
+            else:
+                effective_messages.insert(0, LLMMessage(role="system", content=ar_inst))
+        elif lang_pref == "en":
+            en_inst = (
+                "MANDATORY INSTRUCTION: The user has locked the response language to English. "
+                "You must strictly formulate your entire response in clear English, "
+                "even if the user writes or speaks in Arabic or another language."
+            )
+            if effective_messages and effective_messages[0].role == "system":
+                effective_messages[0] = LLMMessage(
+                    role="system",
+                    content=f"{effective_messages[0].content}\n\n{en_inst}",
+                )
+            else:
+                effective_messages.insert(0, LLMMessage(role="system", content=en_inst))
+
         start_time = time.perf_counter()
         token_count = 0
 
         try:
             async for chunk in provider.generate_stream(
-                messages=messages,
+                messages=effective_messages,
                 model=model,
                 tools=tools,
                 temperature=temperature,
@@ -123,7 +154,7 @@ class AIRuntimeRouter:
                     model="openai",
                 )
                 async for chunk in self.pollinations.generate_stream(
-                    messages=messages,
+                    messages=effective_messages,
                     model="openai",
                     temperature=temperature,
                 ):

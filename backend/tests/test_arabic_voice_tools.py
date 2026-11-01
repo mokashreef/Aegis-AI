@@ -129,14 +129,14 @@ async def test_open_url_tool_execution():
 
     # 1. Normalization of shorthand names
     with patch("webbrowser.open", return_value=True) as mock_wb:
-        res = await tool.execute(url="youtube")
+        res = await tool.execute(url="youtube", browser="default")
         assert res.success is True
         assert res.data["url"] == "https://www.youtube.com"
         mock_wb.assert_called_once_with("https://www.youtube.com")
 
     # 2. Arabic name normalization
     with patch("webbrowser.open", return_value=True):
-        res_ar = await tool.execute(url="يوتيوب")
+        res_ar = await tool.execute(url="يوتيوب", browser="default")
         assert res_ar.success is True
         assert res_ar.data["url"] == "https://www.youtube.com"
 

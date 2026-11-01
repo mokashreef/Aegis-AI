@@ -41,6 +41,13 @@ class ToolExecuteRequest(BaseModel):
 class SpeakRequest(BaseModel):
     text: str = Field(description="Text to synthesize to speech")
     voice: Optional[str] = Field(default=None, description="Neural voice identifier")
+    rate: Optional[str] = Field(default=None, description="Speech rate adjustment")
+
+
+class VoicePreviewRequest(BaseModel):
+    voice: str = Field(description="Voice identifier to preview")
+    text: Optional[str] = Field(default=None, description="Sample text to synthesize")
+    rate: Optional[str] = Field(default="+0%", description="Speech speed adjustment")
 
 
 class PullModelRequest(BaseModel):
@@ -224,8 +231,8 @@ async def get_wakeword_status() -> Dict[str, Any]:
 
 
 @router.post("/voice/wakeword/toggle")
-async def toggle_wakeword() -> Dict[str, Any]:
-    """Toggles background continuous wake word listening on or off."""
+async def toggle_wakeword_listener() -> Dict[str, Any]:
+    """Toggles active wake word detection on or off."""
     if wake_word_listener.is_running():
         wake_word_listener.stop()
     else:
@@ -234,10 +241,96 @@ async def toggle_wakeword() -> Dict[str, Any]:
 
 
 @router.post("/voice/wakeword/config")
-async def configure_wakeword(req: WakeWordConfigRequest) -> Dict[str, Any]:
-    """Configures active wake word model name and detection confidence threshold."""
-    if req.wake_word:
-        wake_word_listener.wake_word = req.wake_word
-    if req.confidence_threshold is not None:
-        wake_word_listener.confidence_threshold = max(0.1, min(1.0, req.confidence_threshold))
+async def update_wakeword_config(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates model or sensitivity for the wake word engine."""
+    wake_word = req.get("wake_word")
+    confidence = req.get("confidence_threshold")
+    if wake_word:
+        wake_word_listener.wake_word = wake_word
+    if confidence is not None:
+        wake_word_listener.confidence_threshold = float(confidence)
     return wake_word_listener.get_status()
+
+
+# -------------------------------------------------------------
+# User Settings & Personalization Endpoints
+# -------------------------------------------------------------
+
+@router.get("/settings")
+async def get_user_settings() -> Dict[str, Any]:
+    """Retrieves all user personalization settings and startup state."""
+    from aegis_core.desktop.startup import WindowsStartupManager
+    from aegis_core.memory.session_manager import session_manager
+
+    prefs = session_manager.get_all_preferences()
+    prefs["start_with_windows"] = WindowsStartupManager.is_enabled()
+    prefs["wake_word_enabled"] = wake_word_listener.is_running()
+    return prefs
+
+
+@router.post("/settings")
+async def update_user_settings(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Updates user personalization settings and executes system side-effects."""
+    from aegis_core.desktop.startup import WindowsStartupManager
+    from aegis_core.memory.session_manager import session_manager
+
+    # 1. Update persisted preferences
+    updated = session_manager.update_preferences(req)
+
+    # 2. Side-effect: Windows startup
+    if "start_with_windows" in req:
+        if req["start_with_windows"]:
+            WindowsStartupManager.enable()
+        else:
+            WindowsStartupManager.disable()
+        updated["start_with_windows"] = WindowsStartupManager.is_enabled()
+
+    # 3. Side-effect: TTS default voice
+    if "tts_voice" in req and req["tts_voice"]:
+        tts_engine.default_voice = req["tts_voice"]
+
+    # 4. Side-effect: Wake word state
+    if "wake_word_enabled" in req:
+        should_run = bool(req["wake_word_enabled"])
+        if should_run and not wake_word_listener.is_running():
+            wake_word_listener.start()
+        elif not should_run and wake_word_listener.is_running():
+            wake_word_listener.stop()
+        updated["wake_word_enabled"] = wake_word_listener.is_running()
+
+    return updated
+
+
+@router.get("/voice/catalog")
+async def get_voice_catalog() -> List[Dict[str, Any]]:
+    """Returns available natural neural voices with metadata and sample texts."""
+    return VOICE_CATALOG
+
+
+@router.post("/voice/preview")
+async def preview_voice(req: VoicePreviewRequest):
+    """Generates a short audio preview for any selected voice."""
+    target_text = req.text
+    if not target_text:
+        for v in VOICE_CATALOG:
+            if v["id"] == req.voice:
+                target_text = v.get("sample_text", "مرحباً، هذه عينة صوتية لتجربة الصوت.")
+                break
+        if not target_text:
+            target_text = "Hello, this is a sample audio preview for Aegis AI."
+
+    audio_bytes = await tts_engine.synthesize_to_bytes(target_text, voice=req.voice, rate=req.rate)
+    if not audio_bytes:
+        return Response(status_code=500, content="Failed generating voice preview.")
+    return Response(content=audio_bytes, media_type="audio/mpeg")
+
+
+@router.post("/sessions/{session_id}/clear")
+async def clear_session_history(session_id: str) -> Dict[str, Any]:
+    """Clears message history for the specified session."""
+    from aegis_core.memory.db import db_engine
+
+    with db_engine.get_connection() as conn:
+        conn.execute("DELETE FROM messages WHERE session_id = ?;", (session_id,))
+        conn.execute("DELETE FROM tool_executions WHERE session_id = ?;", (session_id,))
+    return {"session_id": session_id, "cleared": True}

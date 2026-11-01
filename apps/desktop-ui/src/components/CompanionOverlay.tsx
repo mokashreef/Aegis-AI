@@ -18,19 +18,49 @@ import {
   Globe,
   Camera,
   Layers,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
 import { ModelSetupBanner } from "./ModelSetupBanner";
 import { SystemTelemetryModal } from "./SystemTelemetryModal";
+import { SettingsModal } from "./SettingsModal";
 import { useAegisWebSocket } from "../hooks/useAegisWebSocket";
 import { useMicrophoneCapture } from "../hooks/useMicrophoneCapture";
-import { fetchSystemStatus, fetchWakeWordStatus, toggleWakeWord, triggerVoiceSpeech } from "../services/api";
-import { SystemTelemetry, AIRuntimeStatus, VoiceStatus, WakeWordStatus } from "../types";
+import {
+  fetchSettings,
+  fetchSystemStatus,
+  fetchWakeWordStatus,
+  toggleWakeWord,
+  triggerVoiceSpeech,
+} from "../services/api";
+import {
+  SystemTelemetry,
+  AIRuntimeStatus,
+  VoiceStatus,
+  WakeWordStatus,
+  UserSettings,
+  QuickActionItem,
+} from "../types";
 
 export const CompanionOverlay: React.FC = () => {
   const [sessionId] = useState(() => "session-" + Math.random().toString(36).substring(7));
-  const { messages, activeTools, isStreaming, isConnected, sendMessage } = useAegisWebSocket(sessionId);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  const handleStreamFinished = useCallback(
+    (fullText: string) => {
+      if (userSettings?.auto_speak && fullText.trim()) {
+        triggerVoiceSpeech(fullText.trim());
+      }
+    },
+    [userSettings]
+  );
+
+  const { messages, activeTools, isStreaming, isConnected, sendMessage, clearMessages } = useAegisWebSocket(
+    sessionId,
+    handleStreamFinished
+  );
 
   const [input, setInput] = useState("");
   const [showTelemetry, setShowTelemetry] = useState(false);
@@ -130,6 +160,7 @@ export const CompanionOverlay: React.FC = () => {
 
     refreshTelemetry();
     fetchPinStatus();
+    fetchSettings().then(setUserSettings).catch(() => {});
     return () => window.removeEventListener("keydown", handleGlobalKey);
   }, [refreshTelemetry, fetchPinStatus]);
 
@@ -160,6 +191,34 @@ export const CompanionOverlay: React.FC = () => {
     triggerVoiceSpeech(text);
   };
 
+  const renderQuickActionIcon = (iconName: string) => {
+    switch (iconName) {
+      case "globe":
+        return <Globe className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />;
+      case "camera":
+        return <Camera className="w-4 h-4 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />;
+      case "layers":
+        return <Layers className="w-4 h-4 text-purple-400 shrink-0 group-hover:scale-110 transition-transform" />;
+      case "clipboard":
+        return <Clipboard className="w-4 h-4 text-emerald-400 shrink-0 group-hover:scale-110 transition-transform" />;
+      default:
+        return <AppWindow className="w-4 h-4 text-sky-400 shrink-0 group-hover:scale-110 transition-transform" />;
+    }
+  };
+
+  const defaultQuickActions: QuickActionItem[] = [
+    { id: "1", title: "YouTube in Chrome", title_ar: "يوتيوب في كروم", command: "افتح موقع يوتيوب بمتصفح كروم", icon: "globe", enabled: true },
+    { id: "2", title: "Google in Comet", title_ar: "جوجل في كومت", command: "افتح جوجل بمتصفح كومت", icon: "globe", enabled: true },
+    { id: "3", title: "Launch Notepad", title_ar: "المفكرة", command: "open notepad", icon: "app", enabled: true },
+    { id: "4", title: "Take Screenshot", title_ar: "لقطة شاشة", command: "صور الشاشة", icon: "camera", enabled: true },
+    { id: "5", title: "Show Desktop", title_ar: "إظهار سطح المكتب", command: "صغر كل النوافذ", icon: "layers", enabled: true },
+    { id: "6", title: "Read Clipboard", title_ar: "قراءة الحافظة", command: "get clipboard", icon: "clipboard", enabled: true },
+  ];
+
+  const quickActionsToRender = userSettings?.quick_actions
+    ? userSettings.quick_actions.filter((a) => a.enabled)
+    : defaultQuickActions;
+
   const activeModelDisplay =
     runtimeStatus?.ollama?.models && runtimeStatus.ollama.models.length > 0
       ? runtimeStatus.ollama.models[0]
@@ -168,7 +227,11 @@ export const CompanionOverlay: React.FC = () => {
       : "Pollinations (Emergency)";
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0b0f19] border border-slate-800 shadow-2xl relative select-none">
+    <div
+      className={`w-full h-full flex flex-col bg-[#0b0f19] border border-slate-800 shadow-2xl relative select-none ${
+        userSettings?.theme === "light" ? "theme-light" : ""
+      }`}
+    >
       {/* Top Header Bar with Native Window Dragging & Quick Actions */}
       <div className="pywebview-drag-region flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-[#0f172a] shrink-0 select-none cursor-move">
         <div className="flex items-center gap-3">
@@ -248,6 +311,14 @@ export const CompanionOverlay: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white transition"
+            title="Personalization & Settings (الإعدادات والتخصيص)"
+          >
+            <SettingsIcon className="w-3.5 h-3.5" />
+          </button>
+
+          <button
             onClick={() => setShowTelemetry(true)}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white transition"
             title="System Telemetry"
@@ -283,53 +354,16 @@ export const CompanionOverlay: React.FC = () => {
             </p>
 
             <div className="grid grid-cols-2 gap-2 w-full max-w-md">
-              <button
-                onClick={() => handleQuickAction("افتح موقع يوتيوب بمتصفح كروم")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
-              >
-                <Globe className="w-4 h-4 text-rose-400 shrink-0 group-hover:scale-110 transition-transform" />
-                <span className="truncate">YouTube in Chrome</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("افتح جوجل بمتصفح كومت")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
-              >
-                <Globe className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
-                <span className="truncate">Google in Comet</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("open notepad")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <AppWindow className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>Launch Notepad</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("صور الشاشة")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <Camera className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Take Screenshot</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("صغر كل النوافذ")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <Layers className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>Show Desktop</span>
-              </button>
-
-              <button
-                onClick={() => handleQuickAction("get clipboard")}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left"
-              >
-                <Clipboard className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Read Clipboard</span>
-              </button>
+              {quickActionsToRender.map((act) => (
+                <button
+                  key={act.id}
+                  onClick={() => handleQuickAction(act.command)}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
+                >
+                  {renderQuickActionIcon(act.icon)}
+                  <span className="truncate">{act.title}</span>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -453,6 +487,16 @@ export const CompanionOverlay: React.FC = () => {
           onClose={() => setShowTelemetry(false)}
         />
       )}
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={userSettings}
+        onSettingsUpdated={setUserSettings}
+        sessionId={sessionId}
+        onClearChat={clearMessages}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ Unit and integration tests for Aegis AI distribution packaging.
 import hashlib
 import sys
 from pathlib import Path
+
 # Ensure scripts dir is importable
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
@@ -26,16 +27,29 @@ def test_checksum_computation(tmp_path):
     assert computed == expected_hash
 
 
-def test_ensure_frontend_built_verification():
-    # Should not raise exception
+def test_ensure_frontend_built_verification(tmp_path, monkeypatch):
+    import build_distribution
+
+    mock_dist = tmp_path / "apps" / "desktop-ui" / "dist"
+    mock_dist.mkdir(parents=True, exist_ok=True)
+    dist_index = mock_dist / "index.html"
+    dist_index.write_text("<!doctype html><html><body>Aegis HUD</body></html>", encoding="utf-8")
+
+    monkeypatch.setattr(build_distribution, "PROJECT_ROOT", tmp_path)
     ensure_frontend_built()
-    dist_index = PROJECT_ROOT / "apps" / "desktop-ui" / "dist" / "index.html"
     assert dist_index.exists()
 
 
-def test_ensure_models_present_verification():
-    # Core models must exist
+def test_ensure_models_present_verification(tmp_path, monkeypatch):
+    import build_distribution
+
+    mock_models = tmp_path / "data" / "models" / "wakeword"
+    mock_models.mkdir(parents=True, exist_ok=True)
+    required = ["melspectrogram.onnx", "embedding_model.onnx", "hey_jarvis_v0.1.onnx", "alexa_v0.1.onnx"]
+    for name in required:
+        (mock_models / name).write_bytes(b"mock_onnx_model")
+
+    monkeypatch.setattr(build_distribution, "PROJECT_ROOT", tmp_path)
     ensure_models_present()
-    models_dir = PROJECT_ROOT / "data" / "models" / "wakeword"
-    for name in ["melspectrogram.onnx", "embedding_model.onnx", "hey_jarvis_v0.1.onnx", "alexa_v0.1.onnx"]:
-        assert (models_dir / name).exists()
+    for name in required:
+        assert (mock_models / name).exists()

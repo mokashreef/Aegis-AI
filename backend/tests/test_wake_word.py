@@ -15,6 +15,42 @@ def client():
     return TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def mock_wakeword_models_if_missing(monkeypatch):
+    """Ensures deterministic offline execution in CI environments without network dependencies."""
+    engine = WakeWordEngine()
+    mel_path = engine.models_dir / "melspectrogram.onnx"
+    if not mel_path.exists():
+        class MockSession:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def run(self, output_names, input_feed):
+                if "input" in input_feed:
+                    return [np.zeros((1, 1, 4, 32), dtype=np.float32)]
+                elif "input_1" in input_feed:
+                    return [np.zeros((1, 1, 96), dtype=np.float32)]
+                else:
+                    return [np.array([[0.75]], dtype=np.float32)]
+
+            def get_inputs(self):
+                class Input:
+                    name = "input"
+
+                return [Input()]
+
+        monkeypatch.setattr(WakeWordEngine, "ensure_models_downloaded", lambda self: None)
+
+        def mock_load(self):
+            self._mel_session = MockSession()
+            self._emb_session = MockSession()
+            self._classifiers = {"hey_jarvis": MockSession(), "alexa": MockSession()}
+            self.is_initialized = True
+            return True
+
+        monkeypatch.setattr(WakeWordEngine, "load_models", mock_load)
+
+
 def test_wake_word_engine_initialization():
     engine = WakeWordEngine()
     success = engine.load_models()

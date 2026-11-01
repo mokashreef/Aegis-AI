@@ -48,3 +48,4 @@ This pull request addresses user feedback regarding the desktop experience, voic
 - **Packaging**: Automated distribution build succeeded:
   - Archive: `Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip` (5.26 MB)
   - SHA-256: `4d04d67533a0354fb6ce8208a62fcca08de2975af71f1482c0b1c080fa60bd00`
+

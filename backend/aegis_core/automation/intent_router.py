@@ -231,10 +231,10 @@ class IntentRouter:
                 "arguments": {"url": resolved_url, "browser": resolved_browser},
             }
 
-        # 0.2 Arabic Target-First with Browser (e.g. "افتح موقع كود التطور دوت نت بمتصفح كروم")
+        # 0.2 Arabic Target-First with Browser (e.g. "افتح موقع كود التطور بكروم", "افتح موقع كود التطور بمتصفح كروم")
         m_ar_target_br = re.match(
-            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s+(?:موقع|صفحة)?\s*"
-            r"(?P<target>.+?)\s+(?:ب|في|عبر|بمتصفح|في\s+متصفح)\s+"
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)?(?:\s+لي)?\s+(?:موقع|صفحة)?\s*"
+            r"(?P<target>.+?)\s+(?:بمتصفح\s+|في\s+متصفح\s+|عبر\s+متصفح\s+|في\s+|عبر\s+|ب\s+|ب)"
             r"(?P<browser>كروم|جوجل\s+كروم|كومت|ايدج|إيدج|بريف|فايرفوكس)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
             norm_raw,
             re.IGNORECASE,
@@ -252,7 +252,7 @@ class IntentRouter:
 
         # 0.3 Arabic Site-only (e.g. "افتح موقع كود التطور دوت نت", "افتح موقع يوتيوب")
         m_ar_site = re.match(
-            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s+(?:موقع|صفحة)\s+"
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)?(?:\s+لي)?\s+(?:موقع|صفحة)\s+"
             r"(?P<target>.+?)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
             norm_raw,
             re.IGNORECASE,
@@ -268,11 +268,12 @@ class IntentRouter:
 
         # 0.4 Direct Known Web Domains or URLs
         m_ar_url = re.match(
-            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)(?:\s+لي)?\s*(?:موقع|صفحة)?\s*"
-            r"(?P<target>https?://\S+|\S+\.\S+|[a-zA-Z0-9_-]+|يوتيوب|جوجل|غوغل|غيتهاب|"
+            r"^(?:ممكن\s+)?(?:افتح|شغل|روّح|اذهب|تصفح)?(?:\s+لي)?\s*(?:موقع|صفحة)?\s*"
+            r"(?P<target>https?://\S+|.+\.(?:net|com|org|io|ai|co|dev|app|me)|[a-zA-Z0-9_-]+|يوتيوب|جوجل|غوغل|غيتهاب|"
             r"جيت\s*هاب|تويتر|فيسبوك|شات\s*جي\s*بي\s*تي|جيميل|واتساب)"
             r"(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
             norm_raw,
+            re.IGNORECASE,
         )
         if m_ar_url:
             tgt = m_ar_url.group("target").strip()

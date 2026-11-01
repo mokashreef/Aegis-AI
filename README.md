@@ -56,10 +56,18 @@ If your local Ollama instance is not running, Aegis AI automatically shifts to f
 
 ## ⚡ Features
 
-### 🖥️ Desktop Companion Overlay
-- **Instant Hotkey Summon**: Press `Alt + Space` (or `Win + Space`) anywhere in Windows to bring up the glassmorphic HUD.
-- **System Tray Resident**: Lives quietly in the Windows notification area with minimal resource footprint (~40MB RAM).
-- **Responsive Animations**: Designed with glassmorphism, fluid typography, and dark-mode aesthetics tailored for Windows 11.
+### 🖥️ Desktop Companion Overlay & Native Binary
+- **Native Windows Executable (`AegisAI.exe`)**: Compiled zero-console Windows GUI binary (`winexe`) with embedded official shield branding and single-instance mutex protection.
+- **Windows Startup Daemon**: Starts silently on Windows logon (`--background`) minimized to the notification tray. Toggleable with one click via tray context menu (*"Start with Windows"*) or CLI.
+- **Natural Z-Order Window Layering**: Operates as a standard desktop window that smoothly drops behind other apps (Chrome, VSCode/Codex) when clicking outside, with an optional always-on-top Pin toggle.
+- **Instant Hotkey Summon**: Press `Alt + Space` anywhere in Windows to summon or dismiss the glassmorphic companion HUD.
+- **Modern Action Cards**: Clean, spacious UI with tool-specific badges, icons, and collapsible execution details replacing cramped layouts and raw JSON dumps.
+
+### 🎙️ Offline Voice Intelligence & Spoken Arabic NLP
+- **Faster-Whisper STT**: Real-time offline speech-to-text with INT8 hardware acceleration and client-side Voice Activity Detection (VAD).
+- **Phonetic Spoken Arabic Understanding**: Intelligently normalizes spoken Arabic domains (*"دوت نت"* -> `.net`, *"دوت كوم"* -> `.com`) and parses compound navigation requests (e.g., *"كروم و افتح موقع كود التطور دوت نت"* or *"افتح موقع كود التطور بكروم"*).
+- **Targeted Browser & App Routing**: Direct URL opening across Chrome, Comet, Edge, Brave, and Firefox with automatic web-intent fallback.
+- **Piper Neural TTS**: High-fidelity, local neural speech synthesis with zero cloud latency.
 
 ### 🤖 Windows Desktop Automation
 - **Process Orchestration**: Launch, inspect, and safely terminate Windows applications (`notepad.exe`, `calc.exe`, `code`, etc.).
@@ -70,11 +78,6 @@ If your local Ollama instance is not running, Aegis AI automatically shifts to f
 ### 🌐 Web & Browser Automation
 - **Headless & Visible Chromium**: Powered by Playwright for reliable web navigation, form submission, and live scraping.
 - **Article & Data Extractor**: Extract clean text, tables, and structured data from arbitrary websites.
-
-### 🎙️ Offline Voice Intelligence
-- **Faster-Whisper STT**: Real-time offline speech-to-text with INT8 / FP16 hardware acceleration.
-- **Piper Neural TTS**: High-fidelity, local neural speech synthesis with zero cloud latency.
-- **Audio Waveform HUD**: Visual indicator that pulses in real time to speech input and output.
 
 ### 🧠 Persistent Local Memory
 - **SQLite Database with WAL Mode**: Stores all conversation history, sessions, user preferences, and tool logs locally.
@@ -136,10 +139,13 @@ cd "Aegis AI"
 
 ### 3. Launch Aegis AI Desktop Companion
 ```powershell
-# One-click launcher (starts native overlay & registers Alt+Space)
-.\scripts\run_desktop.ps1
+# Double-click the native desktop executable (recommended):
+.\AegisAI.exe
 
-# Or run directly via Python:
+# Enable automatic start with Windows on boot:
+.\AegisAI.exe --install-startup
+
+# Or run via Python:
 python aegis.py
 ```
 Press **`Alt + Space`** anywhere in Windows to summon or dismiss the companion! Press **`ESC`** to close instantly.

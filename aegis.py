@@ -24,6 +24,25 @@ from aegis_core.main import app  # noqa: E402
 from aegis_core.utils.logger import logger  # noqa: E402
 
 
+def ensure_port_available(port: int = 8420):
+    """Safely terminates any orphaned background process occupying the backend port."""
+    import os
+    try:
+        import psutil
+        current_pid = os.getpid()
+        for conn in psutil.net_connections(kind="inet"):
+            if conn.laddr and conn.laddr.port == port and conn.pid and conn.pid != current_pid:
+                try:
+                    p = psutil.Process(conn.pid)
+                    logger.warning("Terminating orphan process PID %d holding port %d...", conn.pid, port)
+                    p.terminate()
+                    p.wait(timeout=2)
+                except Exception as ex:
+                    logger.debug("Could not terminate orphan PID %d: %s", conn.pid, ex)
+    except Exception as e:
+        logger.debug("Port cleanup check: %s", e)
+
+
 def run_daemon_thread():
     """Runs FastAPI daemon in a background thread."""
     config = uvicorn.Config(
@@ -65,6 +84,7 @@ def main():
     print("=" * 60)
 
     # 1. Start backend daemon
+    ensure_port_available(settings.port)
     logger.info("Starting Aegis Core daemon thread on %s:%d...", settings.host, settings.port)
     daemon_thread = threading.Thread(target=run_daemon_thread, name="AegisDaemonThread", daemon=True)
     daemon_thread.start()

@@ -218,6 +218,25 @@ def test_arabic_spoken_phonetic_domains_and_compound_phrases():
     assert r4 is not None
     assert "كود التطور.net" in r4["arguments"]["url"]
 
+    # 5. "كروم و افتح موقع كود التطور" (without domain extension)
+    r5 = IntentRouter.classify_and_route("كروم و افتح موقع كود التطور")
+    assert r5 is not None
+    assert r5["intent"] == UserIntent.OPEN_URL
+    assert r5["arguments"]["browser"] == "chrome"
+    assert r5["arguments"]["url"] == "كود التطور"
+
+    # 6. "افتح موقع كود التطور بكروم"
+    r6 = IntentRouter.classify_and_route("افتح موقع كود التطور بكروم")
+    assert r6 is not None
+    assert r6["arguments"]["browser"] == "chrome"
+    assert r6["arguments"]["url"] == "كود التطور"
+
+    # 7. "كود التطور دوت نت" (standalone spoken domain)
+    r7 = IntentRouter.classify_and_route("كود التطور دوت نت")
+    assert r7 is not None
+    assert r7["intent"] == UserIntent.OPEN_URL
+    assert "كود التطور.net" in r7["arguments"]["url"]
+
 
 @pytest.mark.asyncio
 async def test_launch_app_tool_website_fallback():

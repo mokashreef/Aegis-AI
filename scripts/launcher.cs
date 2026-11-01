@@ -95,6 +95,29 @@ namespace AegisAI
                     return;
                 }
 
+                // Terminate any stale orphan pythonw instances running from this directory
+                try
+                {
+                    int myPid = Process.GetCurrentProcess().Id;
+                    foreach (var proc in Process.GetProcessesByName("pythonw"))
+                    {
+                        try
+                        {
+                            if (proc.Id != myPid)
+                            {
+                                string exePath = proc.MainModule != null ? proc.MainModule.FileName : "";
+                                if (!string.IsNullOrEmpty(exePath) && exePath.IndexOf("Aegis AI", StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    proc.Kill();
+                                    proc.WaitForExit(1000);
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
+
                 // Locate isolated Python runtime (pythonw.exe prevents CMD console window)
                 string pythonw = Path.Combine(appDir, ".venv", "Scripts", "pythonw.exe");
                 string aegisPy = Path.Combine(appDir, "aegis.py");

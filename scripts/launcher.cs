@@ -4,16 +4,29 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace AegisAI
 {
     static class Program
     {
         private const string MutexName = "Global\\AegisAI_Desktop_Mutex_2026";
+        private const string AppUserModelId = "AegisAI.Desktop.Companion.2026";
+
+        [DllImport("shell32.dll", SetLastError = true)]
+        private static extern int SetCurrentProcessExplicitAppUserModelID(
+            [MarshalAs(UnmanagedType.LPWStr)] string AppID
+        );
 
         [STAThread]
         static void Main(string[] args)
         {
+            try
+            {
+                SetCurrentProcessExplicitAppUserModelID(AppUserModelId);
+            }
+            catch { }
+
             string appDir = AppDomain.CurrentDomain.BaseDirectory;
             Directory.SetCurrentDirectory(appDir);
 

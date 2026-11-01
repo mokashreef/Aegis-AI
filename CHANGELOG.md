@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 16: Native Windows Taskbar Branding & Application Identity Alignment
+- **Windows AppUserModelID Decoupling (`aegis.py`, `window.py`, `launcher.cs`)**: Explicitly registered `AegisAI.Desktop.Companion.2026` via Windows `shell32.SetCurrentProcessExplicitAppUserModelID`, permanently preventing Windows Taskbar from grouping Aegis AI under generic `python.exe` / `.py` document file associations.
+- **PyWebView WinForms Icon Binding (`window.py`)**: Bound `assets/icon.ico` directly into `webview.start(icon=...)`, preventing PyWebView from extracting the generic Python icon from `sys.executable`.
+- **Win32 Native `WM_SETICON` Dispatch (`window.py`)**: Directly applied `WM_SETICON` (`ICON_BIG` 32x32 and `ICON_SMALL` 16x16) onto the native window HWND via `user32.LoadImageW` and `user32.SendMessageW`, ensuring the official shield logo appears on the Taskbar and in Alt+Tab window switching.
+- **Recompiled Launcher (`AegisAI.exe`)**: Synchronized the C# native launcher to share the same AppUserModelID and recompiled with embedded `/win32icon:assets\icon.ico`.
+
 ### Added - Phase 15: Comprehensive User Personalization & Customization Settings, Reliable App Launching & Auto-Ollama Resilience
 - **Interactive Personalization Settings Modal (`SettingsModal.tsx`, `CompanionOverlay.tsx`)**: Full-featured settings dialog accessible via header gear icon with 4 comprehensive tabs:
   1. *General*: Theme switcher (Dark / Light / System) with daytime CSS styles, Forced Language Lock (Auto / Arabic / English), Default browser preference (Chrome, Comet, Edge, Brave, Firefox, System Default), and Windows Startup auto-run toggle.

@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     )
 
     # Storage & Persistence
+    base_dir: Path = Field(default=PROJECT_ROOT, description="Application root directory")
     storage_dir: Path = Field(default=STORAGE_DIR, description="Root directory for local storage")
     db_path: Path = Field(default=STORAGE_DIR / "aegis.db", description="Path to primary SQLite database")
     logs_dir: Path = Field(default=LOGS_DIR, description="Directory for rolling log files")

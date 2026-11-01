@@ -165,12 +165,11 @@ class DesktopOverlayManager:
         """Applies the official Aegis shield icon to the native Win32 window handles."""
         try:
             import os
-            from pathlib import Path
 
             app_id = "AegisAI.Desktop.Companion.2026"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
-            icon_path = str(Path(settings.base_dir) / "assets" / "icon.ico")
+            icon_path = str(settings.base_dir / "assets" / "icon.ico")
             if not os.path.isfile(icon_path):
                 return
 
@@ -274,9 +273,8 @@ class DesktopOverlayManager:
         """Starts the pywebview UI loop on the main thread."""
         logger.info("Starting native Windows desktop overlay GUI loop (WebView2)...")
         import os
-        from pathlib import Path
 
-        icon_path = str(Path(settings.base_dir) / "assets" / "icon.ico")
+        icon_path = str(settings.base_dir / "assets" / "icon.ico")
         if not os.path.isfile(icon_path):
             icon_path = None
         webview.start(debug=settings.debug, icon=icon_path)

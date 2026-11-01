@@ -13,7 +13,6 @@ import {
   X,
   Zap,
   Radio,
-  GripHorizontal,
   Pin,
   PinOff,
   Globe,
@@ -169,50 +168,43 @@ export const CompanionOverlay: React.FC = () => {
       : "Pollinations (Emergency)";
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col h-[640px] glass-panel rounded-3xl overflow-hidden shadow-2xl relative select-none">
-      {/* Top Header Bar with Draggable Handle & Always-on-Top Toggle */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-700/50 bg-slate-900/50">
+    <div className="w-full h-full flex flex-col bg-[#0b0f19] border border-slate-800 shadow-2xl relative select-none">
+      {/* Top Header Bar with Native Window Dragging & Quick Actions */}
+      <div className="pywebview-drag-region flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-[#0f172a] shrink-0 select-none cursor-move">
         <div className="flex items-center gap-3">
-          {/* Native Drag Handle */}
-          <div
-            className="pywebview-drag-region flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-slate-200 cursor-move border border-slate-700/50 transition-colors shadow-sm select-none"
-            title="Drag window anywhere on screen (اضغط واسحب لتحريك النافذة)"
-          >
-            <GripHorizontal className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-mono tracking-tight font-medium">Move</span>
-          </div>
-
-          <div className="relative">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
-              <Sparkles className="w-4 h-4 text-slate-950 fill-current" />
+          {/* Logo & Online Status */}
+          <div className="relative shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-md shadow-sky-500/20">
+              <Sparkles className="w-3.5 h-3.5 text-slate-950 fill-current" />
             </div>
             <span
-              className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${
+              className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border-2 border-slate-900 ${
                 isConnected ? "bg-emerald-400" : "bg-rose-400"
               }`}
             />
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-sm tracking-wide text-slate-100">Aegis AI</h1>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30">
-                Alt+Space
-              </span>
-              {runtimeStatus?.tokens_per_second ? (
-                <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
-                  <Zap className="w-3 h-3" />
-                  {runtimeStatus.tokens_per_second} t/s
-                </span>
-              ) : null}
-            </div>
-            <p className="text-[11px] text-slate-400 font-mono truncate max-w-xs">
+          {/* Title & Badge */}
+          <div className="flex items-center gap-2">
+            <h1 className="font-bold text-sm tracking-wide text-slate-100 whitespace-nowrap">Aegis AI</h1>
+            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30 whitespace-nowrap">
+              Alt+Space
+            </span>
+            <span className="text-xs text-slate-600">•</span>
+            <span className="text-[11px] text-slate-400 font-mono truncate max-w-[170px]" title={activeModelDisplay}>
               {activeModelDisplay}
-            </p>
+            </span>
+            {runtimeStatus?.tokens_per_second ? (
+              <span className="flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30 whitespace-nowrap">
+                <Zap className="w-3 h-3" />
+                {runtimeStatus.tokens_per_second} t/s
+              </span>
+            ) : null}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right Controls */}
+        <div className="flex items-center gap-1.5 shrink-0" onMouseDown={(e) => e.stopPropagation()}>
           <AudioWaveform
             isActive={isRecording || isTranscribing || voiceStatus?.state === "speaking"}
             statusText={
@@ -230,45 +222,45 @@ export const CompanionOverlay: React.FC = () => {
 
           <button
             onClick={handleToggleWakeWord}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono transition border ${
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono transition border ${
               wakeWordStatus?.is_running
                 ? "bg-cyan-500/15 border-cyan-500/40 text-cyan-300 shadow-sm shadow-cyan-500/20"
-                : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-slate-200"
+                : "bg-slate-800 border-slate-700/60 text-slate-400 hover:text-slate-200"
             }`}
             title={wakeWordStatus?.is_running ? "Wake Word Listening Active (Click to Pause)" : "Enable Wake Word Summoning"}
           >
             <Radio className={`w-3.5 h-3.5 ${wakeWordStatus?.is_running ? "text-cyan-400 animate-pulse" : ""}`} />
-            <span className="hidden sm:inline">
+            <span className="text-[11px]">
               {wakeWordStatus?.is_running ? wakeWordStatus.active_model.replace("_", " ") : "Wake Word"}
             </span>
           </button>
 
           <button
             onClick={handleTogglePin}
-            className={`p-2 rounded-xl transition border ${
+            className={`p-1.5 rounded-lg transition border ${
               isPinned
                 ? "bg-sky-500/15 border-sky-500/40 text-sky-300 shadow-sm shadow-sky-500/20"
-                : "bg-slate-800/80 border-slate-700/50 text-slate-400 hover:text-slate-200"
+                : "bg-slate-800 border-slate-700/60 text-slate-400 hover:text-slate-200"
             }`}
             title={isPinned ? "Always-on-top active (Click to allow other windows over Aegis)" : "Unpinned (Click to keep on top)"}
           >
-            {isPinned ? <Pin className="w-4 h-4 fill-current" /> : <PinOff className="w-4 h-4" />}
+            {isPinned ? <Pin className="w-3.5 h-3.5 fill-current" /> : <PinOff className="w-3.5 h-3.5" />}
           </button>
 
           <button
             onClick={() => setShowTelemetry(true)}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white transition"
             title="System Telemetry"
           >
-            <Activity className="w-4 h-4" />
+            <Activity className="w-3.5 h-3.5" />
           </button>
 
           <button
             onClick={dismissOverlay}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 border border-slate-700/60 text-slate-400 hover:text-rose-400 transition"
             title="Dismiss Overlay (ESC)"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

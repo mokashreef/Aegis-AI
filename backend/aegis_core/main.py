@@ -82,7 +82,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     register_default_tools()
     logger.info("Registered %d built-in desktop automation tools.", len(plugin_registry.list_tools()))
 
-    # 3. Probe AI Runtime Matrix
+    # 3. Probe AI Runtime Matrix and ensure local Ollama daemon starts if installed
+    try:
+        from aegis_core.ai_runtime.providers.ollama import OllamaProvider
+
+        ollama_p = OllamaProvider()
+        if ollama_p.is_ollama_installed() and not ollama_p.is_server_running():
+            logger.info("Ollama is installed on host; auto-launching daemon in background...")
+            ollama_p.ensure_server_started()
+    except Exception as ex:
+        logger.debug("Ollama background auto-start check: %s", ex)
+
     runtime_status = await ai_router.get_system_status()
     logger.info(
         "AI Runtime initialized. Active: %s (Ollama Available: %s, Fallbacks Enabled: %s)",

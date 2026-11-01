@@ -237,6 +237,13 @@ def test_arabic_spoken_phonetic_domains_and_compound_phrases():
     assert r7["intent"] == UserIntent.OPEN_URL
     assert "كود التطور.net" in r7["arguments"]["url"]
 
+    # 8. "افتح المتصفح و افتح كود التطور"
+    r8 = IntentRouter.classify_and_route("افتح المتصفح و افتح كود التطور")
+    assert r8 is not None
+    assert r8["intent"] == UserIntent.OPEN_URL
+    assert r8["arguments"]["url"] == "كود التطور"
+    assert r8["arguments"]["browser"] == "chrome"
+
 
 @pytest.mark.asyncio
 async def test_launch_app_tool_website_fallback():

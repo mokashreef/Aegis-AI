@@ -13,6 +13,7 @@ import {
   Plus,
   Trash2,
   RotateCcw,
+  Keyboard,
 } from "lucide-react";
 import { UserSettings, VoiceCatalogItem, QuickActionItem } from "../types";
 import {
@@ -29,6 +30,7 @@ const DEFAULT_FALLBACK_SETTINGS: UserSettings = {
   tts_voice: "ar-SA-HamedNeural",
   tts_rate: "0%",
   default_browser: "chrome",
+  global_hotkey: "Alt+Space",
   start_with_windows: true,
   quick_actions: [],
 };
@@ -61,6 +63,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [newActionCommand, setNewActionCommand] = useState("");
   const [showAddAction, setShowAddAction] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
+  const [isRecordingHotkey, setIsRecordingHotkey] = useState(false);
+  const [hotkeySavedNotice, setHotkeySavedNotice] = useState(false);
+
+  const handleRecordKeyDown = (e: React.KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Ignore standalone modifier presses
+    if (["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
+      return;
+    }
+
+    const modifiers: string[] = [];
+    if (e.ctrlKey) modifiers.push("Ctrl");
+    if (e.altKey) modifiers.push("Alt");
+    if (e.shiftKey) modifiers.push("Shift");
+    if (e.metaKey) modifiers.push("Win");
+
+    let keyName = e.key;
+    if (keyName === " ") keyName = "Space";
+    else if (keyName.length === 1) keyName = keyName.toUpperCase();
+
+    const formatted = modifiers.length > 0 ? `${modifiers.join("+")}+${keyName}` : keyName;
+    handleSaveField("global_hotkey", formatted);
+    setIsRecordingHotkey(false);
+    setHotkeySavedNotice(true);
+    setTimeout(() => setHotkeySavedNotice(false), 3000);
+  };
 
   useEffect(() => {
     if (settings) setLocalSettings(settings);
@@ -665,25 +695,128 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 4: SYSTEM & DATA */}
           {activeTab === "system" && (
             <div className="space-y-4">
-              {/* Hotkey Helper */}
+              {/* Customizable Global Hotkey */}
               <div
-                className={`p-4 rounded-xl border ${
+                className={`p-4 rounded-xl border space-y-3 ${
                   isLight ? "bg-slate-50 border-slate-200" : "bg-slate-900/60 border-slate-800"
                 }`}
               >
-                <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400 mb-1">
-                  {localSettings.language === "ar" ? "مفتاح الاختصار العام (Global Hotkey)" : "Global Summon Hotkey"}
-                </h3>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-slate-300">
-                    {localSettings.language === "ar"
-                      ? "إظهار أو إخفاء الواجهة فوراً في أي مكان في ويندوز"
-                      : "Instant toggle HUD from anywhere in Windows"}
-                  </span>
-                  <kbd className="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-sky-300 font-mono text-xs font-bold shadow-inner">
-                    Alt + Space
-                  </kbd>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Keyboard className="w-4 h-4 text-sky-400" />
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                        {localSettings.language === "ar" ? "مفتاح الاختصار العام (Global Shortcut)" : "Global Summon Hotkey"}
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {localSettings.language === "ar"
+                          ? "اختر الاختصار الذي يُظهر أو يُخفي التطبيق فورياً من أي نافذة"
+                          : "Change the system-wide shortcut to summon/dismiss Aegis AI"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <kbd className="px-2.5 py-1 rounded bg-sky-500/20 border border-sky-500/40 text-sky-300 font-mono text-xs font-bold shadow-inner">
+                      {localSettings.global_hotkey || "Alt+Space"}
+                    </kbd>
+                  </div>
                 </div>
+
+                {/* Preset Options Grid */}
+                <div>
+                  <div className="text-[11px] font-semibold text-slate-400 mb-1.5">
+                    {localSettings.language === "ar" ? "اختصارات جاهزة وموصى بها:" : "Recommended Presets:"}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { id: "Alt+Space", label: "Alt + Space", desc: "Spotlight (الافتراضي)" },
+                      { id: "Ctrl+Space", label: "Ctrl + Space", desc: "سريع ومألوف" },
+                      { id: "Ctrl+Shift+A", label: "Ctrl + Shift + A", desc: "Aegis AI" },
+                      { id: "Alt+Shift+A", label: "Alt + Shift + A", desc: "سهل الوصول" },
+                      { id: "Ctrl+Alt+Space", label: "Ctrl + Alt + Space", desc: "ثلاثي فريد" },
+                      { id: "F4", label: "F4", desc: "مفتاح وظيفي" },
+                    ].map((hk) => {
+                      const isSelected = (localSettings.global_hotkey || "Alt+Space") === hk.id;
+                      return (
+                        <button
+                          key={hk.id}
+                          onClick={() => {
+                            handleSaveField("global_hotkey", hk.id);
+                            setHotkeySavedNotice(true);
+                            setTimeout(() => setHotkeySavedNotice(false), 3000);
+                          }}
+                          className={`p-2 rounded-lg border text-left transition ${
+                            isSelected
+                              ? "bg-sky-500/20 border-sky-500 text-sky-300 font-bold"
+                              : isLight
+                              ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+                              : "bg-slate-800/80 border-slate-700/60 text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          <div className="text-xs font-mono">{hk.label}</div>
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">{hk.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Shortcut Recorder */}
+                <div
+                  className={`p-3 rounded-lg border flex items-center justify-between gap-3 ${
+                    isRecordingHotkey
+                      ? "bg-sky-500/15 border-sky-500 animate-pulse"
+                      : isLight
+                      ? "bg-white border-slate-200"
+                      : "bg-slate-950/40 border-slate-800"
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-slate-200">
+                      {localSettings.language === "ar" ? "تسجيل اختصار مخصص:" : "Record Custom Shortcut:"}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {isRecordingHotkey
+                        ? localSettings.language === "ar"
+                          ? "اضغط المفاتيح المطلوبة الآن معاً على لوحة المفاتيح..."
+                          : "Press your desired key combination now..."
+                        : localSettings.language === "ar"
+                        ? "انقر لتسجيل أي تركيبة مفاتيح مخصصة تناسبك"
+                        : "Click button and press your preferred keys"}
+                    </div>
+                  </div>
+
+                  {isRecordingHotkey ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      readOnly
+                      onKeyDown={handleRecordKeyDown}
+                      onBlur={() => setIsRecordingHotkey(false)}
+                      placeholder={localSettings.language === "ar" ? "اضغط المفاتيح..." : "Press keys..."}
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-sky-950 border border-sky-500 text-sky-300 text-center outline-none animate-pulse w-36"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setIsRecordingHotkey(true)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition"
+                    >
+                      {localSettings.language === "ar" ? "تسجيل اختصار" : "Record Shortcut"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Instant Feedback Notice */}
+                {hotkeySavedNotice && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>
+                      {localSettings.language === "ar"
+                        ? "تم تحديث الاختصار وتفعيله فوراً على نظام ويندوز!"
+                        : "Shortcut updated and activated live across Windows!"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Clear History */}

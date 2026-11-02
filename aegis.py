@@ -26,7 +26,8 @@ sys.path.insert(0, str(PROJECT_ROOT / "backend"))
 
 import uvicorn  # noqa: E402
 from aegis_core.config import settings  # noqa: E402
-from aegis_core.desktop.hotkey import GlobalHotkeyManager  # noqa: E402
+from aegis_core.desktop.hotkey import hotkey_manager  # noqa: E402
+from aegis_core.memory.session_manager import session_manager  # noqa: E402
 from aegis_core.desktop.tray import TrayIconManager  # noqa: E402
 from aegis_core.desktop.window import overlay_manager  # noqa: E402
 from aegis_core.main import app  # noqa: E402
@@ -112,17 +113,19 @@ def main():
     except Exception as exc:
         logger.debug("Ollama background start check: %s", exc)
 
-    # 2. Setup native Windows Alt+Space global hotkey
+    # 2. Setup native Windows customizable global hotkey
     def on_hotkey():
         overlay_manager.toggle()
 
-    hotkey_mgr = GlobalHotkeyManager(on_hotkey_pressed=on_hotkey)
-    hotkey_mgr.start()
+    saved_hotkey = session_manager.get_preference("global_hotkey", "Alt+Space")
+    hotkey_manager.on_hotkey_pressed = on_hotkey
+    hotkey_manager.set_hotkey(saved_hotkey)
+    hotkey_manager.start()
 
     # 3. Initialize System Tray companion icon
     def on_tray_quit():
         logger.info("Shutdown dispatched from system tray.")
-        hotkey_mgr.stop()
+        hotkey_manager.stop()
         overlay_manager.quit()
 
     tray_mgr = TrayIconManager(overlay_manager=overlay_manager, on_quit=on_tray_quit)
@@ -135,7 +138,7 @@ def main():
     finally:
         logger.info("Aegis AI shutting down...")
         tray_mgr.stop()
-        hotkey_mgr.stop()
+        hotkey_manager.stop()
 
 
 if __name__ == "__main__":

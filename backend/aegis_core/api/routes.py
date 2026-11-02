@@ -3,7 +3,7 @@ Aegis AI - RESTful API Gateway.
 """
 
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, File, Query, Response, UploadFile
+from fastapi import APIRouter, File, HTTPException, Query, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from aegis_core.agent.planner import agent_planner
@@ -258,13 +258,16 @@ async def update_wakeword_config(req: Dict[str, Any]) -> Dict[str, Any]:
 
 @router.get("/settings")
 async def get_user_settings() -> Dict[str, Any]:
-    """Retrieves all user personalization settings and startup state."""
+    """Retrieves all user personalization settings, hotkey state, and startup configuration."""
+    from aegis_core.desktop.hotkey import PRESET_HOTKEYS, hotkey_manager
     from aegis_core.desktop.startup import WindowsStartupManager
     from aegis_core.memory.session_manager import session_manager
 
     prefs = session_manager.get_all_preferences()
     prefs["start_with_windows"] = WindowsStartupManager.is_enabled()
     prefs["wake_word_enabled"] = wake_word_listener.is_running()
+    prefs["active_hotkey"] = hotkey_manager.current_hotkey
+    prefs["preset_hotkeys"] = PRESET_HOTKEYS
     return prefs
 
 
@@ -298,7 +301,50 @@ async def update_user_settings(req: Dict[str, Any]) -> Dict[str, Any]:
             wake_word_listener.stop()
         updated["wake_word_enabled"] = wake_word_listener.is_running()
 
+    # 5. Side-effect: Dynamic Hotkey configuration
+    if "global_hotkey" in req and req["global_hotkey"]:
+        from aegis_core.desktop.hotkey import hotkey_manager
+
+        hotkey_manager.set_hotkey(req["global_hotkey"])
+        updated["active_hotkey"] = hotkey_manager.current_hotkey
+
     return updated
+
+
+@router.get("/desktop/hotkey")
+async def get_desktop_hotkey() -> Dict[str, Any]:
+    """Returns the currently active global hotkey and preset options."""
+    from aegis_core.desktop.hotkey import PRESET_HOTKEYS, hotkey_manager
+    from aegis_core.memory.session_manager import session_manager
+
+    saved = session_manager.get_preference("global_hotkey", "Alt+Space")
+    return {
+        "current_hotkey": hotkey_manager.current_hotkey or saved,
+        "is_running": hotkey_manager.is_running,
+        "presets": PRESET_HOTKEYS,
+    }
+
+
+@router.post("/desktop/hotkey")
+async def update_desktop_hotkey(req: Dict[str, Any]) -> Dict[str, Any]:
+    """Dynamically updates the global hotkey and persists user preference."""
+    new_hotkey = req.get("hotkey")
+    if not new_hotkey:
+        raise HTTPException(status_code=400, detail="Field 'hotkey' is required.")
+
+    from aegis_core.desktop.hotkey import hotkey_manager
+    from aegis_core.memory.session_manager import session_manager
+
+    ok = hotkey_manager.set_hotkey(new_hotkey)
+    if not ok:
+        raise HTTPException(status_code=400, detail=f"Failed to parse or register hotkey: {new_hotkey}")
+
+    session_manager.set_preference("global_hotkey", new_hotkey)
+    return {
+        "success": True,
+        "hotkey": hotkey_manager.current_hotkey,
+        "message": f"Global shortcut updated to {hotkey_manager.current_hotkey}.",
+    }
 
 
 @router.get("/voice/catalog")

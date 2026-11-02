@@ -186,6 +186,7 @@ DEFAULT_USER_PREFERENCES: Dict[str, Any] = {
     "tts_voice": "ar-SA-HamedNeural",
     "tts_rate": "+0%",
     "default_browser": "chrome",
+    "global_hotkey": "Alt+Space",
     "start_with_windows": False,
     "quick_actions": [
         {

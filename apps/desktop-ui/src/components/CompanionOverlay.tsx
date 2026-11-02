@@ -250,9 +250,13 @@ export const CompanionOverlay: React.FC = () => {
           {/* Title & Badge */}
           <div className="flex items-center gap-2">
             <h1 className="font-bold text-sm tracking-wide text-slate-100 whitespace-nowrap">Aegis AI</h1>
-            <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30 whitespace-nowrap">
-              Alt+Space
-            </span>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              title="Shortcut to summon Aegis AI (Click to change in Settings)"
+              className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30 hover:bg-sky-500/30 hover:border-sky-400 transition whitespace-nowrap cursor-pointer"
+            >
+              {userSettings?.global_hotkey || "Alt+Space"}
+            </button>
             <span className="text-xs text-slate-600">•</span>
             <span className="text-[11px] text-slate-400 font-mono truncate max-w-[170px]" title={activeModelDisplay}>
               {activeModelDisplay}

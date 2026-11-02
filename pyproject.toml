@@ -10,3 +10,4 @@ python_files = ["test_*.py"]
 max-line-length = 120
 exclude = [".venv", "venv", "__pycache__", ".git", "build", "dist", "apps/desktop-ui/node_modules"]
 ignore = ["E203", "W503", "W391"]
+

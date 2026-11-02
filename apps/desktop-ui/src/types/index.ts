@@ -118,6 +118,12 @@ export interface VoiceCatalogItem {
   sample_text: string;
 }
 
+export interface PresetHotkey {
+  id: string;
+  label: string;
+  desc_ar?: string;
+}
+
 export interface UserSettings {
   theme: "dark" | "light" | "system";
   language: "auto" | "ar" | "en";
@@ -125,6 +131,8 @@ export interface UserSettings {
   tts_voice: string;
   tts_rate: string;
   default_browser: "chrome" | "comet" | "msedge" | "brave" | "firefox" | "default";
+  global_hotkey?: string;
+  preset_hotkeys?: PresetHotkey[];
   start_with_windows: boolean;
   wake_word_enabled?: boolean;
   quick_actions: QuickActionItem[];

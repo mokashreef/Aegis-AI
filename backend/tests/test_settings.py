@@ -18,6 +18,7 @@ def test_session_manager_preferences():
     assert "language" in prefs
     assert "auto_speak" in prefs
     assert "tts_voice" in prefs
+    assert "global_hotkey" in prefs
     assert "quick_actions" in prefs
 
     # Update preferences
@@ -39,6 +40,8 @@ def test_settings_api_endpoints():
     data_get = resp_get.json()
     assert "theme" in data_get
     assert "language" in data_get
+    assert "active_hotkey" in data_get
+    assert "preset_hotkeys" in data_get
     assert "quick_actions" in data_get
 
     # 2. POST update settings

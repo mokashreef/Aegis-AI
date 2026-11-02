@@ -380,3 +380,42 @@ async def clear_session_history(session_id: str) -> Dict[str, Any]:
         conn.execute("DELETE FROM messages WHERE session_id = ?;", (session_id,))
         conn.execute("DELETE FROM tool_executions WHERE session_id = ?;", (session_id,))
     return {"session_id": session_id, "cleared": True}
+
+
+@router.get("/desktop/installer/status")
+async def get_installer_status() -> Dict[str, Any]:
+    """Returns the availability and metadata of the One-Click Installer."""
+    from aegis_core.desktop.installer import installer_builder
+
+    return installer_builder.get_status()
+
+
+@router.post("/desktop/installer/build")
+async def build_desktop_installer() -> Dict[str, Any]:
+    """Compiles and generates the standalone Windows One-Click Installer executable."""
+    from aegis_core.desktop.installer import installer_builder
+
+    try:
+        return installer_builder.build_installer()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/desktop/installer/open-folder")
+async def open_installer_folder() -> Dict[str, Any]:
+    """Opens Windows Explorer with the compiled installer selected."""
+    from aegis_core.desktop.installer import installer_builder
+
+    return installer_builder.open_folder()
+
+
+@router.post("/desktop/installer/run")
+async def run_desktop_installer() -> Dict[str, Any]:
+    """Launches the compiled installer executable."""
+    from aegis_core.desktop.installer import installer_builder
+
+    try:
+        return installer_builder.launch_installer()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

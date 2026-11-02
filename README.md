@@ -49,11 +49,14 @@ Get the latest portable distribution package for Windows 64-bit (zero installati
 
 | Asset | Format | Version | Size | Download Link |
 | :--- | :---: | :---: | :---: | :---: |
+| **Aegis AI One-Click Installer** | `.exe` | `v0.2.0-alpha` | ~5.3 MB | [⬇️ **Download AegisAI-Setup-v0.2.0-alpha.exe**](https://github.com/mokashreef/Aegis-AI/releases/latest) |
 | **Aegis AI Portable Package** | `.zip` | `v0.2.0-alpha` | ~5.3 MB | [⬇️ **Download Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip**](https://github.com/mokashreef/Aegis-AI/releases/latest) |
-| **Release Checksums (SHA-256)** | `.txt` | `v0.2.0-alpha` | 114 B | [📄 **View SHA256SUMS.txt**](releases/SHA256SUMS.txt) |
+| **Release Checksums (SHA-256)** | `.txt` | `v0.2.0-alpha` | ~300 B | [📄 **View SHA256SUMS.txt**](releases/SHA256SUMS.txt) |
 
 > [!TIP]
-> **Zero Installation Required**: Download the `.zip`, extract it to any directory (e.g. `C:\AegisAI` or your Desktop), and double-click **`AegisAI.exe`**.
+> **One-Click Setup vs Portable**:
+> - **Installer (`.exe`)**: Double-click **`AegisAI-Setup-v0.2.0-alpha.exe`** to install in 1 click, automatically creating Desktop & Start Menu shortcuts with high-res icons and Windows App registration.
+> - **Portable (`.zip`)**: Extract to any folder and run `AegisAI.exe` directly without modifying system registry.
 
 ### Verify Package Integrity (PowerShell)
 ```powershell
@@ -86,6 +89,11 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 ---
 
 ## ⚡ Key Features
+
+### 📦 1-Click Windows Installer & Built-in Packager
+- **Standalone One-Click Setup (`AegisAI-Setup.exe`)**: Single-file native Windows executable that extracts all binaries, creates Desktop and Start Menu shortcuts, registers Windows Add/Remove Programs, and launches in seconds.
+- **In-App Installer Generator**: A dedicated one-click button in Settings allowing developers and users to compile a fresh installer directly from the active runtime.
+- **Clean Uninstallation**: Seamlessly deregisters shortcuts, registry entries, and program directories via `/uninstall`.
 
 ### ⌨️ Fully Customizable Global Hotkey
 - **Instant System-Wide Summoning**: Summon or dismiss the companion from anywhere in Windows without switching active applications.
@@ -205,11 +213,14 @@ python aegis.py
 ### نبذة عن التطبيق
 **Aegis AI** هو المساعد الذكي المستقل لنظام ويندوز 10 و 11. يعمل بالكامل على حاسوبك دون الحاجة لاشتراكات سحابية، ودون بطاقات دفع، وبلا مفاتيح API مدفوعة.
 
-### خطوات التشغيل بنقرة واحدة
-1. حمّل النسخة المحمولة المباشرة: **[Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip](https://github.com/mokashreef/Aegis-AI/releases/latest)**.
-2. فك الضغط عن الملف في أي مجلد على جهازك.
-3. انقر نقراً مزدوجاً على ملف **`AegisAI.exe`** (أو `run.bat`).
-4. اضغط على اختصار **`Alt + Space`** لفتح الواجهة فوراً فوق سطح المكتب!
+### خيارات التشغيل والتثبيت
+- **الخيار الأول: مثبت ويندوز التلقائي (بنقرة واحدة - مستحسن للمستخدمين)**:
+  1. حمّل المثبت التلقائي: **[AegisAI-Setup-v0.2.0-alpha.exe](https://github.com/mokashreef/Aegis-AI/releases/latest)**.
+  2. افتح الملف بنقرة واحدة؛ سيقوم بتثبيت الملفات وإنشاء اختصار سطح المكتب وقائمة ابدأ وتشغيل التطبيق فوراً.
+- **الخيار الثاني: النسخة المحمولة (Portable بدون تثبيت)**:
+  1. حمّل الملف المضغوط: **[Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip](https://github.com/mokashreef/Aegis-AI/releases/latest)**.
+  2. فك الضغط وانقر نقراً مزدوجاً على ملف **`AegisAI.exe`**.
+- اضغط على اختصار **`Alt + Space`** لفتح الواجهة في أي وقت!
 
 > [!TIP]
 > **معاينة حية للمساعد**: يمكنك مشاهدة العرض التوضيحي المتحرك ولقطات الشاشة الحقيقية في [قسم المعاينة البصرية (Visual Showcase)](#-visual-showcase).
@@ -232,7 +243,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **67 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **72 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 

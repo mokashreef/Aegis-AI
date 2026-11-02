@@ -137,3 +137,15 @@ export interface UserSettings {
   wake_word_enabled?: boolean;
   quick_actions: QuickActionItem[];
 }
+
+export interface InstallerStatus {
+  available: boolean;
+  version: string;
+  file_name: string | null;
+  file_path: string | null;
+  size_bytes: number;
+  size_mb: number;
+  sha256: string | null;
+  last_modified: string | null;
+}
+

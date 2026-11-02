@@ -14,13 +14,21 @@ import {
   Trash2,
   RotateCcw,
   Keyboard,
+  Package,
+  FolderOpen,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
-import { UserSettings, VoiceCatalogItem, QuickActionItem } from "../types";
+import { UserSettings, VoiceCatalogItem, QuickActionItem, InstallerStatus } from "../types";
 import {
   fetchVoiceCatalog,
   playVoicePreview,
   updateSettings,
   clearSessionHistory,
+  fetchInstallerStatus,
+  buildOneClickInstaller,
+  openInstallerFolder,
+  launchInstaller,
 } from "../services/api";
 
 const DEFAULT_FALLBACK_SETTINGS: UserSettings = {
@@ -66,6 +74,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isRecordingHotkey, setIsRecordingHotkey] = useState(false);
   const [hotkeySavedNotice, setHotkeySavedNotice] = useState(false);
 
+  // One-Click Installer state
+  const [installerStatus, setInstallerStatus] = useState<InstallerStatus | null>(null);
+  const [isBuildingInstaller, setIsBuildingInstaller] = useState(false);
+  const [installerError, setInstallerError] = useState<string | null>(null);
+  const [installerSuccess, setInstallerSuccess] = useState(false);
+
   const handleRecordKeyDown = (e: React.KeyboardEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -101,8 +115,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       fetchVoiceCatalog()
         .then(setVoices)
         .catch((err) => console.error("Failed fetching voice catalog:", err));
+      fetchInstallerStatus()
+        .then(setInstallerStatus)
+        .catch((err) => console.error("Failed fetching installer status:", err));
     }
   }, [isOpen]);
+
+  const handleBuildInstaller = async () => {
+    setIsBuildingInstaller(true);
+    setInstallerError(null);
+    setInstallerSuccess(false);
+    try {
+      const res = await buildOneClickInstaller();
+      setInstallerStatus(res);
+      setInstallerSuccess(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "فشل إنشاء ملف التثبيت";
+      setInstallerError(msg);
+    } finally {
+      setIsBuildingInstaller(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -817,6 +850,134 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </span>
                   </div>
                 )}
+              </div>
+
+              
+              {/* One-Click Installer Packager */}
+              <div
+                className={`p-4 rounded-xl border space-y-3 ${
+                  isLight ? "bg-slate-50 border-slate-200" : "bg-slate-900/60 border-slate-800"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-sky-400" />
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                        {localSettings.language === "ar"
+                          ? "إنشاء ملف تثبيت تلقائي بنقرة واحدة (One-Click Installer)"
+                          : "One-Click Windows Installer Packager"}
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {localSettings.language === "ar"
+                          ? "توليد ملف تثبيت ويندوز ذاتي التشغيل (AegisAI-Setup.exe) مدمج به كافة الملفات واختصارات سطح المكتب"
+                          : "Compile a self-contained standalone Windows setup executable with desktop shortcuts"}
+                      </p>
+                    </div>
+                  </div>
+                  {installerStatus?.available && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      v{installerStatus.version} • {installerStatus.size_mb} MB
+                    </span>
+                  )}
+                </div>
+
+                {/* Status & Details */}
+                {installerStatus?.available && (
+                  <div
+                    className={`p-3 rounded-lg border text-xs font-mono space-y-1.5 ${
+                      isLight ? "bg-white border-slate-200 text-slate-700" : "bg-slate-950/50 border-slate-800 text-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">اسم الملف:</span>
+                      <span className="text-sky-400 font-bold">{installerStatus.file_name}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">الحجم:</span>
+                      <span>{installerStatus.size_mb} MB ({installerStatus.size_bytes.toLocaleString()} bytes)</span>
+                    </div>
+                    {installerStatus.sha256 && (
+                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>SHA-256:</span>
+                        <span className="truncate max-w-[240px] text-slate-500">{installerStatus.sha256}</span>
+                      </div>
+                    )}
+                    {installerStatus.last_modified && (
+                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>آخر تحديث:</span>
+                        <span>{installerStatus.last_modified}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {installerError && (
+                  <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+                    {installerError}
+                  </div>
+                )}
+
+                {installerSuccess && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>
+                      {localSettings.language === "ar"
+                        ? "تم إنشاء ملف التثبيت التلقائي بنجاح في مجلد releases!"
+                        : "One-Click installer built successfully in releases directory!"}
+                    </span>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleBuildInstaller}
+                    disabled={isBuildingInstaller}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition shadow-sm ${
+                      isBuildingInstaller
+                        ? "bg-sky-700 text-sky-200 cursor-wait opacity-80"
+                        : "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white"
+                    }`}
+                  >
+                    {isBuildingInstaller ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>{localSettings.language === "ar" ? "جاري إنشاء ملف التثبيت..." : "Building Installer..."}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Package className="w-3.5 h-3.5" />
+                        <span>
+                          {localSettings.language === "ar"
+                            ? "⚡ إنشاء ملف تثبيت تلقائي بنقرة واحدة (Build Installer)"
+                            : "⚡ Build One-Click Installer (.exe)"}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {installerStatus?.available && (
+                    <>
+                      <button
+                        onClick={() => openInstallerFolder()}
+                        title={localSettings.language === "ar" ? "فتح مجلد التثبيت" : "Open Folder"}
+                        className="flex items-center gap-1.5 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium transition"
+                      >
+                        <FolderOpen className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{localSettings.language === "ar" ? "فتح المجلد" : "Folder"}</span>
+                      </button>
+                      <button
+                        onClick={() => launchInstaller()}
+                        title={localSettings.language === "ar" ? "تشغيل المثبت الآن" : "Run Installer"}
+                        className="flex items-center gap-1.5 py-2 px-3 rounded-lg bg-emerald-600/80 hover:bg-emerald-500 border border-emerald-500/40 text-white text-xs font-medium transition"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{localSettings.language === "ar" ? "تشغيل المثبت" : "Run Setup"}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Clear History */}

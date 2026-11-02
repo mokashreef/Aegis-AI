@@ -6,6 +6,7 @@ import {
   WakeWordStatus,
   UserSettings,
   VoiceCatalogItem,
+  InstallerStatus,
 } from "../types";
 
 const API_BASE = "http://127.0.0.1:8420/api";
@@ -185,4 +186,35 @@ export async function clearSessionHistory(sessionId: string): Promise<boolean> {
     method: "POST",
   });
   return response.ok;
+}
+
+export async function fetchInstallerStatus(): Promise<InstallerStatus> {
+  const response = await fetch(`${API_BASE}/desktop/installer/status`);
+  if (!response.ok) {
+    throw new Error("Failed fetching installer status");
+  }
+  return response.json();
+}
+
+export async function buildOneClickInstaller(): Promise<InstallerStatus> {
+  const response = await fetch(`${API_BASE}/desktop/installer/build`, {
+    method: "POST",
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: "Build failed" }));
+    throw new Error(err.detail || "Failed to build installer");
+  }
+  return response.json();
+}
+
+export async function openInstallerFolder(): Promise<void> {
+  await fetch(`${API_BASE}/desktop/installer/open-folder`, {
+    method: "POST",
+  });
+}
+
+export async function launchInstaller(): Promise<void> {
+  await fetch(`${API_BASE}/desktop/installer/run`, {
+    method: "POST",
+  });
 }

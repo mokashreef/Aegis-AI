@@ -129,22 +129,28 @@ def compute_checksum(file_path: Path) -> str:
     return h.hexdigest()
 
 
+def compile_one_click_installer(zip_archive: Path) -> Path:
+    """Compiles the standalone Windows One-Click Installer with embedded ZIP archive."""
+    import sys
+    sys.path.insert(0, str(PROJECT_ROOT / "backend"))
+    from aegis_core.desktop.installer import installer_builder
+
+    status = installer_builder.build_installer()
+    log(f"Compiled One-Click Setup Executable: {status['file_name']} ({status['size_mb']} MB)")
+    return Path(status["file_path"])
+
+
 def main():
     log(f"Starting Aegis AI v{VERSION} Packaging & Distribution Build...")
     ensure_frontend_built()
     ensure_models_present()
     staged = stage_distribution_files()
     zip_archive = create_portable_zip(staged)
+    compile_one_click_installer(zip_archive)
 
-    # Generate checksum file
-    sha256 = compute_checksum(zip_archive)
     checksum_file = RELEASES_DIR / "SHA256SUMS.txt"
-    with open(checksum_file, "w", encoding="utf-8") as f:
-        f.write(f"{sha256}  {zip_archive.name}\n")
-
-    log(f"SHA-256: {sha256}")
-    log(f"Checksum file: {checksum_file.resolve()}")
-    log("Distribution build successfully finished!")
+    log(f"Checksum file updated: {checksum_file.resolve()}")
+    log("Distribution & One-Click Installer build successfully finished!")
 
 
 if __name__ == "__main__":

@@ -22,6 +22,7 @@ Summoned instantly via a customizable global hotkey (default **`Alt + Space`**),
 <br />
 
 [📥 **Download Latest Release**](#-download--installation) •
+[🎬 **Visual Showcase**](#-visual-showcase) •
 [⚡ **Key Features**](#-key-features) •
 [🔒 **Zero API Keys Guarantee**](#-zero-api-keys-guarantee) •
 [🏛️ **Architecture**](#-architecture) •
@@ -30,6 +31,15 @@ Summoned instantly via a customizable global hotkey (default **`Alt + Space`**),
 [🗺️ **Roadmap**](#-roadmap)
 
 ---
+
+<br />
+
+<a href="#-visual-showcase">
+  <img src="assets/showcase-demo.gif" alt="Aegis AI Live Interactive Desktop Showcase" width="820" style="max-width: 100%; border-radius: 12px; box-shadow: 0 20px 45px rgba(0,0,0,0.6);" />
+</a>
+
+<br />
+<sub><i>Instant Alt+Space Summoning • Offline AI Runtime • Spoken Arabic Natural Language Execution • Settings Customizer</i></sub>
 
 </div>
 
@@ -50,6 +60,28 @@ Get the latest portable distribution package for Windows 64-bit (zero installati
 Get-FileHash -Path ".\Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip" -Algorithm SHA256
 # Expected SHA-256: d14e25ba82dffec588efb5c961ca8514a5aa586d5c17ec3adf0f7db9068c0522
 ```
+
+---
+
+## 🎬 Visual Showcase
+
+### 1. Transparent Windows HUD & Arabic Spoken NLP Tool Execution
+Summoned anywhere in Windows via `Alt + Space`. Natural language voice input converts colloquial phonetics into zero-latency OS automation:
+
+<div align="center">
+  <img src="assets/showcase-main.png" alt="Aegis AI Main HUD Companion" width="840" style="max-width: 100%; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.25);" />
+  <p><sub><b>Figure 1:</b> Desktop overlay showing Qwen 2.5 local runtime, Alt+Space hotkey badge, Arabic voice command processing, and native tool execution cards.</sub></p>
+</div>
+
+<br />
+
+### 2. Comprehensive Personalization & Live Hotkey Customizer
+Configure and fine-tune your desktop copilot with runtime hotkey recording, language locking, and appearance options:
+
+<div align="center">
+  <img src="assets/showcase-settings.png" alt="Aegis AI Personalization and Hotkey Settings" width="840" style="max-width: 100%; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.25);" />
+  <p><sub><b>Figure 2:</b> Settings modal with 6 instant hotkey presets, live key combination recorder, and Arabic Language Lock.</sub></p>
+</div>
 
 ---
 
@@ -178,6 +210,9 @@ python aegis.py
 2. فك الضغط عن الملف في أي مجلد على جهازك.
 3. انقر نقراً مزدوجاً على ملف **`AegisAI.exe`** (أو `run.bat`).
 4. اضغط على اختصار **`Alt + Space`** لفتح الواجهة فوراً فوق سطح المكتب!
+
+> [!TIP]
+> **معاينة حية للمساعد**: يمكنك مشاهدة العرض التوضيحي المتحرك ولقطات الشاشة الحقيقية في [قسم المعاينة البصرية (Visual Showcase)](#-visual-showcase).
 
 ### أبرز الميزات المخصصة للمستخدم العربي
 - **تخصيص مفتاح الاختصار بالكامل:** يمكنك تغيير اختصار فتح التطبيق إلى `Ctrl+Space` أو `Ctrl+Shift+A` أو تسجيل أي مفاتيح تختارها من شاشة الإعدادات.

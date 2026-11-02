@@ -19,6 +19,7 @@ class UserIntent(str, Enum):
     VOLUME = "volume"
     BRIGHTNESS = "brightness"
     SCREEN_CAPTURE = "screen_capture"
+    VISION_ANALYSIS = "vision_analysis"
     NOTES = "notes"
     CONVERSATION = "conversation"
 
@@ -211,6 +212,24 @@ class IntentRouter:
     CLIPBOARD_PATTERNS = [
         r"^(?:what(?:'s|\s+is)\s+on\s+my\s+clipboard|get\s+clipboard|read\s+clipboard|show\s+clipboard)$",
         r"^(?:ممكن\s+)?(?:اقرأ\s+الحافظة|شو\s+بالحافظة|محتوى\s+الحافظة|الحافظة)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+    ]
+
+    VISION_ANALYSIS_PATTERNS = [
+        (
+            r"^(?:ممكن\s+)?(?:حلل\s+الشاشة|تحليل\s+الشاشة|حلل\s+ما\s+يظهر\s+على\s+الشاشة|حلل\s+ما\s+في\s+الشاشة|"
+            r"افحص\s+الشاشة|اقرأ\s+الشاشة|شوف\s+الشاشة|ايش\s+على\s+الشاشة|شو\s+في\s+على\s+الشاشة|"
+            r"ماذا\s+ترى\s+على\s+الشاشة|ماذا\s+يوجد\s+على\s+الشاشة|ماذا\s+في\s+الشاشة|اشرح\s+الشاشة|"
+            r"اشرح\s+ما\s+في\s+الشاشة|ترجم\s+الشاشة|ترجم\s+ما\s+يظهر\s+على\s+الشاشة|فحص\s+الشاشة|"
+            r"تحليل\s+الشاشة\s+الذكي)"
+            r"(?:\s+(?:و\s+)?(?P<query>.+))?$"
+        ),
+        (
+            r"^(?:please\s+)?(?:ask\s+my\s+screen|ask\s+screen|analyze\s+screen|analyze\s+my\s+screen|"
+            r"what\s+is\s+on\s+my\s+screen|what\'s\s+on\s+my\s+screen|what\s+is\s+on\s+screen|"
+            r"read\s+screen|explain\s+screen|check\s+screen|look\s+at\s+my\s+screen|screen\s+vision|"
+            r"vision\s+ai|analyze\s+what\s+is\s+on\s+screen)"
+            r"(?:\s+(?:and\s+)?(?P<query>.+))?$"
+        ),
     ]
 
     SCREEN_CAPTURE_PATTERNS = [
@@ -426,6 +445,20 @@ class IntentRouter:
                 "name": "control_brightness",
                 "arguments": {"action": "decrease", "level": 10},
             }
+
+        # 2.5 Screen Vision Analysis (Ask My Screen / Bilingual)
+        for pat in cls.VISION_ANALYSIS_PATTERNS:
+            m = re.match(pat, low) or re.match(pat, raw)
+            if m:
+                query_arg = (m.groupdict().get("query") or "").strip()
+                return {
+                    "intent": UserIntent.VISION_ANALYSIS,
+                    "name": "analyze_screen",
+                    "arguments": {
+                        "query": query_arg if query_arg else raw,
+                        "target": "full",
+                    },
+                }
 
         # 3. Screen Capture (Bilingual)
         for pat in cls.SCREEN_CAPTURE_PATTERNS:

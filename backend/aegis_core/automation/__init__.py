@@ -22,6 +22,7 @@ from aegis_core.automation.system_tools import (
     MinimizeAllWindowsTool,
     QuickNotesTool,
     ScreenCaptureTool,
+    AnalyzeScreenTool,
     SetClipboardTool,
     SnapWindowTool,
     VolumeControlTool,
@@ -58,6 +59,7 @@ __all__ = [
     "VolumeControlTool",
     "BrightnessControlTool",
     "ScreenCaptureTool",
+    "AnalyzeScreenTool",
     "QuickNotesTool",
     "GetSystemTelemetryTool",
 ]

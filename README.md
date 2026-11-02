@@ -90,6 +90,12 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 
 ## ⚡ Key Features
 
+### 👁️ Smart Screen Analysis (Ask My Screen / Vision AI)
+- **Instant Desktop Inspection**: Capture the current display in <150ms and intelligently analyze visible windows, active workflows, diagrams, and error dialogs.
+- **Dedicated Eye Button (`👁️`)**: Trigger one-click screen inspection directly from the chat input bar or Welcome Screen Quick Action tiles.
+- **Multimodal VLM & Local Synthesis**: Automatically discovers and routes through local Ollama vision models (`Moondream`, `LLaVA`, `Llama 3.2 Vision`, `Qwen-VL`) when present, or synthesizes rich Win32 GDI workspace context.
+- **Bilingual Arabic & English Natural Understanding**: Say *"حلل ما يظهر على الشاشة"*, *"ماذا ترى على الشاشة؟"*, or *"اقرأ الشاشة واشرح الكود"* to get structured, actionable visual breakdowns with zero cloud dependency.
+
 ### 📦 1-Click Windows Installer & Built-in Packager
 - **Standalone One-Click Setup (`AegisAI-Setup.exe`)**: Single-file native Windows executable that extracts all binaries, creates Desktop and Start Menu shortcuts, registers Windows Add/Remove Programs, and launches in seconds.
 - **In-App Installer Generator**: A dedicated one-click button in Settings allowing developers and users to compile a fresh installer directly from the active runtime.
@@ -226,6 +232,9 @@ python aegis.py
 > **معاينة حية للمساعد**: يمكنك مشاهدة العرض التوضيحي المتحرك ولقطات الشاشة الحقيقية في [قسم المعاينة البصرية (Visual Showcase)](#-visual-showcase).
 
 ### أبرز الميزات المخصصة للمستخدم العربي
+- **تحليل ما يظهر على الشاشة الذكي (Ask My Screen / Vision AI) 👁️:**
+  - انقر على زر العين (`👁️`) بجانب حقل الإدخال أو اطلب بالصوت: *"حلل ما يظهر على الشاشة"* أو *"ماذا ترى على الشاشة؟"* أو *"اقرأ الشاشة واشرح الكود"*.
+  - يلتقط المساعد صورة الشاشة فورياً في أجزاء من الثانية ويحلل التطبيقات والنوافذ النشطة ويشرح محتوى الشاشة بصرياً.
 - **تخصيص مفتاح الاختصار بالكامل:** يمكنك تغيير اختصار فتح التطبيق إلى `Ctrl+Space` أو `Ctrl+Shift+A` أو تسجيل أي مفاتيح تختارها من شاشة الإعدادات.
 - **فهم النطق العربي الصوتي:**
   - تحويل نطق المواقع تلقائياً: *"كود التطور دوت نت"* ⬅️ يفتح موقع `كود التطور.net`.
@@ -243,7 +252,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **72 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **78 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 

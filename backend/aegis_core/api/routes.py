@@ -4,7 +4,7 @@ Aegis AI - RESTful API Gateway.
 
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, File, HTTPException, Query, Response, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from aegis_core.agent.planner import agent_planner
 from aegis_core.ai_runtime.ollama_provider import OllamaProvider
@@ -19,6 +19,11 @@ from aegis_core.voice.tts import VOICE_CATALOG, tts_engine
 from aegis_core.voice.wake_word import wake_word_listener
 
 router = APIRouter()
+
+
+class VisionAnalysisRequest(BaseModel):
+    query: Optional[str] = Field(default=None, description="Prompt or question about the screen")
+    target: str = Field(default="full", description="Target capture area: 'full' or 'window'")
 
 
 class WakeWordConfigRequest(BaseModel):
@@ -418,4 +423,30 @@ async def run_desktop_installer() -> Dict[str, Any]:
         return installer_builder.launch_installer()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/vision/analyze")
+async def analyze_screen_endpoint(req: VisionAnalysisRequest) -> Dict[str, Any]:
+    """Captures and analyzes what is displayed on screen via Vision AI."""
+    from aegis_core.ai_runtime.vision_analyzer import screen_vision_analyzer
+
+    res = await screen_vision_analyzer.analyze_screen(query=req.query, target=req.target)
+    if not res.get("success"):
+        raise HTTPException(status_code=500, detail=res.get("error", "Vision analysis failed."))
+    return res
+
+
+@router.get("/vision/latest-screen")
+async def get_latest_screen_capture():
+    """Returns the latest captured screen image."""
+    screen_file = settings.storage_dir / "cache" / "screenshots" / "screen_analysis.jpg"
+    if not screen_file.exists():
+        cache_dir = settings.storage_dir / "cache" / "screenshots"
+        imgs = list(cache_dir.glob("*.jpg")) + list(cache_dir.glob("*.png"))
+        if imgs:
+            screen_file = imgs[0]
+        else:
+            raise HTTPException(status_code=404, detail="No screen captures found.")
+
+    return FileResponse(str(screen_file), media_type="image/jpeg")
 

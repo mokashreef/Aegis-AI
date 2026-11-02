@@ -4,6 +4,7 @@ import {
   Mic,
   MicOff,
   Sparkles,
+  Eye,
   Activity,
   AppWindow,
   Clipboard,
@@ -211,6 +212,7 @@ export const CompanionOverlay: React.FC = () => {
     { id: "2", title: "Google in Comet", title_ar: "جوجل في كومت", command: "افتح جوجل بمتصفح كومت", icon: "globe", enabled: true },
     { id: "3", title: "Launch Notepad", title_ar: "المفكرة", command: "open notepad", icon: "app", enabled: true },
     { id: "4", title: "Take Screenshot", title_ar: "لقطة شاشة", command: "صور الشاشة", icon: "camera", enabled: true },
+    { id: "vision", title: "Ask My Screen", title_ar: "تحليل الشاشة الذكي", command: "حلل ما يظهر على الشاشة واشرح محتواها", icon: "camera", enabled: true },
     { id: "5", title: "Show Desktop", title_ar: "إظهار سطح المكتب", command: "صغر كل النوافذ", icon: "layers", enabled: true },
     { id: "6", title: "Read Clipboard", title_ar: "قراءة الحافظة", command: "get clipboard", icon: "clipboard", enabled: true },
   ];
@@ -443,6 +445,21 @@ export const CompanionOverlay: React.FC = () => {
             }
             className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
           />
+
+          {/* Ask My Screen / Vision AI Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const query = userSettings?.language === "en" ? "Analyze what is on my screen" : "حلل ما يظهر على الشاشة واشرح أهم ما تراه";
+              setInput(query);
+              sendMessage(query);
+            }}
+            disabled={isStreaming || isTranscribing}
+            className="p-2 rounded-xl bg-slate-700/60 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 transition"
+            title={userSettings?.language === "en" ? "Ask My Screen (Vision AI)" : "تحليل ما يظهر على الشاشة الذكي (Ask My Screen)"}
+          >
+            <Eye className="w-4 h-4" />
+          </button>
 
           <button
             onClick={toggleRecording}

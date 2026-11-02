@@ -29,6 +29,7 @@ from aegis_core.automation.system_tools import (
     OpenUrlTool,
     QuickNotesTool,
     ScreenCaptureTool,
+    AnalyzeScreenTool,
     SetClipboardTool,
     SnapWindowTool,
     VolumeControlTool,
@@ -57,6 +58,7 @@ def register_default_tools() -> None:
         VolumeControlTool(),
         BrightnessControlTool(),
         ScreenCaptureTool(),
+        AnalyzeScreenTool(),
         QuickNotesTool(),
         GetSystemTelemetryTool(),
     ]

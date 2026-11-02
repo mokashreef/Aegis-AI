@@ -515,6 +515,50 @@ class ScreenCaptureTool(BaseTool):
         return ToolResult(success=False, error="Screen capture failed.", data=res)
 
 
+class AnalyzeScreenTool(BaseTool):
+    name = "analyze_screen"
+    description = (
+        "Captures and intelligently analyzes what is currently displayed on the Windows desktop "
+        "(Ask My Screen / Vision AI), identifying active applications, window contents, and key elements."
+    )
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Specific question or instruction about what is shown on the screen.",
+            },
+            "target": {
+                "type": "string",
+                "enum": ["full", "window"],
+                "description": "Capture target area (default: 'full').",
+            },
+        },
+    }
+
+    async def execute(self, query: str = "", target: str = "full", **kwargs: Any) -> ToolResult:
+        from aegis_core.ai_runtime.vision_analyzer import screen_vision_analyzer
+
+        res = await screen_vision_analyzer.analyze_screen(query=query, target=target)
+        if res.get("success"):
+            return ToolResult(
+                success=True,
+                data={
+                    "active_window": res.get("active_window"),
+                    "resolution": res.get("resolution"),
+                    "screenshot_path": res.get("screenshot_path"),
+                    "screenshot_url": res.get("screenshot_url"),
+                    "latency_ms": res.get("latency_ms"),
+                    "vision_model_used": res.get("vision_model_used"),
+                    "has_local_vision_model": res.get("has_local_vision_model"),
+                    "open_windows": res.get("open_windows"),
+                },
+                message=res.get("analysis", "Screen analyzed successfully."),
+            )
+        return ToolResult(success=False, error=res.get("error", "Vision screen analysis failed."), data=res)
+
+
 class QuickNotesTool(BaseTool):
     name = "manage_notes"
     description = (

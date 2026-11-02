@@ -9,6 +9,7 @@ import {
   Volume2,
   Camera,
   Layers,
+  Eye,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -50,6 +51,14 @@ export const ActionCard: React.FC<ActionCardProps> = ({ activity, onConfirm }) =
           titleAr: "التحكم بالصوت",
           summary: `${String(activity.arguments?.action || "")} ${activity.arguments?.level ? activity.arguments.level + "%" : ""}`,
           badge: "AUDIO",
+        };
+      case "analyze_screen":
+        return {
+          icon: <Eye className="w-4 h-4 text-sky-400" />,
+          title: "Ask My Screen",
+          titleAr: "تحليل الشاشة الذكي",
+          summary: String(activity.arguments?.query || "تحليل الشاشة بالذكاء البصري"),
+          badge: "VISION AI",
         };
       case "capture_screen":
         return {
@@ -138,6 +147,19 @@ export const ActionCard: React.FC<ActionCardProps> = ({ activity, onConfirm }) =
           </button>
         </div>
       </div>
+
+
+      {activity.toolName === "analyze_screen" && Boolean(activity.result?.active_window) ? (
+        <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-300">
+          <div className="flex items-center gap-1.5 text-sky-300 font-mono">
+            <span>🪟</span>
+            <span className="truncate max-w-[260px]">{String(activity.result?.active_window || "")}</span>
+          </div>
+          {activity.result?.resolution ? (
+            <span className="text-[10px] text-slate-500 font-mono">{String(activity.result.resolution)}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       {showDetails && (
                         <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] font-mono text-slate-400 bg-slate-950/50 p-2.5 rounded-xl overflow-x-auto">

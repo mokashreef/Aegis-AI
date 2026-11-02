@@ -23,6 +23,7 @@ class UserIntent(str, Enum):
     DOCUMENT_RAG = "document_rag"
     TIMER = "timer"
     REMINDER = "reminder"
+    MEDIA = "media"
     NOTES = "notes"
     CONVERSATION = "conversation"
 
@@ -556,6 +557,72 @@ class IntentRouter:
                     "name": "set_timer",
                     "arguments": {"duration_seconds": sec, "title": title},
                 }
+
+        # 2.9 Media Playback Controls (Bilingual)
+        # 2.9.1 Next Track
+        if re.match(
+            r"^(?:ممكن\s+)?(?:المقطع\s+التالي|الأغنية\s+التالية|الاغنية\s+التالية|"
+            r"التالي|اللي\s+بعده|قدم\s+المقطع|تخطي)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:next\s+track|next\s+song|next|skip\s+song|skip\s+track|skip)(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.MEDIA,
+                "name": "control_media",
+                "arguments": {"action": "next"},
+            }
+
+        # 2.9.2 Previous Track
+        if re.match(
+            r"^(?:ممكن\s+)?(?:المقطع\s+السابق|الأغنية\s+السابقة|الاغنية\s+السابقة|"
+            r"السابق|اللي\s+قبله|رجع\s+المقطع|السابقة)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:previous\s+track|previous\s+song|prev\s+track|prev\s+song|previous|prev|back)"
+            r"(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.MEDIA,
+                "name": "control_media",
+                "arguments": {"action": "previous"},
+            }
+
+        # 2.9.3 Stop Media
+        if re.match(
+            r"^(?:ممكن\s+)?(?:إيقاف\s+الموسيقى|ايقاف\s+الموسيقى|إيقاف\s+المقطع|ايقاف\s+المقطع|"
+            r"إيقاف\s+التشغيل|ايقاف\s+التشغيل|اطفئ\s+الموسيقى)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:stop\s+music|stop\s+media|stop\s+playback)(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.MEDIA,
+                "name": "control_media",
+                "arguments": {"action": "stop"},
+            }
+
+        # 2.9.4 Play / Pause Toggle
+        if re.match(
+            r"^(?:ممكن\s+)?(?:شغل\s+(?:الموسيقى|المقطع|الفيديو|الاغنية|الأغنية)|"
+            r"وقف\s+(?:الموسيقى|المقطع|الفيديو|الاغنية|الأغنية)|"
+            r"شغل\s+أو\s+وقف\s+الموسيقى|شغل\s+او\s+وقف\s+الموسيقى|"
+            r"وقف\s+مؤقتاً|وقف\s+مؤقت|استئناف|كمل\s+المقطع|"
+            r"شغل|وقف|تشغيل|ايقاف\s+مؤقت|إيقاف\s+مؤقت)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:play\s+music|pause\s+music|play\s+media|pause\s+media|"
+            r"play|pause|resume|unpause|toggle\s+playback)(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.MEDIA,
+                "name": "control_media",
+                "arguments": {"action": "play_pause"},
+            }
 
         # 3. Screen Capture (Bilingual)
         for pat in cls.SCREEN_CAPTURE_PATTERNS:

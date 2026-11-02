@@ -25,6 +25,9 @@ import {
   Loader2,
   Bell,
   Clock,
+  Play,
+  SkipForward,
+  SkipBack,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -42,6 +45,7 @@ import {
   uploadDocument,
   fetchReminders,
   cancelReminder,
+  controlMedia,
 } from "../services/api";
 import {
   SystemTelemetry,
@@ -118,6 +122,14 @@ export const CompanionOverlay: React.FC = () => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleMediaAction = async (action: "play_pause" | "next" | "previous") => {
+    try {
+      await controlMedia(action);
+    } catch (err) {
+      console.error("Failed to control media:", err);
+    }
   };
 
   const handleCancelReminder = async (id: string) => {
@@ -313,6 +325,8 @@ export const CompanionOverlay: React.FC = () => {
     { id: "4", title: "Take Screenshot", title_ar: "لقطة شاشة", command: "صور الشاشة", icon: "camera", enabled: true },
     { id: "vision", title: "Ask My Screen", title_ar: "تحليل الشاشة الذكي", command: "حلل ما يظهر على الشاشة واشرح محتواها", icon: "camera", enabled: true },
     { id: "timer5", title: "Timer 5 Mins", title_ar: "مؤقت 5 دقائق", command: "اضبط مؤقت 5 دقائق", icon: "app", enabled: true },
+    { id: "media_pp", title: "Play/Pause Media", title_ar: "تشغيل/إيقاف الموسيقى", command: "شغل أو وقف الموسيقى", icon: "volume", enabled: true },
+    { id: "media_next", title: "Next Track", title_ar: "المقطع التالي", command: "المقطع التالي", icon: "volume", enabled: true },
     { id: "5", title: "Show Desktop", title_ar: "إظهار سطح المكتب", command: "صغر كل النوافذ", icon: "layers", enabled: true },
     { id: "6", title: "Read Clipboard", title_ar: "قراءة الحافظة", command: "get clipboard", icon: "clipboard", enabled: true },
   ];
@@ -452,6 +466,31 @@ export const CompanionOverlay: React.FC = () => {
               {wakeWordStatus?.is_running ? wakeWordStatus.active_model.replace("_", " ") : "Wake Word"}
             </span>
           </button>
+
+          {/* Global Media Playback Mini-Controls */}
+          <div className="flex items-center gap-0.5 bg-slate-800/80 border border-slate-700/60 rounded-lg p-0.5" title="Media Playback Controls">
+            <button
+              onClick={() => handleMediaAction("previous")}
+              className="p-1 rounded text-slate-400 hover:text-slate-100 hover:bg-slate-700/60 transition"
+              title={userSettings?.language === "en" ? "Previous Track" : "المقطع السابق"}
+            >
+              <SkipBack className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => handleMediaAction("play_pause")}
+              className="p-1 rounded text-sky-400 hover:text-sky-300 hover:bg-sky-500/20 transition"
+              title={userSettings?.language === "en" ? "Play / Pause" : "تشغيل / إيقاف مؤقت"}
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+            </button>
+            <button
+              onClick={() => handleMediaAction("next")}
+              className="p-1 rounded text-slate-400 hover:text-slate-100 hover:bg-slate-700/60 transition"
+              title={userSettings?.language === "en" ? "Next Track" : "المقطع التالي"}
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           <button
             onClick={handleTogglePin}

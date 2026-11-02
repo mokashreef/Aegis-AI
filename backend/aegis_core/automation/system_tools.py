@@ -785,3 +785,35 @@ class CancelReminderTool(BaseTool):
         if ok:
             return ToolResult(success=True, data={"cancelled": True}, message="تم إلغاء المؤقت بنجاح.")
         return ToolResult(success=False, error="لم يتم العثور على مؤقت نشط لإلغائه.")
+
+
+class ControlMediaTool(BaseTool):
+    name = "control_media"
+    description = (
+        "Controls global Windows media playback (play_pause, next, previous, stop) "
+        "for Spotify, YouTube, VLC, and system media players."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["play_pause", "play", "pause", "next", "previous", "stop"],
+                "description": "Media action to dispatch: 'play_pause', 'next', 'previous', or 'stop'.",
+            },
+        },
+        "required": ["action"],
+    }
+
+    async def execute(self, action: str, **kwargs: Any) -> ToolResult:
+        from aegis_core.automation.media_manager import media_manager
+
+        res = media_manager.execute_action(action)
+        if res.get("success"):
+            return ToolResult(
+                success=True,
+                data=res,
+                message=res.get("message", "تم تنفيذ أمر الوسائط بنجاح."),
+            )
+        return ToolResult(success=False, error=res.get("error", "فشل تنفيذ أمر الوسائط."), data=res)

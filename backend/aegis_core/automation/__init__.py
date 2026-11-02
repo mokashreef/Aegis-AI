@@ -6,6 +6,7 @@ from aegis_core.automation.app_finder import AppFinder, app_finder
 from aegis_core.automation.brightness_manager import BrightnessManager, brightness_manager
 from aegis_core.automation.clipboard_manager import ClipboardManager
 from aegis_core.automation.intent_router import IntentRouter, UserIntent
+from aegis_core.automation.media_manager import MediaManager, media_manager
 from aegis_core.automation.notes_manager import NotesManager, notes_manager
 from aegis_core.automation.reminder_manager import ReminderManager, reminder_manager
 from aegis_core.automation.process_manager import ProcessManager
@@ -29,6 +30,7 @@ from aegis_core.automation.system_tools import (
     SetReminderTool,
     ListRemindersTool,
     CancelReminderTool,
+    ControlMediaTool,
     SetClipboardTool,
     SnapWindowTool,
     VolumeControlTool,
@@ -71,6 +73,9 @@ __all__ = [
     "SetReminderTool",
     "ListRemindersTool",
     "CancelReminderTool",
+    "ControlMediaTool",
+    "MediaManager",
+    "media_manager",
     "ReminderManager",
     "reminder_manager",
     "QuickNotesTool",

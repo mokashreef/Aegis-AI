@@ -32,6 +32,10 @@ class CreateReminderRequest(BaseModel):
     title: Optional[str] = Field(default="", description="Reminder description")
 
 
+class MediaControlRequest(BaseModel):
+    action: str = Field(default="play_pause", description="Action: 'play_pause', 'next', 'previous', 'stop'")
+
+
 class DocumentQueryRequest(BaseModel):
     query: str = Field(description="Question or prompt about the local documents")
     doc_id: Optional[str] = Field(default=None, description="Optional document ID")
@@ -577,3 +581,43 @@ async def cancel_latest_timer_endpoint() -> Dict[str, Any]:
 
     ok = reminder_manager.cancel_reminder(None)
     return {"success": ok}
+
+
+@router.post("/media/control")
+async def control_media_endpoint(req: MediaControlRequest) -> Dict[str, Any]:
+    """Controls global Windows media playback."""
+    from aegis_core.automation.media_manager import media_manager
+
+    return media_manager.execute_action(req.action)
+
+
+@router.post("/media/play-pause")
+async def media_play_pause_endpoint() -> Dict[str, Any]:
+    """Toggles play/pause for active global media."""
+    from aegis_core.automation.media_manager import media_manager
+
+    return media_manager.play_pause()
+
+
+@router.post("/media/next")
+async def media_next_endpoint() -> Dict[str, Any]:
+    """Skips to next media track."""
+    from aegis_core.automation.media_manager import media_manager
+
+    return media_manager.next_track()
+
+
+@router.post("/media/previous")
+async def media_previous_endpoint() -> Dict[str, Any]:
+    """Skips to previous media track."""
+    from aegis_core.automation.media_manager import media_manager
+
+    return media_manager.previous_track()
+
+
+@router.post("/media/stop")
+async def media_stop_endpoint() -> Dict[str, Any]:
+    """Stops global media playback."""
+    from aegis_core.automation.media_manager import media_manager
+
+    return media_manager.stop()

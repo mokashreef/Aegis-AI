@@ -300,3 +300,13 @@ export async function cancelReminder(reminderId?: string): Promise<boolean> {
   const response = await fetch(`${API_BASE}/reminders/cancel-latest`, { method: "POST" });
   return response.ok;
 }
+
+
+export async function controlMedia(action: "play_pause" | "next" | "previous" | "stop"): Promise<{ success: boolean; action: string }> {
+  const response = await fetch(`${API_BASE}/media/control`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action }),
+  });
+  return response.json();
+}

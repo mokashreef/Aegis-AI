@@ -36,6 +36,7 @@ from aegis_core.automation.system_tools import (
     SetReminderTool,
     ListRemindersTool,
     CancelReminderTool,
+    ControlMediaTool,
     SetClipboardTool,
     SnapWindowTool,
     VolumeControlTool,
@@ -70,6 +71,7 @@ def register_default_tools() -> None:
         SetReminderTool(),
         ListRemindersTool(),
         CancelReminderTool(),
+        ControlMediaTool(),
         QuickNotesTool(),
         GetSystemTelemetryTool(),
     ]

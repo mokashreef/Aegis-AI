@@ -90,6 +90,14 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 
 ## ⚡ Key Features
 
+### 🎵 Media Playback Controls (التحكم في تشغيل الوسائط والموسيقى)
+- **Global Hardware Multimedia Key Dispatch**: Controls Spotify, YouTube in Chrome/Edge, VLC, Apple Music, and Windows media players without requiring window focus via native Windows Virtual-Key scan codes (`VK_MEDIA_PLAY_PAUSE`, `VK_MEDIA_NEXT_TRACK`, `VK_MEDIA_PREV_TRACK`, `VK_MEDIA_STOP`).
+- **Bilingual Natural Language & Voice Commands**:
+  - Play / Pause: *"شغل الموسيقى"*, *"وقف الموسيقى"*, *"استئناف"*, *"play music"*, *"pause"*.
+  - Next / Previous Track: *"المقطع التالي"*, *"الأغنية التالية"*, *"المقطع السابق"*, *"next track"*, *"skip"*, *"previous track"*.
+  - Stop: *"إيقاف الموسيقى"*, *"stop playback"*.
+- **HUD Quick Media Bar**: Interactive hardware media controls (`⏮️`, `⏯️`, `⏭️`) integrated directly into the desktop overlay header and Welcome Screen quick actions.
+
 ### ⏰ Smart Reminders, Timers & System Alerts (المنبهات والمؤقتات وإشعارات ويندوز)
 - **Bilingual Natural Language Timers**: Seamlessly say or type *"مؤقت 10 دقائق"*, *"ذكرني بعد نص ساعة أشرب مي"*, *"نبهني بعد ربع ساعة"*, or *"set a timer for 15 minutes"*.
 - **Scheduled Clock Alarms**: Schedule appointments and tasks with natural absolute time parsing (*"ذكرني باجتماع العمل الساعة 4:30 عصراً"*, *"منبه الساعة 7 صباحاً"*, *"remind me at 5:15 pm"*).
@@ -254,6 +262,13 @@ python aegis.py
   - تحويل نطق المواقع تلقائياً: *"كود التطور دوت نت"* ⬅️ يفتح موقع `كود التطور.net`.
   - الأوامر المدمجة مع المتصفح: *"كروم و افتح موقع كود التطور"* أو *"افتح المتصفح و افتح يوتيوب"*.
 - **تثبيت لغة الرد (Language Lock):** إمكانية إجبار المساعد على الرد دائماً باللغة العربية حتى لو كتبت له بالإنجليزية من تبويب الإعدادات.
+- **التحكم في تشغيل الوسائط والموسيقى (Media Controls):**
+  - تحكم بتشغيل الموسيقى والفيديوهات (Spotify, YouTube, VLC) بالصوت أو الكتابة:
+    - *"شغل الموسيقى"* / *"وقف الموسيقى"* (Play/Pause)
+    - *"المقطع التالي"* / *"اللي بعده"* (Next Track)
+    - *"المقطع السابق"* / *"اللي قبله"* (Previous Track)
+    - *"إيقاف الموسيقى"* (Stop)
+  - أزرار تحكم مصغرة في شريط العنوان بالأعلى تتيح التبديل والتشغيل بنقرة واحدة دون تشتيت الانتباه.
 - **المنبهات والمؤقتات وإشعارات ويندوز (Reminders & System Alerts):**
   - اضبط مؤقتات سريعة بالعامية أو الفصحى: *"مؤقت 5 دقائق"*, *"ذكرني بعد نص ساعة"*, *"نبهني بعد ربع ساعة أشرب مي"*.
   - عيّن منبهاً لساعة محددة: *"منبه الساعة 7 صباحاً"*, *"ذكرني باجتماع العمل الساعة 4:30 عصراً"*.
@@ -272,7 +287,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **92 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **98 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 
@@ -293,8 +308,9 @@ flake8 backend aegis.py --max-line-length=120
 - [x] **Phase 17**: Dynamic Hotkey Reconfiguration, Custom Key Recorder, and GitHub Actions CI stabilization.
 - [x] **Phase 18**: Local Document Offline Search & RAG (PDF / DOCX / FTS5 Unicode BM25).
 - [x] **Phase 19**: Smart Reminders, Timers & Native Windows System Alerts (SQLite persistence, 0.0% CPU daemon).
-- [ ] **Phase 20**: Windows UI Automation (Accessible Desktop UI tree interaction).
-- [ ] **Phase 21**: Winget & MSIX Windows Installer Distribution.
+- [x] **Phase 20**: Global Media Playback Controls (Hardware Multimedia keys for Spotify, YouTube, VLC).
+- [ ] **Phase 21**: Windows UI Automation (Accessible Desktop UI tree interaction).
+- [ ] **Phase 22**: Winget & MSIX Windows Installer Distribution.
 
 ---
 

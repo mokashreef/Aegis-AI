@@ -20,6 +20,9 @@ import {
   Camera,
   Layers,
   Settings as SettingsIcon,
+  Paperclip,
+  FileText,
+  Loader2,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -34,6 +37,7 @@ import {
   fetchWakeWordStatus,
   toggleWakeWord,
   triggerVoiceSpeech,
+  uploadDocument,
 } from "../services/api";
 import {
   SystemTelemetry,
@@ -42,6 +46,7 @@ import {
   WakeWordStatus,
   UserSettings,
   QuickActionItem,
+  DocumentItem,
 } from "../types";
 
 export const CompanionOverlay: React.FC = () => {
@@ -70,6 +75,44 @@ export const CompanionOverlay: React.FC = () => {
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
   const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus | null>(null);
   const [isPinned, setIsPinned] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [activeDocument, setActiveDocument] = useState<DocumentItem | null>(null);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsUploadingDoc(true);
+      const doc = await uploadDocument(file);
+      setActiveDocument(doc);
+    } catch (err) {
+      console.error("Failed to upload document:", err);
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
 
   const fetchPinStatus = useCallback(() => {
     // @ts-expect-error pywebview JS bridge
@@ -173,7 +216,14 @@ export const CompanionOverlay: React.FC = () => {
 
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
-    sendMessage(input.trim());
+    let queryToSend = input.trim();
+    if (activeDocument) {
+      const isDocQuery = /(?:مستند|ملف|document|file)/i.test(queryToSend);
+      if (!isDocQuery) {
+        queryToSend = `ابحث في المستند عن: ${queryToSend}`;
+      }
+    }
+    sendMessage(queryToSend);
     setInput("");
   };
 
@@ -230,10 +280,29 @@ export const CompanionOverlay: React.FC = () => {
 
   return (
     <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       className={`w-full h-full flex flex-col bg-[#0b0f19] border border-slate-800 shadow-2xl relative select-none ${
         userSettings?.theme === "light" ? "theme-light" : ""
       }`}
     >
+      {/* Drag & Drop Visual HUD Overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center border-2 border-dashed border-sky-400 m-2 rounded-2xl pointer-events-none">
+          <div className="w-16 h-16 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 mb-3 shadow-lg shadow-sky-500/30">
+            <FileText className="w-8 h-8 animate-pulse" />
+          </div>
+          <div className="text-base font-semibold text-white">
+            {userSettings?.language === "en" ? "Drop Document for Offline RAG" : "أفلِت المستند هنا للفهرسة والسؤال الذكي"}
+          </div>
+          <div className="text-xs text-slate-400 mt-1">
+            {userSettings?.language === "en"
+              ? "Supports PDF, DOCX, TXT, MD, Code • 100% Local SQLite FTS5"
+              : "يدعم PDF و Word DOCX والشفرات البرمجية • خصوصية محلية 100% دون سحاب"}
+          </div>
+        </div>
+      )}
       {/* Top Header Bar with Native Window Dragging & Quick Actions */}
       <div className="pywebview-drag-region flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-[#0f172a] shrink-0 select-none cursor-move">
         <div className="flex items-center gap-3">
@@ -426,7 +495,57 @@ export const CompanionOverlay: React.FC = () => {
 
       {/* Input Prompt Bar */}
       <div className="p-4 border-t border-slate-700/50 bg-slate-900/60">
+        {/* Active Document Pill */}
+        {activeDocument && (
+          <div className="mb-2 px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/40 flex items-center justify-between gap-2 text-xs text-sky-200">
+            <div className="flex items-center gap-2 truncate">
+              <FileText className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span className="font-medium truncate">{activeDocument.filename}</span>
+              <span className="text-[10px] text-sky-400/80 bg-sky-900/50 px-1.5 py-0.5 rounded-md font-mono shrink-0">
+                {activeDocument.chunk_count} {userSettings?.language === "en" ? "chunks" : "فقرة"}
+              </span>
+              <span className="text-[10px] text-slate-400 shrink-0">
+                {(activeDocument.file_size / 1024).toFixed(1)} KB
+              </span>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const q = userSettings?.language === "en" ? "Summarize document" : "لخص المستند المرفق";
+                  setInput(q);
+                  sendMessage(q);
+                }}
+                className="px-2 py-0.5 rounded-md bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 hover:text-white transition text-[11px]"
+              >
+                {userSettings?.language === "en" ? "Summarize" : "لخص المستند"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDocument(null)}
+                className="p-1 hover:text-rose-400 text-slate-400 transition rounded"
+                title="Detach document"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 focus-within:border-sky-500/60 focus-within:ring-2 focus-within:ring-sky-500/20 transition-all">
+          {/* Hidden File Input for Paperclip */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".pdf,.docx,.txt,.md,.py,.json,.csv,.log,.rs,.ts,.js,.html"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                handleFileUpload(e.target.files[0]);
+                e.target.value = "";
+              }
+            }}
+          />
           <input
             type="text"
             value={input}
@@ -445,6 +564,25 @@ export const CompanionOverlay: React.FC = () => {
             }
             className="flex-1 bg-transparent px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
           />
+
+          {/* Local Document RAG Attachment Button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingDoc || isStreaming}
+            className="p-2 rounded-xl bg-slate-700/60 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 transition relative"
+            title={
+              userSettings?.language === "en"
+                ? "Attach & Query Document (Drag & Drop Local RAG)"
+                : "إرفاق وسؤال مستند محلي (Drag & Drop Local RAG)"
+            }
+          >
+            {isUploadingDoc ? (
+              <Loader2 className="w-4 h-4 text-sky-400 animate-spin" />
+            ) : (
+              <Paperclip className="w-4 h-4" />
+            )}
+          </button>
 
           {/* Ask My Screen / Vision AI Button */}
           <button

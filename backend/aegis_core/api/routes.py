@@ -2,6 +2,7 @@
 Aegis AI - RESTful API Gateway.
 """
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, File, HTTPException, Query, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
@@ -19,6 +20,11 @@ from aegis_core.voice.tts import VOICE_CATALOG, tts_engine
 from aegis_core.voice.wake_word import wake_word_listener
 
 router = APIRouter()
+
+
+class DocumentQueryRequest(BaseModel):
+    query: str = Field(description="Question or prompt about the local documents")
+    doc_id: Optional[str] = Field(default=None, description="Optional document ID")
 
 
 class VisionAnalysisRequest(BaseModel):
@@ -449,4 +455,59 @@ async def get_latest_screen_capture():
             raise HTTPException(status_code=404, detail="No screen captures found.")
 
     return FileResponse(str(screen_file), media_type="image/jpeg")
+
+
+@router.post("/documents/upload")
+async def upload_document(
+    file: Optional[UploadFile] = File(None),
+    file_path: Optional[str] = Query(None),
+) -> Dict[str, Any]:
+    """Uploads and indexes a local document into SQLite FTS5 for local RAG."""
+    import os
+    import shutil
+    from aegis_core.memory.document_rag import document_rag_engine
+
+    upload_dir = settings.storage_dir / "cache" / "documents"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    if file:
+        filename = file.filename or "uploaded_document.txt"
+        target_path = upload_dir / filename
+        with open(target_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+    elif file_path and os.path.exists(file_path):
+        target_path = Path(file_path)
+        filename = target_path.name
+    else:
+        raise HTTPException(status_code=400, detail="Either a file upload or valid file_path is required.")
+
+    try:
+        return document_rag_engine.index_document(target_path, filename)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/documents")
+async def list_documents() -> List[Dict[str, Any]]:
+    """Returns all currently indexed local documents."""
+    from aegis_core.memory.document_rag import document_rag_engine
+
+    return document_rag_engine.list_documents()
+
+
+@router.delete("/documents/{doc_id}")
+async def delete_document(doc_id: str) -> Dict[str, Any]:
+    """Deletes an indexed document and its chunks."""
+    from aegis_core.memory.document_rag import document_rag_engine
+
+    document_rag_engine.delete_document(doc_id)
+    return {"doc_id": doc_id, "deleted": True}
+
+
+@router.post("/documents/query")
+async def query_documents_endpoint(req: DocumentQueryRequest) -> Dict[str, Any]:
+    """Queries indexed documents with grounded citations."""
+    from aegis_core.memory.document_rag import document_rag_engine
+
+    return await document_rag_engine.ask_document(query=req.query, doc_id=req.doc_id)
 

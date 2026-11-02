@@ -149,3 +149,29 @@ export interface InstallerStatus {
   last_modified: string | null;
 }
 
+
+export interface DocumentItem {
+  id: string;
+  filename: string;
+  file_type: string;
+  file_size: number;
+  chunk_count: number;
+  summary?: string;
+  created_at: string;
+}
+
+export interface DocumentSource {
+  page: number;
+  chunk_index: number;
+  snippet: string;
+}
+
+export interface DocumentQueryResult {
+  success: boolean;
+  query: string;
+  answer: string;
+  doc_id?: string;
+  filename?: string;
+  sources: DocumentSource[];
+  chunks_retrieved?: number;
+}

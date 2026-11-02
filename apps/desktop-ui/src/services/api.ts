@@ -7,6 +7,8 @@ import {
   UserSettings,
   VoiceCatalogItem,
   InstallerStatus,
+  DocumentItem,
+  DocumentQueryResult,
 } from "../types";
 
 const API_BASE = "http://127.0.0.1:8420/api";
@@ -217,4 +219,51 @@ export async function launchInstaller(): Promise<void> {
   await fetch(`${API_BASE}/desktop/installer/run`, {
     method: "POST",
   });
+}
+
+
+export async function uploadDocument(file: File): Promise<DocumentItem> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE}/documents/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: "Upload failed" }));
+    throw new Error(err.detail || "Failed to upload document");
+  }
+
+  const data = await response.json();
+  return data.document || data;
+}
+
+export async function fetchDocuments(): Promise<DocumentItem[]> {
+  const response = await fetch(`${API_BASE}/documents`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch documents");
+  }
+  return response.json();
+}
+
+export async function deleteDocument(docId: string): Promise<boolean> {
+  const response = await fetch(`${API_BASE}/documents/${docId}`, {
+    method: "DELETE",
+  });
+  return response.ok;
+}
+
+export async function queryDocument(query: string, docId?: string): Promise<DocumentQueryResult> {
+  const response = await fetch(`${API_BASE}/documents/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, doc_id: docId }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: "Query failed" }));
+    throw new Error(err.detail || "Failed to query document");
+  }
+  return response.json();
 }

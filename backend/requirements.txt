@@ -9,6 +9,7 @@ websockets>=12.0
 httpx>=0.27.0
 aiofiles>=23.2.1
 python-multipart>=0.0.9
+pypdf>=5.0.0
 
 # Desktop UI & OS Automation
 pywebview>=6.0.0

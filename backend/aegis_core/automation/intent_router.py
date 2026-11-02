@@ -20,6 +20,7 @@ class UserIntent(str, Enum):
     BRIGHTNESS = "brightness"
     SCREEN_CAPTURE = "screen_capture"
     VISION_ANALYSIS = "vision_analysis"
+    DOCUMENT_RAG = "document_rag"
     NOTES = "notes"
     CONVERSATION = "conversation"
 
@@ -229,6 +230,25 @@ class IntentRouter:
             r"read\s+screen|explain\s+screen|check\s+screen|look\s+at\s+my\s+screen|screen\s+vision|"
             r"vision\s+ai|analyze\s+what\s+is\s+on\s+screen)"
             r"(?:\s+(?:and\s+)?(?P<query>.+))?$"
+        ),
+    ]
+
+    DOCUMENT_RAG_PATTERNS = [
+        (
+            r"^(?:ممكن\s+)?(?:لخص\s+المستند|لخص\s+الملف|ابحث\s+في\s+المستند|ابحث\s+في\s+الملف|"
+            r"ماذا\s+يقول\s+الملف|ماذا\s+يقول\s+المستند|اسأل\s+المستند|اسأل\s+الملف|"
+            r"في\s+الملف(?:\s+المرفق)?|في\s+المستند(?:\s+المرفق)?|ما\s+محتوى\s+الملف|"
+            r"ما\s+محتوى\s+المستند|اشرح\s+الملف|اشرح\s+المستند|ترجم\s+المستند|ترجم\s+الملف|"
+            r"اقرأ\s+المستند|اقرأ\s+الملف)"
+            r"(?:\s+(?:عن\s+|بخصوص\s+|و\s+)?(?P<query>.+))?$"
+        ),
+        (
+            r"^(?:please\s+)?(?:summarize\s+document|summarize\s+the\s+document|summarize\s+file|"
+            r"summarize\s+the\s+file|query\s+document|query\s+file|search\s+in\s+document|"
+            r"search\s+document|search\s+file|ask\s+document|ask\s+the\s+document|"
+            r"what\s+does\s+the\s+file\s+say|what\s+does\s+the\s+document\s+say|"
+            r"explain\s+document|explain\s+the\s+file|read\s+document|read\s+file)"
+            r"(?:\s+(?:about\s+|for\s+|and\s+)?(?P<query>.+))?$"
         ),
     ]
 
@@ -457,6 +477,19 @@ class IntentRouter:
                     "arguments": {
                         "query": query_arg if query_arg else raw,
                         "target": "full",
+                    },
+                }
+
+        # 2.7 Document RAG Routing (Bilingual)
+        for pat in cls.DOCUMENT_RAG_PATTERNS:
+            m = re.match(pat, low) or re.match(pat, raw)
+            if m:
+                query_arg = (m.groupdict().get("query") or "").strip()
+                return {
+                    "intent": UserIntent.DOCUMENT_RAG,
+                    "name": "query_document",
+                    "arguments": {
+                        "query": query_arg if query_arg else raw,
                     },
                 }
 

@@ -90,6 +90,13 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 
 ## ⚡ Key Features
 
+### 📄 Drag & Drop Local Document RAG (قراءة وسؤال المستندات المحلية)
+- **Zero-Cloud Document Intelligence**: Drag & drop any PDF, Word `.docx`, Markdown, source code, CSV, or text file directly into the Aegis HUD, or attach it using the paperclip icon (`📎`).
+- **Offline Text Extraction & Chunking**: Instant extraction for multi-page PDFs (via `pypdf`) and Word `.docx` documents (via standard zero-dependency XML parsing) with overlapping sliding-window chunking.
+- **Sub-Millisecond SQLite FTS5 Unicode Search**: Native full-text search index (`unicode61` tokenizer) supporting Arabic letterforms, diacritics, and English keywords with BM25 ranking.
+- **Grounded Citation Answers**: Synthesizes thorough answers strictly grounded in document excerpts with specific page citations, eliminating hallucinations and ensuring 100% local privacy.
+- **Bilingual Spoken & Typed Query Routing**: Ask *"لخص المستند المرفق"*, *"ماذا يقول الملف بخصوص الميزانية؟"*, *"ابحث في الملف عن الشروط"*, or *"Summarize document please"*.
+
 ### 👁️ Smart Screen Analysis (Ask My Screen / Vision AI)
 - **Instant Desktop Inspection**: Capture the current display in <150ms and intelligently analyze visible windows, active workflows, diagrams, and error dialogs.
 - **Dedicated Eye Button (`👁️`)**: Trigger one-click screen inspection directly from the chat input bar or Welcome Screen Quick Action tiles.
@@ -240,6 +247,7 @@ python aegis.py
   - تحويل نطق المواقع تلقائياً: *"كود التطور دوت نت"* ⬅️ يفتح موقع `كود التطور.net`.
   - الأوامر المدمجة مع المتصفح: *"كروم و افتح موقع كود التطور"* أو *"افتح المتصفح و افتح يوتيوب"*.
 - **تثبيت لغة الرد (Language Lock):** إمكانية إجبار المساعد على الرد دائماً باللغة العربية حتى لو كتبت له بالإنجليزية من تبويب الإعدادات.
+- **قراءة وسؤال المستندات المحلية (Local RAG):** اسحب وأفلت أي ملف (PDF، وورد DOCX، ملفات نصية أو برمجية) داخل نافذة التطبيق أو انقر زر المشبك `📎`، ثم اسأله بالعامية أو الفصحى مثل *"لخص المستند المرفق"* أو *"ماذا يقول الملف عن الشروط؟"* ليجيبك فورياً باستشهادات دقيقة وأرقام الصفحات دون تسريب أي حرف للسحاب.
 - **التشغيل مع ويندوز:** انقر بزر الفأرة الأيمن على أيقونة التطبيق بجانب الساعة واختر **"Start with Windows"** ليفتح التطبيق تلقائياً في الخلفية مع كل تشغيل للحاسوب.
 - **التحكم بالنظام بالصوت والكتابة:**
   - *"كتم الصوت"* / *"علي الصوت 50%"*
@@ -252,7 +260,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **78 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **84 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 
@@ -271,7 +279,7 @@ flake8 backend aegis.py --max-line-length=120
 - [x] **Phase 15**: Comprehensive Personalization Settings (Themes, Forced Language Lock, Voice Catalog).
 - [x] **Phase 16**: Windows Taskbar Branding (`AppUserModelID`) & WinForms Icon binding.
 - [x] **Phase 17**: Dynamic Hotkey Reconfiguration, Custom Key Recorder, and GitHub Actions CI stabilization.
-- [ ] **Phase 18**: Local Document Vector Search & RAG (PDF / Office).
+- [x] **Phase 18**: Local Document Offline Search & RAG (PDF / DOCX / FTS5 Unicode BM25).
 - [ ] **Phase 19**: Windows UI Automation (Accessible Desktop UI tree interaction).
 - [ ] **Phase 20**: Winget & MSIX Windows Installer Distribution.
 

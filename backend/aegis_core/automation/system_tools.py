@@ -4,7 +4,7 @@ Wraps Windows process, window, volume, brightness, screen capture, quick notes,
 and URL/browser opening as BaseTool implementations.
 """
 
-from typing import Any
+from typing import Any, Optional
 import urllib.parse
 import webbrowser
 from aegis_core.automation.brightness_manager import brightness_manager
@@ -608,3 +608,44 @@ class GetSystemTelemetryTool(BaseTool):
     async def execute(self, **kwargs: Any) -> ToolResult:
         info = get_system_telemetry()
         return ToolResult(success=True, data=info)
+
+
+class QueryDocumentTool(BaseTool):
+    name = "query_document"
+    description = (
+        "Searches and answers questions strictly based on locally indexed documents "
+        "(PDF, Word, Text, Code) with precise citations (Drag & Drop Local RAG)."
+    )
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Question or query to ask against the local document.",
+            },
+            "doc_id": {
+                "type": "string",
+                "description": "Optional specific document ID.",
+            },
+        },
+        "required": ["query"],
+    }
+
+    async def execute(self, query: str, doc_id: Optional[str] = None, **kwargs: Any) -> ToolResult:
+        from aegis_core.memory.document_rag import document_rag_engine
+
+        res = await document_rag_engine.ask_document(query=query, doc_id=doc_id)
+        if res.get("success"):
+            return ToolResult(
+                success=True,
+                data={
+                    "doc_id": res.get("doc_id"),
+                    "filename": res.get("filename"),
+                    "chunks_retrieved": res.get("chunks_retrieved"),
+                    "sources": res.get("sources"),
+                },
+                message=res.get("answer", "Query answered successfully."),
+            )
+        return ToolResult(success=False, error=res.get("error", "Document query failed."), data=res)
+

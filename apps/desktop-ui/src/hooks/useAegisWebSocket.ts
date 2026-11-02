@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChatMessage, ToolActivity } from "../types";
+import { ChatMessage, ToolActivity, ReminderItem } from "../types";
 
 export function useAegisWebSocket(
   sessionId: string,
-  onStreamEnd?: (fullText: string) => void
+  onStreamEnd?: (fullText: string) => void,
+  onReminderAlert?: (reminder: ReminderItem) => void
 ) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeTools, setActiveTools] = useState<ToolActivity[]>([]);
@@ -12,6 +13,8 @@ export function useAegisWebSocket(
   const socketRef = useRef<WebSocket | null>(null);
   const onStreamEndRef = useRef(onStreamEnd);
   onStreamEndRef.current = onStreamEnd;
+  const onReminderAlertRef = useRef(onReminderAlert);
+  onReminderAlertRef.current = onReminderAlert;
   const lastAssistantTextRef = useRef<string>("");
 
   useEffect(() => {
@@ -86,6 +89,10 @@ export function useAegisWebSocket(
             onStreamEndRef.current(lastAssistantTextRef.current);
           }
           lastAssistantTextRef.current = "";
+        } else if (data.type === "reminder_alert") {
+          if (onReminderAlertRef.current && data.reminder) {
+            onReminderAlertRef.current(data.reminder);
+          }
         }
       } catch (err) {
         console.error("Failed to parse websocket message:", err);

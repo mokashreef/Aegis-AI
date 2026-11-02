@@ -175,3 +175,16 @@ export interface DocumentQueryResult {
   sources: DocumentSource[];
   chunks_retrieved?: number;
 }
+
+
+export interface ReminderItem {
+  id: string;
+  title: string;
+  due_timestamp: number;
+  due_time_str: string;
+  duration_seconds: number;
+  remind_type: "timer" | "reminder" | "alarm";
+  status: "active" | "completed" | "cancelled";
+  created_at: string;
+  remaining_seconds?: number;
+}

@@ -21,6 +21,8 @@ class UserIntent(str, Enum):
     SCREEN_CAPTURE = "screen_capture"
     VISION_ANALYSIS = "vision_analysis"
     DOCUMENT_RAG = "document_rag"
+    TIMER = "timer"
+    REMINDER = "reminder"
     NOTES = "notes"
     CONVERSATION = "conversation"
 
@@ -491,6 +493,68 @@ class IntentRouter:
                     "arguments": {
                         "query": query_arg if query_arg else raw,
                     },
+                }
+
+        # 2.8 Reminders, Timers & System Alerts (Bilingual)
+        # 2.8.1 Cancel Timer / Alarm
+        if re.match(
+            r"^(?:ممكن\s+)?(?:الغ(?:اء|ي)|وقف|احذف|بطل|اطفئ|اطفي|سكّت|سكت)\s*"
+            r"(?:المؤقت|المنبه|المؤقتات|المنبهات|التنبيه)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:cancel|stop|delete|dismiss)\s*(?:the\s+)?(?:timer|alarm|reminder)(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.TIMER,
+                "name": "cancel_reminder",
+                "arguments": {},
+            }
+
+        # 2.8.2 List Timers / Alarms
+        if re.match(
+            r"^(?:ممكن\s+)?(?:اعرض|وريني|شو\s+في|قائمة|استعرض|كم)\s*"
+            r"(?:المؤقتات|المنبهات|التنبيهات|المؤقت|المنبه)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$",
+            raw,
+        ) or re.match(
+            r"^(?:please\s+)?(?:list|show|view|get)\s*(?:the\s+)?(?:reminders|timers|alarms)(?:\s+please)?$",
+            low,
+        ):
+            return {
+                "intent": UserIntent.REMINDER,
+                "name": "list_reminders",
+                "arguments": {"status": "active"},
+            }
+
+        # 2.8.3 Set Relative Timer (e.g. "مؤقت 10 دقائق", "ذكرني بعد نص ساعة", "timer 5 mins")
+        if any(w in raw for w in ["مؤقت", "timer"]) or re.search(r"\b(?:ذكرني|نبهني)\s+بعد\b", raw):
+            from aegis_core.automation.reminder_manager import reminder_manager
+
+            sec, title = reminder_manager.parse_relative_duration(raw)
+            if sec > 0:
+                return {
+                    "intent": UserIntent.TIMER,
+                    "name": "set_timer",
+                    "arguments": {"duration_seconds": sec, "title": title},
+                }
+
+        # 2.8.4 Set Absolute Reminder (e.g. "منبه الساعة 7", "ذكرني الساعة 4:30", "remind me at 5 pm")
+        if any(w in raw for w in ["منبه", "تنبيه", "alarm"]) or re.search(r"\b(?:الساعة|ساعة|at\s+\d)\b", raw):
+            from aegis_core.automation.reminder_manager import reminder_manager
+
+            dt, title = reminder_manager.parse_absolute_time(raw)
+            if dt:
+                return {
+                    "intent": UserIntent.REMINDER,
+                    "name": "set_reminder",
+                    "arguments": {"target_time": raw, "title": title},
+                }
+            sec, title = reminder_manager.parse_relative_duration(raw)
+            if sec > 0:
+                return {
+                    "intent": UserIntent.TIMER,
+                    "name": "set_timer",
+                    "arguments": {"duration_seconds": sec, "title": title},
                 }
 
         # 3. Screen Capture (Bilingual)

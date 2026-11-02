@@ -649,3 +649,139 @@ class QueryDocumentTool(BaseTool):
             )
         return ToolResult(success=False, error=res.get("error", "Document query failed."), data=res)
 
+
+class SetTimerTool(BaseTool):
+    name = "set_timer"
+    description = "Sets a countdown timer for a given duration in seconds or minutes with audio/toast alert."
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "duration_seconds": {
+                "type": "integer",
+                "description": "Total timer countdown length in seconds.",
+            },
+            "title": {
+                "type": "string",
+                "description": "Optional title or purpose of the timer.",
+            },
+        },
+        "required": ["duration_seconds"],
+    }
+
+    async def execute(self, duration_seconds: int, title: str = "", **kwargs: Any) -> ToolResult:
+        from aegis_core.automation.reminder_manager import reminder_manager
+
+        if duration_seconds <= 0:
+            return ToolResult(success=False, error="مدة المؤقت يجب أن تكون أكبر من صفر.")
+
+        item = reminder_manager.create_timer(duration_seconds=duration_seconds, title=title)
+        minutes = duration_seconds // 60
+        secs = duration_seconds % 60
+        if minutes and not secs:
+            time_desc = f"{minutes} دقيقة"
+        elif not minutes:
+            time_desc = f"{duration_seconds} ثانية"
+        else:
+            time_desc = f"{minutes} دقيقة و {secs} ثانية"
+
+        msg = f"تم ضبط المؤقت بنجاح لمدة {time_desc} (ينتهي في {item.due_time_str})."
+        return ToolResult(success=True, data=item.to_dict(), message=msg)
+
+
+class SetReminderTool(BaseTool):
+    name = "set_reminder"
+    description = "Sets a scheduled reminder or alarm at an absolute clock time (e.g. 16:30 or 09:00)."
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "target_time": {
+                "type": "string",
+                "description": "Target time or descriptive string (e.g. 'الساعة 4:30 عصراً' or '17:00').",
+            },
+            "title": {
+                "type": "string",
+                "description": "The title or reminder description.",
+            },
+        },
+        "required": ["target_time"],
+    }
+
+    async def execute(self, target_time: str, title: str = "", **kwargs: Any) -> ToolResult:
+        from aegis_core.automation.reminder_manager import reminder_manager
+
+        dt, parsed_title = reminder_manager.parse_absolute_time(target_time)
+        final_title = title.strip() or parsed_title.strip() or "تنبيه"
+
+        if not dt:
+            sec, rel_title = reminder_manager.parse_relative_duration(target_time)
+            if sec > 0:
+                item = reminder_manager.create_timer(duration_seconds=sec, title=title or rel_title)
+                return ToolResult(
+                    success=True,
+                    data=item.to_dict(),
+                    message=f"تم ضبط المؤقت لمدة {sec // 60} دقيقة (ينتهي في {item.due_time_str}).",
+                )
+            return ToolResult(success=False, error="تعذر تحديد توقيت المنبه بشكل دقيق.")
+
+        item = reminder_manager.create_reminder(due_dt=dt, title=final_title)
+        msg = f"تم ضبط المنبه بنجاح: '{item.title}' في موعد {item.due_time_str}."
+        return ToolResult(success=True, data=item.to_dict(), message=msg)
+
+
+class ListRemindersTool(BaseTool):
+    name = "list_reminders"
+    description = "Lists all currently active or scheduled timers, alarms, and reminders."
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "description": "Filter by status: 'active', 'completed', or all if omitted.",
+            },
+        },
+    }
+
+    async def execute(self, status: Optional[str] = "active", **kwargs: Any) -> ToolResult:
+        from aegis_core.automation.reminder_manager import reminder_manager
+
+        items = reminder_manager.list_reminders(status=status)
+        if not items:
+            return ToolResult(
+                success=True,
+                data={"reminders": [], "count": 0},
+                message="لا توجد مؤقتات أو منبهات نشطة حالياً.",
+            )
+
+        lines = [f"- [{it.remind_type.upper()}] {it.title} (ينتهي: {it.due_time_str})" for it in items]
+        msg = f"لديك {len(items)} تنبيه نشط:\n" + "\n".join(lines)
+        return ToolResult(
+            success=True,
+            data={"reminders": [it.to_dict() for it in items], "count": len(items)},
+            message=msg,
+        )
+
+
+class CancelReminderTool(BaseTool):
+    name = "cancel_reminder"
+    description = "Cancels an active timer or reminder by ID, or cancels the most recent timer."
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "reminder_id": {
+                "type": "string",
+                "description": "Optional reminder ID. If omitted, cancels the latest active timer.",
+            },
+        },
+    }
+
+    async def execute(self, reminder_id: Optional[str] = None, **kwargs: Any) -> ToolResult:
+        from aegis_core.automation.reminder_manager import reminder_manager
+
+        ok = reminder_manager.cancel_reminder(reminder_id)
+        if ok:
+            return ToolResult(success=True, data={"cancelled": True}, message="تم إلغاء المؤقت بنجاح.")
+        return ToolResult(success=False, error="لم يتم العثور على مؤقت نشط لإلغائه.")

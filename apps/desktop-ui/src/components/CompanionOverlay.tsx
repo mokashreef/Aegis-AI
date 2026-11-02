@@ -23,6 +23,8 @@ import {
   Paperclip,
   FileText,
   Loader2,
+  Bell,
+  Clock,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -38,6 +40,8 @@ import {
   toggleWakeWord,
   triggerVoiceSpeech,
   uploadDocument,
+  fetchReminders,
+  cancelReminder,
 } from "../services/api";
 import {
   SystemTelemetry,
@@ -47,6 +51,7 @@ import {
   UserSettings,
   QuickActionItem,
   DocumentItem,
+  ReminderItem,
 } from "../types";
 
 export const CompanionOverlay: React.FC = () => {
@@ -63,9 +68,18 @@ export const CompanionOverlay: React.FC = () => {
     [userSettings]
   );
 
+  const [activeReminders, setActiveReminders] = useState<ReminderItem[]>([]);
+  const [firingReminder, setFiringReminder] = useState<ReminderItem | null>(null);
+
+  const handleReminderAlert = useCallback((rem: ReminderItem) => {
+    setFiringReminder(rem);
+    fetchReminders().then(setActiveReminders).catch(() => {});
+  }, []);
+
   const { messages, activeTools, isStreaming, isConnected, sendMessage, clearMessages } = useAegisWebSocket(
     sessionId,
-    handleStreamFinished
+    handleStreamFinished,
+    handleReminderAlert
   );
 
   const [input, setInput] = useState("");
@@ -75,6 +89,41 @@ export const CompanionOverlay: React.FC = () => {
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus | null>(null);
   const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus | null>(null);
   const [isPinned, setIsPinned] = useState(false);
+
+  useEffect(() => {
+    const updateReminders = () => {
+      fetchReminders("active").then(setActiveReminders).catch(() => {});
+    };
+    updateReminders();
+    const interval = setInterval(updateReminders, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (activeReminders.length === 0) return;
+    const tick = setInterval(() => {
+      setActiveReminders((prev) =>
+        prev
+          .map((r) => ({
+            ...r,
+            remaining_seconds: Math.max(0, Math.floor(r.due_timestamp - Date.now() / 1000)),
+          }))
+          .filter((r) => (r.remaining_seconds ?? 0) > 0)
+      );
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [activeReminders.length]);
+
+  const formatCountdown = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleCancelReminder = async (id: string) => {
+    await cancelReminder(id);
+    setActiveReminders((prev) => prev.filter((r) => r.id !== id));
+  };
   const [isDragging, setIsDragging] = useState(false);
   const [activeDocument, setActiveDocument] = useState<DocumentItem | null>(null);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
@@ -263,6 +312,7 @@ export const CompanionOverlay: React.FC = () => {
     { id: "3", title: "Launch Notepad", title_ar: "المفكرة", command: "open notepad", icon: "app", enabled: true },
     { id: "4", title: "Take Screenshot", title_ar: "لقطة شاشة", command: "صور الشاشة", icon: "camera", enabled: true },
     { id: "vision", title: "Ask My Screen", title_ar: "تحليل الشاشة الذكي", command: "حلل ما يظهر على الشاشة واشرح محتواها", icon: "camera", enabled: true },
+    { id: "timer5", title: "Timer 5 Mins", title_ar: "مؤقت 5 دقائق", command: "اضبط مؤقت 5 دقائق", icon: "app", enabled: true },
     { id: "5", title: "Show Desktop", title_ar: "إظهار سطح المكتب", command: "صغر كل النوافذ", icon: "layers", enabled: true },
     { id: "6", title: "Read Clipboard", title_ar: "قراءة الحافظة", command: "get clipboard", icon: "clipboard", enabled: true },
   ];
@@ -287,6 +337,36 @@ export const CompanionOverlay: React.FC = () => {
         userSettings?.theme === "light" ? "theme-light" : ""
       }`}
     >
+      {/* System Reminder / Timer Alert Popup Banner */}
+      {firingReminder && (
+        <div className="absolute top-12 left-4 right-4 z-50 p-4 rounded-2xl bg-gradient-to-r from-amber-600/95 to-rose-600/95 text-white shadow-2xl border border-amber-300/50 backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-3 truncate">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <Bell className="w-6 h-6 text-white animate-bounce" />
+            </div>
+            <div className="truncate">
+              <div className="text-[11px] uppercase tracking-wider text-amber-100 font-bold">
+                {firingReminder.remind_type === "timer"
+                  ? "⏳ انتهى المؤقت (Timer Finished)"
+                  : "⏰ موعد التنبيه (Reminder Alert)"}
+              </div>
+              <div className="text-sm font-bold text-white truncate leading-tight mt-0.5">
+                {firingReminder.title}
+              </div>
+              <div className="text-[10px] text-amber-100/80">
+                {firingReminder.due_time_str}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setFiringReminder(null)}
+            className="px-3 py-1.5 rounded-xl bg-white text-slate-900 font-bold text-xs hover:bg-amber-100 transition shadow shrink-0"
+          >
+            {userSettings?.language === "en" ? "Dismiss" : "حسناً / إغلاق"}
+          </button>
+        </div>
+      )}
+
       {/* Drag & Drop Visual HUD Overlay */}
       {isDragging && (
         <div className="absolute inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center border-2 border-dashed border-sky-400 m-2 rounded-2xl pointer-events-none">
@@ -495,6 +575,26 @@ export const CompanionOverlay: React.FC = () => {
 
       {/* Input Prompt Bar */}
       <div className="p-4 border-t border-slate-700/50 bg-slate-900/60">
+        {/* Active Timers Pill */}
+        {activeReminders.length > 0 && (
+          <div className="mb-2 px-3 py-1.5 rounded-xl bg-amber-950/50 border border-amber-500/40 flex items-center justify-between gap-2 text-xs text-amber-200 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 truncate">
+              <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-spin" style={{ animationDuration: "8s" }} />
+              <span className="font-medium truncate">{activeReminders[0].title}</span>
+              <span className="font-mono text-amber-300 font-bold bg-amber-900/60 px-1.5 py-0.5 rounded text-[11px] shrink-0">
+                {formatCountdown(activeReminders[0].remaining_seconds || 0)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleCancelReminder(activeReminders[0].id)}
+              className="p-1 hover:text-rose-400 text-slate-400 transition rounded"
+              title="Cancel timer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         {/* Active Document Pill */}
         {activeDocument && (
           <div className="mb-2 px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/40 flex items-center justify-between gap-2 text-xs text-sky-200">

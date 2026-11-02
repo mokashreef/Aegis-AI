@@ -4,6 +4,7 @@ Starts the FastAPI application, mounts compiled desktop UI assets, registers sys
 and exposes the HTTP/WebSocket gateway for native desktop interaction.
 """
 
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
@@ -31,6 +32,10 @@ from aegis_core.automation.system_tools import (
     ScreenCaptureTool,
     AnalyzeScreenTool,
     QueryDocumentTool,
+    SetTimerTool,
+    SetReminderTool,
+    ListRemindersTool,
+    CancelReminderTool,
     SetClipboardTool,
     SnapWindowTool,
     VolumeControlTool,
@@ -61,6 +66,10 @@ def register_default_tools() -> None:
         ScreenCaptureTool(),
         AnalyzeScreenTool(),
         QueryDocumentTool(),
+        SetTimerTool(),
+        SetReminderTool(),
+        ListRemindersTool(),
+        CancelReminderTool(),
         QuickNotesTool(),
         GetSystemTelemetryTool(),
     ]
@@ -113,9 +122,32 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         wake_word_listener.confidence_threshold = settings.wake_word_threshold
         wake_word_listener.start()
 
+    # Start background reminder scheduler worker
+    async def _run_reminders_worker():
+        from aegis_core.automation.reminder_manager import reminder_manager
+
+        while True:
+            try:
+                due = reminder_manager.check_due_reminders()
+                for r in due:
+                    await reminder_manager.trigger_alert(r)
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                logger.debug("Reminder loop tick error: %s", exc)
+            await asyncio.sleep(1.0)
+
+    reminders_task = asyncio.create_task(_run_reminders_worker())
+
     yield
 
     logger.info("Shutting down %s daemon...", settings.app_name)
+    reminders_task.cancel()
+    try:
+        await reminders_task
+    except asyncio.CancelledError:
+        pass
+
     from aegis_core.voice.wake_word import wake_word_listener
 
     wake_word_listener.stop()

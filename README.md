@@ -90,6 +90,13 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 
 ## ⚡ Key Features
 
+### ⏰ Smart Reminders, Timers & System Alerts (المنبهات والمؤقتات وإشعارات ويندوز)
+- **Bilingual Natural Language Timers**: Seamlessly say or type *"مؤقت 10 دقائق"*, *"ذكرني بعد نص ساعة أشرب مي"*, *"نبهني بعد ربع ساعة"*, or *"set a timer for 15 minutes"*.
+- **Scheduled Clock Alarms**: Schedule appointments and tasks with natural absolute time parsing (*"ذكرني باجتماع العمل الساعة 4:30 عصراً"*, *"منبه الساعة 7 صباحاً"*, *"remind me at 5:15 pm"*).
+- **Multi-Modal Windows Alerts**: Rings with native Windows audio chimes (`winsound.MessageBeep`), Windows Action Center tray notifications (`pystray.notify`), and live animated HUD banner alerts.
+- **Live HUD Countdown Pill**: Displays active timers directly above the input bar with 1-second live ticking countdown and 1-click cancellation.
+- **100% Local SQLite Persistence**: Timers and reminders are persisted in local SQLite storage and scheduled via a non-blocking 0.0% CPU background daemon.
+
 ### 📄 Drag & Drop Local Document RAG (قراءة وسؤال المستندات المحلية)
 - **Zero-Cloud Document Intelligence**: Drag & drop any PDF, Word `.docx`, Markdown, source code, CSV, or text file directly into the Aegis HUD, or attach it using the paperclip icon (`📎`).
 - **Offline Text Extraction & Chunking**: Instant extraction for multi-page PDFs (via `pypdf`) and Word `.docx` documents (via standard zero-dependency XML parsing) with overlapping sliding-window chunking.
@@ -247,6 +254,11 @@ python aegis.py
   - تحويل نطق المواقع تلقائياً: *"كود التطور دوت نت"* ⬅️ يفتح موقع `كود التطور.net`.
   - الأوامر المدمجة مع المتصفح: *"كروم و افتح موقع كود التطور"* أو *"افتح المتصفح و افتح يوتيوب"*.
 - **تثبيت لغة الرد (Language Lock):** إمكانية إجبار المساعد على الرد دائماً باللغة العربية حتى لو كتبت له بالإنجليزية من تبويب الإعدادات.
+- **المنبهات والمؤقتات وإشعارات ويندوز (Reminders & System Alerts):**
+  - اضبط مؤقتات سريعة بالعامية أو الفصحى: *"مؤقت 5 دقائق"*, *"ذكرني بعد نص ساعة"*, *"نبهني بعد ربع ساعة أشرب مي"*.
+  - عيّن منبهاً لساعة محددة: *"منبه الساعة 7 صباحاً"*, *"ذكرني باجتماع العمل الساعة 4:30 عصراً"*.
+  - تحكم بالمنبهات بسهولة: *"اعرض المنبهات"*, *"الغاء المؤقت"*.
+  - عند انتهاء الوقت، يصدر رنين نظام ويندوز، إشعار سطح المكتب بجانب الساعة، وبانر تفاعلي مباشر داخل واجهة التطبيق.
 - **قراءة وسؤال المستندات المحلية (Local RAG):** اسحب وأفلت أي ملف (PDF، وورد DOCX، ملفات نصية أو برمجية) داخل نافذة التطبيق أو انقر زر المشبك `📎`، ثم اسأله بالعامية أو الفصحى مثل *"لخص المستند المرفق"* أو *"ماذا يقول الملف عن الشروط؟"* ليجيبك فورياً باستشهادات دقيقة وأرقام الصفحات دون تسريب أي حرف للسحاب.
 - **التشغيل مع ويندوز:** انقر بزر الفأرة الأيمن على أيقونة التطبيق بجانب الساعة واختر **"Start with Windows"** ليفتح التطبيق تلقائياً في الخلفية مع كل تشغيل للحاسوب.
 - **التحكم بالنظام بالصوت والكتابة:**
@@ -260,7 +272,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **84 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **92 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 
@@ -280,8 +292,9 @@ flake8 backend aegis.py --max-line-length=120
 - [x] **Phase 16**: Windows Taskbar Branding (`AppUserModelID`) & WinForms Icon binding.
 - [x] **Phase 17**: Dynamic Hotkey Reconfiguration, Custom Key Recorder, and GitHub Actions CI stabilization.
 - [x] **Phase 18**: Local Document Offline Search & RAG (PDF / DOCX / FTS5 Unicode BM25).
-- [ ] **Phase 19**: Windows UI Automation (Accessible Desktop UI tree interaction).
-- [ ] **Phase 20**: Winget & MSIX Windows Installer Distribution.
+- [x] **Phase 19**: Smart Reminders, Timers & Native Windows System Alerts (SQLite persistence, 0.0% CPU daemon).
+- [ ] **Phase 20**: Windows UI Automation (Accessible Desktop UI tree interaction).
+- [ ] **Phase 21**: Winget & MSIX Windows Installer Distribution.
 
 ---
 

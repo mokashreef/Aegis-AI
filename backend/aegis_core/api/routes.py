@@ -22,6 +22,16 @@ from aegis_core.voice.wake_word import wake_word_listener
 router = APIRouter()
 
 
+class CreateTimerRequest(BaseModel):
+    duration_seconds: int = Field(description="Timer duration in seconds")
+    title: Optional[str] = Field(default="", description="Timer label or purpose")
+
+
+class CreateReminderRequest(BaseModel):
+    target_time: str = Field(description="Time string e.g. '16:30' or 'الساعة 4:30 عصراً'")
+    title: Optional[str] = Field(default="", description="Reminder description")
+
+
 class DocumentQueryRequest(BaseModel):
     query: str = Field(description="Question or prompt about the local documents")
     doc_id: Optional[str] = Field(default=None, description="Optional document ID")
@@ -511,3 +521,59 @@ async def query_documents_endpoint(req: DocumentQueryRequest) -> Dict[str, Any]:
 
     return await document_rag_engine.ask_document(query=req.query, doc_id=req.doc_id)
 
+
+@router.get("/reminders")
+async def list_reminders_endpoint(status: Optional[str] = "active") -> List[Dict[str, Any]]:
+    """Lists active or recent reminders and timers."""
+    from aegis_core.automation.reminder_manager import reminder_manager
+
+    items = reminder_manager.list_reminders(status=status)
+    return [it.to_dict() for it in items]
+
+
+@router.post("/reminders/timer")
+async def create_timer_endpoint(req: CreateTimerRequest) -> Dict[str, Any]:
+    """Creates a countdown timer."""
+    from aegis_core.automation.reminder_manager import reminder_manager
+
+    if req.duration_seconds <= 0:
+        raise HTTPException(status_code=400, detail="Duration must be positive integer.")
+
+    item = reminder_manager.create_timer(duration_seconds=req.duration_seconds, title=req.title or "")
+    return {"success": True, "reminder": item.to_dict()}
+
+
+@router.post("/reminders")
+async def create_reminder_endpoint(req: CreateReminderRequest) -> Dict[str, Any]:
+    """Creates an absolute reminder or alarm."""
+    from aegis_core.automation.reminder_manager import reminder_manager
+
+    dt, title = reminder_manager.parse_absolute_time(req.target_time)
+    if not dt:
+        sec, rel_title = reminder_manager.parse_relative_duration(req.target_time)
+        if sec > 0:
+            item = reminder_manager.create_timer(duration_seconds=sec, title=req.title or rel_title)
+            return {"success": True, "reminder": item.to_dict()}
+        raise HTTPException(status_code=400, detail="Unable to parse target time.")
+
+    final_title = req.title.strip() if req.title else title
+    item = reminder_manager.create_reminder(due_dt=dt, title=final_title)
+    return {"success": True, "reminder": item.to_dict()}
+
+
+@router.delete("/reminders/{reminder_id}")
+async def cancel_reminder_endpoint(reminder_id: str) -> Dict[str, Any]:
+    """Cancels a reminder or timer by ID."""
+    from aegis_core.automation.reminder_manager import reminder_manager
+
+    ok = reminder_manager.cancel_reminder(reminder_id)
+    return {"success": ok, "reminder_id": reminder_id}
+
+
+@router.post("/reminders/cancel-latest")
+async def cancel_latest_timer_endpoint() -> Dict[str, Any]:
+    """Cancels the most recent active timer."""
+    from aegis_core.automation.reminder_manager import reminder_manager
+
+    ok = reminder_manager.cancel_reminder(None)
+    return {"success": ok}

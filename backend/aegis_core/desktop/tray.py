@@ -197,6 +197,16 @@ class TrayIconManager:
             self._is_running = False
             return False
 
+    def notify(self, title: str, message: str) -> bool:
+        """Displays a native Windows notification balloon/toast via the system tray."""
+        if self._icon and self._is_running:
+            try:
+                self._icon.notify(message, title)
+                return True
+            except Exception as exc:
+                logger.debug("Failed to send tray notification: %s", exc)
+        return False
+
     def stop(self) -> None:
         """Stops and cleans up the notification area icon."""
         if self._icon:

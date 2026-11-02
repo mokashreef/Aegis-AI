@@ -9,6 +9,7 @@ import {
   InstallerStatus,
   DocumentItem,
   DocumentQueryResult,
+  ReminderItem,
 } from "../types";
 
 const API_BASE = "http://127.0.0.1:8420/api";
@@ -266,4 +267,36 @@ export async function queryDocument(query: string, docId?: string): Promise<Docu
     throw new Error(err.detail || "Failed to query document");
   }
   return response.json();
+}
+
+
+export async function fetchReminders(status = "active"): Promise<ReminderItem[]> {
+  const response = await fetch(`${API_BASE}/reminders?status=${status}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch reminders");
+  }
+  return response.json();
+}
+
+export async function createTimer(duration_seconds: number, title = ""): Promise<ReminderItem> {
+  const response = await fetch(`${API_BASE}/reminders/timer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ duration_seconds, title }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: "Failed to create timer" }));
+    throw new Error(err.detail || "Failed to create timer");
+  }
+  const data = await response.json();
+  return data.reminder;
+}
+
+export async function cancelReminder(reminderId?: string): Promise<boolean> {
+  if (reminderId) {
+    const response = await fetch(`${API_BASE}/reminders/${reminderId}`, { method: "DELETE" });
+    return response.ok;
+  }
+  const response = await fetch(`${API_BASE}/reminders/cancel-latest`, { method: "POST" });
+  return response.ok;
 }

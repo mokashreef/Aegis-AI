@@ -118,11 +118,38 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
 
     from aegis_core.voice.wake_word import wake_word_listener
+    from aegis_core.api.websocket import broadcast_ws_event
+
+    loop = asyncio.get_running_loop()
+
+    def _on_wake_word_triggered(keyword: str, score: float):
+        logger.info("Wake word triggered in supervisor: %s (confidence: %.2f)", keyword, score)
+        if loop and loop.is_running():
+            asyncio.run_coroutine_threadsafe(
+                broadcast_ws_event({
+                    "type": "wake_word_triggered",
+                    "keyword": keyword,
+                    "score": score,
+                }),
+                loop,
+            )
+
+    wake_word_listener.register_callback(_on_wake_word_triggered)
 
     if settings.wake_word_enabled:
         wake_word_listener.wake_word = settings.wake_word_model
         wake_word_listener.confidence_threshold = settings.wake_word_threshold
         wake_word_listener.start()
+
+    # Pre-warm Faster-Whisper in background so first user recording is instantaneous
+    async def _warmup_whisper():
+        from aegis_core.voice.stt import stt_engine
+        try:
+            await asyncio.to_thread(stt_engine.load_model)
+        except Exception as exc:
+            logger.debug("Whisper background warmup notice: %s", exc)
+
+    asyncio.create_task(_warmup_whisper())
 
     # Start background reminder scheduler worker
     async def _run_reminders_worker():

@@ -28,6 +28,7 @@ import {
   Play,
   SkipForward,
   SkipBack,
+  Headphones,
 } from "lucide-react";
 import { AudioWaveform } from "./AudioWaveform";
 import { ActionCard } from "./ActionCard";
@@ -80,11 +81,63 @@ export const CompanionOverlay: React.FC = () => {
     fetchReminders().then(setActiveReminders).catch(() => {});
   }, []);
 
+  const sendMessageRef = useRef<(text: string, confirmed?: boolean) => void>(() => {});
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+
+  const handleVoiceNotice = useCallback((msg: string) => {
+    setVoiceNotice(msg);
+    setTimeout(() => setVoiceNotice(null), 3500);
+  }, []);
+
+  const handleTranscription = useCallback((text: string) => {
+    if (text.trim()) {
+      setInput(text.trim());
+      sendMessageRef.current(text.trim());
+    }
+  }, []);
+
+  const {
+    isRecording,
+    isTranscribing,
+    isSpeaking,
+    audioLevel,
+    isHandsFree,
+    startRecording,
+    toggleRecording,
+    toggleHandsFree,
+    setHandsFreePaused,
+  } = useMicrophoneCapture(handleTranscription, {
+    silenceThreshold: 0.012,
+    silenceDurationMs: 650,
+    minSpeechDurationMs: 300,
+    maxDurationMs: 8000,
+    initialHandsFree: localStorage.getItem("aegis_hands_free") === "true",
+    onNotice: handleVoiceNotice,
+  });
+
+  const handleWakeWordTriggered = useCallback((keyword: string) => {
+    console.log("Wake word triggered:", keyword);
+    setVoiceNotice(`🎙️ تم التقاط النداء الصوتي (${keyword})! تحدث الآن...`);
+    setTimeout(() => setVoiceNotice(null), 3000);
+    startRecording();
+  }, [startRecording]);
+
   const { messages, activeTools, isStreaming, isConnected, sendMessage, clearMessages } = useAegisWebSocket(
     sessionId,
     handleStreamFinished,
-    handleReminderAlert
+    handleReminderAlert,
+    handleWakeWordTriggered
   );
+
+  sendMessageRef.current = sendMessage;
+
+  useEffect(() => {
+    setHandsFreePaused(isStreaming);
+  }, [isStreaming, setHandsFreePaused]);
+
+  useEffect(() => {
+    localStorage.setItem("aegis_hands_free", isHandsFree ? "true" : "false");
+  }, [isHandsFree]);
 
   const [input, setInput] = useState("");
   const [showTelemetry, setShowTelemetry] = useState(false);
@@ -218,20 +271,7 @@ export const CompanionOverlay: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleTranscription = useCallback((text: string) => {
-    if (text.trim()) {
-      setInput(text.trim());
-      sendMessage(text.trim());
-    }
-  }, [sendMessage]);
-
-  const {
-    isRecording,
-    isTranscribing,
-    isSpeaking,
-    audioLevel,
-    toggleRecording,
-  } = useMicrophoneCapture(handleTranscription);
+// (Microphone capture initialized with hands-free support above)
 
   const refreshTelemetry = useCallback(() => {
     fetchSystemStatus()
@@ -467,6 +507,25 @@ export const CompanionOverlay: React.FC = () => {
             </span>
           </button>
 
+          <button
+            onClick={toggleHandsFree}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-mono transition border ${
+              isHandsFree
+                ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 shadow-sm shadow-emerald-500/20"
+                : "bg-slate-800 border-slate-700/60 text-slate-400 hover:text-slate-200"
+            }`}
+            title={
+              isHandsFree
+                ? "وضع الاستماع الحر نشط: تحدث مباشرة دون فتح أو إغلاق المايك يدويًا (انقر للإيقاف)"
+                : "تفعيل الاستماع الحر (Hands-Free): تحدث في أي وقت دون الحاجة لفتح المايك"
+            }
+          >
+            <Headphones className={`w-3.5 h-3.5 ${isHandsFree ? "text-emerald-400 animate-pulse" : ""}`} />
+            <span className="text-[11px]">
+              {isHandsFree ? "Hands-Free ON" : "Hands-Free"}
+            </span>
+          </button>
+
           {/* Global Media Playback Mini-Controls */}
           <div className="flex items-center gap-0.5 bg-slate-800/80 border border-slate-700/60 rounded-lg p-0.5" title="Media Playback Controls">
             <button
@@ -668,6 +727,35 @@ export const CompanionOverlay: React.FC = () => {
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
+          </div>
+        )}
+
+        {voiceNotice && (
+          <div className="mb-2 px-3 py-1.5 rounded-lg bg-sky-950/80 border border-sky-500/40 text-xs text-sky-200 flex items-center justify-between">
+            <span>{voiceNotice}</span>
+            <button onClick={() => setVoiceNotice(null)} className="text-sky-400 hover:text-white">✕</button>
+          </div>
+        )}
+
+        {isRecording && (
+          <div className="mb-2 px-3 py-1 rounded-md bg-slate-800/80 border border-rose-500/40 text-xs text-rose-300 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="font-mono text-[11px]">
+              {isSpeaking ? "🎤 جاري التقاط صوتك..." : (isHandsFree ? "🎧 مستمع حر... تحدث في أي وقت" : "جاري الاستماع...")}
+            </span>
+            <div className="flex-1 h-1.5 bg-slate-950 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-400 via-sky-400 to-rose-400 transition-all duration-75"
+                style={{ width: `${Math.min(100, Math.max(6, audioLevel * 300))}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {isTranscribing && (
+          <div className="mb-2 px-3 py-1 rounded-md bg-amber-950/60 border border-amber-500/40 text-xs text-amber-300 flex items-center gap-2 animate-pulse">
+            <Activity className="w-3.5 h-3.5 animate-spin" />
+            <span>⚡ جاري تحويل الصوت إلى نص...</span>
           </div>
         )}
 

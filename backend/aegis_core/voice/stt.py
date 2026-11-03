@@ -66,7 +66,8 @@ class FasterWhisperEngine:
             beam_size=1,  # Greedy for maximum real-time speed
             language=language,
             condition_on_previous_text=False,
-            vad_filter=False,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=300),
         )
 
         text_pieces = []

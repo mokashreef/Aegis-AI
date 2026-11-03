@@ -81,9 +81,9 @@ class Settings(BaseSettings):
 
     # Voice Pipeline
     voice_enabled: bool = Field(default=True, description="Enable voice synthesis and transcription interfaces")
-    whisper_model_size: str = Field(default="base", description="Faster-Whisper model size (tiny, base, small, medium)")
+    whisper_model_size: str = Field(default="tiny", description="Faster-Whisper model size (tiny, base, small, medium)")
     piper_voice: str = Field(default="en_US-lessac-medium", description="Piper neural TTS voice identifier")
-    wake_word_enabled: bool = Field(default=False, description="Enable continuous background wake word listening")
+    wake_word_enabled: bool = Field(default=True, description="Enable continuous background wake word listening")
     wake_word_model: str = Field(default="hey_jarvis", description="Acoustic keyword model name")
     wake_word_threshold: float = Field(default=0.55, description="Confidence threshold [0.0 - 1.0]")
 

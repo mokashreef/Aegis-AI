@@ -1,3 +1,3 @@
 d14e25ba82dffec588efb5c961ca8514a5aa586d5c17ec3adf0f7db9068c0522  Aegis-AI-v0.2.0-alpha-Windows-x64-Portable.zip
-d43e0b3cb01d993ef0e5d87aa308f403902502b64b62f207f4d004323426c94c  AegisAI-Setup.exe
-d43e0b3cb01d993ef0e5d87aa308f403902502b64b62f207f4d004323426c94c  AegisAI-Setup-v0.2.0-alpha.exe
+c098a213fdd00ca840ca05cedc7d781fa6290388d9d94350a2270b38df52b2d2  AegisAI-Setup.exe
+c098a213fdd00ca840ca05cedc7d781fa6290388d9d94350a2270b38df52b2d2  AegisAI-Setup-v0.2.0-alpha.exe

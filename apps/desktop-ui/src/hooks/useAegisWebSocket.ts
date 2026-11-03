@@ -4,7 +4,8 @@ import { ChatMessage, ToolActivity, ReminderItem } from "../types";
 export function useAegisWebSocket(
   sessionId: string,
   onStreamEnd?: (fullText: string) => void,
-  onReminderAlert?: (reminder: ReminderItem) => void
+  onReminderAlert?: (reminder: ReminderItem) => void,
+  onWakeWordTriggered?: (keyword: string) => void
 ) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeTools, setActiveTools] = useState<ToolActivity[]>([]);
@@ -15,6 +16,8 @@ export function useAegisWebSocket(
   onStreamEndRef.current = onStreamEnd;
   const onReminderAlertRef = useRef(onReminderAlert);
   onReminderAlertRef.current = onReminderAlert;
+  const onWakeWordTriggeredRef = useRef(onWakeWordTriggered);
+  onWakeWordTriggeredRef.current = onWakeWordTriggered;
   const lastAssistantTextRef = useRef<string>("");
 
   useEffect(() => {
@@ -92,6 +95,10 @@ export function useAegisWebSocket(
         } else if (data.type === "reminder_alert") {
           if (onReminderAlertRef.current && data.reminder) {
             onReminderAlertRef.current(data.reminder);
+          }
+        } else if (data.type === "wake_word_triggered") {
+          if (onWakeWordTriggeredRef.current) {
+            onWakeWordTriggeredRef.current(data.keyword || "hey_jarvis");
           }
         }
       } catch (err) {

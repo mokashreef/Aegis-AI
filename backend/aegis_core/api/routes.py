@@ -219,9 +219,16 @@ async def transcribe_audio(file: UploadFile = File(...)) -> Dict[str, Any]:
 
     try:
         content = await file.read()
+        if not content:
+            return {"text": "", "length": 0, "success": True, "empty": True, "notice": "Audio payload empty."}
         temp_path.write_bytes(content)
         text = await voice_controller.transcribe_audio_file(temp_path)
-        return {"text": text, "length": len(text), "success": True}
+        return {
+            "text": text,
+            "length": len(text),
+            "success": True,
+            "empty": len(text) == 0,
+        }
     except Exception as exc:
         logger.error("Audio upload transcription failed: %s", exc)
         return {"text": "", "error": str(exc), "success": False}

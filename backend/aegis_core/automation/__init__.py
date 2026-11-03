@@ -19,6 +19,7 @@ from aegis_core.automation.system_tools import (
     GetClipboardTool,
     GetSystemTelemetryTool,
     LaunchAppTool,
+    OpenUrlTool,
     ListProcessesTool,
     ListWindowsTool,
     MinimizeAllWindowsTool,
@@ -80,4 +81,43 @@ __all__ = [
     "reminder_manager",
     "QuickNotesTool",
     "GetSystemTelemetryTool",
+    "OpenUrlTool",
+    "register_default_tools",
 ]
+
+
+def register_default_tools(registry=None) -> None:
+    """Registers core desktop automation tools into the registry idempotently."""
+    if registry is None:
+        from aegis_core.plugins.registry import plugin_registry
+        registry = plugin_registry
+
+    tools = [
+        LaunchAppTool(),
+        OpenUrlTool(),
+        CloseAppTool(),
+        ListProcessesTool(),
+        GetClipboardTool(),
+        SetClipboardTool(),
+        ListWindowsTool(),
+        FocusWindowTool(),
+        FocusWindowByTitleTool(),
+        MinimizeAllWindowsTool(),
+        SnapWindowTool(),
+        VolumeControlTool(),
+        BrightnessControlTool(),
+        ScreenCaptureTool(),
+        AnalyzeScreenTool(),
+        QueryDocumentTool(),
+        SetTimerTool(),
+        SetReminderTool(),
+        ListRemindersTool(),
+        CancelReminderTool(),
+        ControlMediaTool(),
+        QuickNotesTool(),
+        GetSystemTelemetryTool(),
+    ]
+    for t in tools:
+        if not registry.get(t.name):
+            registry.register(t)
+

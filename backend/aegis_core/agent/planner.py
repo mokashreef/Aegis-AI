@@ -15,21 +15,14 @@ from aegis_core.utils.logger import logger
 SYSTEM_PROMPT = """You are Aegis AI, the official open-source, local-first Windows AI companion.
 You live on the user's desktop, floating seamlessly above their workspace.
 
-CORE OPERATIONAL PRINCIPLES:
-1. Native Windows Helper: You can launch desktop applications, inspect running processes,
-   interact with the system clipboard, and monitor Windows telemetry.
-2. Direct and Helpful: Be concise, clear, and proactive.
-3. Tool Usage: When the user asks you to interact with Windows (e.g., open an app, read
-   clipboard, list processes), use your registered tools.
-4. Tool Format:
-   If you need to call a tool, respond with a JSON block:
-   ```tool_call
-   {
-     "name": "tool_name",
-     "arguments": {"param1": "val1"}
-   }
-   ```
-5. Safety: Never attempt destructive actions without warning the user.
+Capabilities:
+- Desktop Automation: Launch apps, manage windows, control volume/brightness, play/pause media.
+- Productive Intelligence: Set reminders & timers, take daily notes, search local documents (RAG),
+  and analyze the desktop screen (Vision AI).
+
+Guidelines:
+1. Direct, concise, and helpful. Avoid unnecessary preamble.
+2. Respond naturally in the user's language (Arabic or English).
 """
 
 
@@ -45,6 +38,11 @@ class AgentPlanner:
         self.router = router or ai_router
         self.registry = registry or plugin_registry
         self.memory = memory or session_manager
+
+        # Ensure core tools are registered if registry is empty
+        if not self.registry.list_tools():
+            from aegis_core.automation import register_default_tools
+            register_default_tools(self.registry)
 
     def _extract_tool_call(self, text: str) -> Optional[Dict[str, Any]]:
         """Parses tool calls from markdown tool_call code blocks or natural language intents."""
@@ -75,25 +73,7 @@ class AgentPlanner:
         # 1. Persist user prompt in conversation memory
         self.memory.add_message(session_id=session_id, role="user", content=user_prompt)
 
-        # 2. Build conversational history with system prompt
-        history_msgs = self.memory.get_messages(session_id=session_id, limit=20)
-        messages: List[LLMMessage] = [
-            LLMMessage(role="system", content=SYSTEM_PROMPT)
-        ]
-
-        # Append tool descriptions in system context
-        tool_schemas = self.registry.list_tools()
-        if tool_schemas:
-            tools_summary = "\nAvailable Tools:\n" + "\n".join(
-                f"- {t['name']}: {t['description']} (parameters: {json.dumps(t['parameters'])})"
-                for t in tool_schemas
-            )
-            messages[0].content += tools_summary
-
-        for m in history_msgs:
-            messages.append(LLMMessage(role=m["role"], content=m["content"]))
-
-        # 3. Check for immediate direct automation intent
+        # 2. Check for immediate direct automation intent (fast-path)
         immediate_tool = self._extract_tool_call(user_prompt)
         if immediate_tool:
             tool_name = immediate_tool.get("name", "")
@@ -121,13 +101,38 @@ class AgentPlanner:
 
             yield {"type": "tool_result", "tool_name": tool_name, "result": tool_res.to_dict()}
 
-            # Add tool observation to context for model synthesis
-            observation_msg = f"Tool '{tool_name}' executed. Result: {json.dumps(tool_res.to_dict())}"
-            messages.append(LLMMessage(role="tool", content=observation_msg, name=tool_name))
-            messages.append(LLMMessage(
-                role="user",
-                content=f"Synthesize the result of executing {tool_name} naturally for the user.",
-            ))
+            # Direct deterministic fast-path:
+            # Direct automation tools already generate comprehensive, fully-grounded messages
+            # (e.g. screen analysis, media controls, reminders, timers, documents, app launching).
+            # Streaming tool_res.message directly provides sub-second latency (<300ms) and eliminates
+            # hallucination from small local models (1.5B) attempting to parse raw JSON observations.
+            final_content = tool_res.message or (
+                f"تم تنفيذ الإجراء '{tool_name}' بنجاح." if tool_res.success
+                else f"تعذر إكمال العملية: {tool_res.error or 'خطأ غير متوقع'}"
+            )
+
+            yield {"type": "stream_start"}
+            yield {
+                "type": "token",
+                "delta": final_content,
+                "provider": "local_direct",
+                "model": "instant_executor",
+            }
+            self.memory.add_message(
+                session_id=session_id,
+                role="assistant",
+                content=final_content,
+            )
+            yield {"type": "stream_end", "full_content": final_content}
+            return
+
+        # 3. Build conversational history with concise system prompt
+        history_msgs = self.memory.get_messages(session_id=session_id, limit=12)
+        messages: List[LLMMessage] = [
+            LLMMessage(role="system", content=SYSTEM_PROMPT)
+        ]
+        for m in history_msgs:
+            messages.append(LLMMessage(role=m["role"], content=m["content"]))
 
         # 4. Stream response from AI Runtime
         assistant_content_chunks = []
@@ -145,12 +150,9 @@ class AgentPlanner:
 
         final_content = "".join(assistant_content_chunks)
 
-        # Fallback direct response if LLM produced no text but a direct tool was executed
-        if not final_content.strip() and immediate_tool:
-            if tool_res.success:
-                final_content = tool_res.message or f"Action '{tool_name}' completed successfully."
-            else:
-                final_content = f"Could not complete '{tool_name}': {tool_res.error}"
+        # Fallback response if LLM produced no text
+        if not final_content.strip():
+            final_content = "عذراً، لم أتمكن من صياغة الرد حالياً. يرجى إعادة المحاولة."
             yield {
                 "type": "token",
                 "delta": final_content,

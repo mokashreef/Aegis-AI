@@ -75,3 +75,51 @@ async def test_agent_planner_direct_tool_execution(tmp_path):
     assert len(history) >= 2
     assert history[0]["role"] == "user"
     assert history[-1]["role"] == "assistant"
+
+
+@pytest.mark.asyncio
+async def test_agent_planner_conversational_streaming(tmp_path):
+    """Ensure agent planner falls back to LLM conversational stream for general chat."""
+    db_path = tmp_path / "conv_test.db"
+    db_engine = DatabaseEngine(db_path=db_path)
+    mem = SessionManager(engine=db_engine)
+    session_id = mem.create_session("Conversational Test")
+
+    reg = PluginRegistry()
+    router = AIRuntimeRouter()
+    mock_p = MockAgentProvider()
+    router.ollama = mock_p
+    router.pollinations = mock_p
+
+    planner = AgentPlanner(router=router, registry=reg, memory=mem)
+
+    tokens = []
+    async for event in planner.execute_task(
+        user_prompt="مرحبا من أنت؟",
+        session_id=session_id,
+        user_confirmed=True,
+    ):
+        if event["type"] == "token":
+            tokens.append(event["delta"])
+
+    assert len(tokens) > 0
+    full_text = "".join(tokens)
+    assert "Task completed successfully." in full_text
+
+
+@pytest.mark.asyncio
+async def test_agent_planner_auto_registers_default_tools(tmp_path):
+    """Ensure agent planner populates standard desktop automation tools when none provided."""
+    db_path = tmp_path / "defaults_test.db"
+    db_engine = DatabaseEngine(db_path=db_path)
+    mem = SessionManager(engine=db_engine)
+
+    planner = AgentPlanner(memory=mem)
+    tools = planner.registry.list_tools()
+    assert len(tools) >= 20
+    tool_names = [t["name"] for t in tools]
+    assert "analyze_screen" in tool_names
+    assert "control_media" in tool_names
+    assert "set_timer" in tool_names
+    assert "query_document" in tool_names
+

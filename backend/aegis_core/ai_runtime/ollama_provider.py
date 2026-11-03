@@ -195,7 +195,11 @@ class OllamaProvider(LLMProvider):
             "model": target_model,
             "messages": [m.to_dict() for m in messages],
             "stream": True,
-            "options": {"temperature": temperature},
+            "keep_alive": "30m",
+            "options": {
+                "temperature": temperature,
+                "num_predict": 512,
+            },
         }
 
         if tools:

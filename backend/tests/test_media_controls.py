@@ -129,3 +129,4 @@ def test_api_media_endpoints():
         res5 = client.post("/api/media/stop")
         assert res5.status_code == 200
         assert res5.json()["action"] == "stop"
+

@@ -199,12 +199,16 @@ class ScreenVisionAnalyzer:
         active window, workspace process tree, and user query.
         """
         windows_bullet = "\n".join(f"- {w}" for w in open_windows[:6]) if open_windows else "- سطح المكتب (Desktop)"
+        has_specific_query_ar = bool(query and "حلل ما يظهر" not in query and "واشرح أهم ما تراه" not in query)
+        query_line_ar = f"- **استفسارك:** `{query}`\n" if has_specific_query_ar else ""
+        has_specific_query_en = bool(query and "Analyze what" not in query)
+        query_line_en = f"- **Query:** `{query}`\n" if has_specific_query_en else ""
 
         if is_arabic:
             response = (
                 f"### 👁️ تحليل ما يظهر على الشاشة (Ask My Screen)\n\n"
                 f"- **التطبيق / النافذة النشطة حالياً:** `{fg_window}`\n"
-                f"- **دقة العرض والشاشة:** `{width}x{height} بكسل`\n\n"
+                f"- **دقة العرض والشاشة:** `{width}x{height} بكسل`\n" + query_line_ar + "\n"
                 f"#### 🪟 التطبيقات والنوافذ البارزة على سطح المكتب:\n"
                 f"{windows_bullet}\n\n"
                 f"#### 🔍 تفاصيل التحليل واستفسارك:\n"
@@ -218,7 +222,7 @@ class ScreenVisionAnalyzer:
             response = (
                 f"### 👁️ Screen Analysis (Ask My Screen)\n\n"
                 f"- **Active Foreground Window:** `{fg_window}`\n"
-                f"- **Screen Resolution:** `{width}x{height} px`\n\n"
+                f"- **Screen Resolution:** `{width}x{height} px`\n" + query_line_en + "\n"
                 f"#### 🪟 Visible Desktop Windows:\n"
                 f"{windows_bullet}\n\n"
                 f"#### 🔍 Visual Workspace Context:\n"

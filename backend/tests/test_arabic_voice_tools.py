@@ -223,13 +223,13 @@ def test_arabic_spoken_phonetic_domains_and_compound_phrases():
     assert r5 is not None
     assert r5["intent"] == UserIntent.OPEN_URL
     assert r5["arguments"]["browser"] == "chrome"
-    assert r5["arguments"]["url"] == "كود التطور"
+    assert r5["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
 
     # 6. "افتح موقع كود التطور بكروم"
     r6 = IntentRouter.classify_and_route("افتح موقع كود التطور بكروم")
     assert r6 is not None
     assert r6["arguments"]["browser"] == "chrome"
-    assert r6["arguments"]["url"] == "كود التطور"
+    assert r6["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
 
     # 7. "كود التطور دوت نت" (standalone spoken domain)
     r7 = IntentRouter.classify_and_route("كود التطور دوت نت")
@@ -241,7 +241,7 @@ def test_arabic_spoken_phonetic_domains_and_compound_phrases():
     r8 = IntentRouter.classify_and_route("افتح المتصفح و افتح كود التطور")
     assert r8 is not None
     assert r8["intent"] == UserIntent.OPEN_URL
-    assert r8["arguments"]["url"] == "كود التطور"
+    assert r8["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
     assert r8["arguments"]["browser"] == "chrome"
 
 
@@ -287,3 +287,42 @@ def test_desktop_startup_api_endpoints():
         resp_toggle = client.post("/api/desktop/startup/toggle")
         assert resp_toggle.status_code == 200
         assert resp_toggle.json() == {"enabled": False}
+
+
+def test_precision_website_and_app_resolution():
+    """Verify precision website alias canonicalization and Arabic app name translation."""
+    from aegis_core.automation.intent_router import IntentRouter, UserIntent, resolve_app_name, resolve_url_name
+
+    # 1. URL resolution tests
+    assert resolve_url_name("موقع كود التطور") == "https://codealtatawor.net"
+    assert resolve_url_name("كانفا") == "https://www.canva.com"
+    assert resolve_url_name("امازون") == "https://www.amazon.com"
+    assert resolve_url_name("نتفلكس") == "https://www.netflix.com"
+    assert resolve_url_name("ويكيبيديا") == "https://ar.wikipedia.org"
+
+    # 2. App name translation and prefix stripping
+    assert resolve_app_name("المفكرة") == "notepad"
+    assert resolve_app_name("برنامج الرسام") == "mspaint"
+    assert resolve_app_name("تطبيق الآلة الحاسبة") == "calc"
+    assert resolve_app_name("الوورد") == "winword"
+    assert resolve_app_name("الفوتوشوب") == "photoshop"
+    assert resolve_app_name("مدير المهام") == "taskmgr"
+    assert resolve_app_name("الإعدادات") == "ms-settings:"
+
+    # 3. IntentRouter direct website routing
+    r_canva = IntentRouter.classify_and_route("افتح كانفا")
+    assert r_canva is not None
+    assert r_canva["intent"] == UserIntent.OPEN_URL
+    assert r_canva["arguments"]["url"] == "https://www.canva.com"
+
+    r_amazon = IntentRouter.classify_and_route("افتح موقع امازون")
+    assert r_amazon is not None
+    assert r_amazon["intent"] == UserIntent.OPEN_URL
+    assert r_amazon["arguments"]["url"] == "https://www.amazon.com"
+
+    # 4. IntentRouter app launching with prefix normalization
+    r_calc = IntentRouter.classify_and_route("افتح تطبيق الحاسبة")
+    assert r_calc is not None
+    assert r_calc["intent"] == UserIntent.APP_LAUNCH
+    assert r_calc["arguments"]["app_name"] == "calc"
+

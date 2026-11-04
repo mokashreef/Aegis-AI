@@ -38,15 +38,26 @@ class LaunchAppTool(BaseTool):
     }
 
     async def execute(self, app_name: str, **kwargs: Any) -> ToolResult:
-        res = ProcessManager.launch_app(app_name)
+        from aegis_core.automation.intent_router import resolve_app_name, resolve_url_name
+
+        canonical_app = resolve_app_name(app_name)
+        res = ProcessManager.launch_app(canonical_app)
         if res.get("launched"):
+            app_display_name = res.get("name") or canonical_app
             return ToolResult(
                 success=True,
                 data=res,
-                message=f"Successfully launched {res.get('name', app_name)}",
+                message=f"تم تشغيل التطبيق بنجاح: {app_display_name}",
             )
 
-        # Defensive fallback: If app_name contains website keywords, redirect to OpenUrlTool
+        # Fallback 1: If it's a known website or web service (e.g. Canva, Netflix, Amazon, etc.)
+        resolved_url = resolve_url_name(app_name) or resolve_url_name(canonical_app)
+        if resolved_url:
+            logger.info("Application '%s' resolved to web URL '%s', launching browser...", app_name, resolved_url)
+            url_tool = OpenUrlTool()
+            return await url_tool.execute(url=resolved_url)
+
+        # Defensive fallback 2: If app_name contains website keywords, redirect to OpenUrlTool
         web_indicators = [
             "موقع", "صفحة", "دوت", ".com", ".net", ".org", " و افتح ", "وافتح", "http://", "https://",
         ]
@@ -76,7 +87,7 @@ class LaunchAppTool(BaseTool):
 
         return ToolResult(
             success=False,
-            error=res.get("error", f"Failed to launch application '{app_name}'."),
+            error=res.get("error", f"تعذر تشغيل التطبيق '{app_name}'. قد لا يكون مثبتاً على جهازك."),
             data=res,
         )
 
@@ -105,34 +116,21 @@ class OpenUrlTool(BaseTool):
 
     async def execute(self, url: str, browser: str = "", **kwargs: Any) -> ToolResult:
         target_url = url.strip()
-        low = target_url.lower()
 
-        KNOWN_URLS = {
-            "youtube": "https://www.youtube.com",
-            "يوتيوب": "https://www.youtube.com",
-            "google": "https://www.google.com",
-            "جوجل": "https://www.google.com",
-            "غوغل": "https://www.google.com",
-            "github": "https://www.github.com",
-            "جيت هاب": "https://www.github.com",
-            "غيتهاب": "https://www.github.com",
-            "twitter": "https://x.com",
-            "تويتر": "https://x.com",
-            "facebook": "https://www.facebook.com",
-            "فيسبوك": "https://www.facebook.com",
-            "chatgpt": "https://chatgpt.com",
-            "شات جي بي تي": "https://chatgpt.com",
-            "gmail": "https://mail.google.com",
-            "جيميل": "https://mail.google.com",
-        }
+        from aegis_core.automation.intent_router import resolve_url_name
 
-        if low in KNOWN_URLS:
-            target_url = KNOWN_URLS[low]
+        resolved_canonical = resolve_url_name(target_url)
+        if resolved_canonical:
+            target_url = resolved_canonical
         elif not target_url.startswith("http://") and not target_url.startswith("https://"):
             if "." in target_url and " " not in target_url:
                 target_url = f"https://{target_url}"
+            elif target_url.replace("-", "").isalnum() and " " not in target_url and not any(
+                "\u0600" <= ch <= "\u06ff" for ch in target_url
+            ):
+                target_url = f"https://www.{target_url}.com"
             else:
-                target_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(target_url)}"
+                target_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(target_url)}&btnI=1"
 
         browser_choice = browser.strip().lower()
         if not browser_choice:
@@ -184,7 +182,7 @@ class OpenUrlTool(BaseTool):
         return ToolResult(
             success=True,
             data={"url": target_url, "browser": target_browser or "default", "method": method},
-            message=f"Opened {target_url} in {target_browser or 'default browser'}",
+            message=f"تم فتح الرابط بنجاح: {target_url}",
         )
 
 

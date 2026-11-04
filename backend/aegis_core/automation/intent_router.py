@@ -29,11 +29,13 @@ class UserIntent(str, Enum):
 
 
 # Common Arabic friendly names for Windows apps and tools
-ARABIC_APP_TRANSLATIONS = {
+ARABIC_APP_TRANSLATIONS: Dict[str, str] = {
     "كروم": "chrome",
     "جوجل كروم": "chrome",
+    "قووقل كروم": "chrome",
     "المفكرة": "notepad",
     "مفكرة": "notepad",
+    "نوتباد": "notepad",
     "النوتة": "notepad",
     "المذكرة": "notepad",
     "الحاسبة": "calc",
@@ -41,8 +43,10 @@ ARABIC_APP_TRANSLATIONS = {
     "الة حاسبة": "calc",
     "الالة الحاسبة": "calc",
     "الآلة الحاسبة": "calc",
+    "كالكوليتر": "calc",
     "الرسام": "mspaint",
     "رسام": "mspaint",
+    "بينت": "mspaint",
     "كود": "code",
     "في اس كود": "code",
     "فيجوال ستوديو كود": "code",
@@ -72,51 +76,182 @@ ARABIC_APP_TRANSLATIONS = {
     "سبوتيفاي": "spotify",
     "ستيم": "steam",
     "وورد": "winword",
+    "الوورد": "winword",
     "اكسل": "excel",
     "إكسل": "excel",
+    "الاكسل": "excel",
     "باوربوينت": "powerpnt",
     "بوربوينت": "powerpnt",
+    "الباوربوينت": "powerpnt",
     "فوتوشوب": "photoshop",
+    "الفوتوشوب": "photoshop",
     "مدير المهام": "taskmgr",
     "التاسك مانجر": "taskmgr",
     "الاعدادات": "ms-settings:",
+    "الإعدادات": "ms-settings:",
+    "ضبط الجهاز": "ms-settings:",
+    "لوحة التحكم": "control",
     "مستكشف الملفات": "explorer",
     "الملفات": "explorer",
+    "المجلدات": "explorer",
     "الطرفية": "cmd",
     "تيرمينال": "wt",
+    "موجه الاوامر": "cmd",
+    "موجه الأوامر": "cmd",
     "باورشيل": "powershell",
     "باور شيل": "powershell",
+    "تيمز": "teams",
+    "زووم": "zoom",
 }
 
 # Arabic and shortcut website friendly names
-ARABIC_URL_TRANSLATIONS = {
-    "يوتيوب": "https://www.youtube.com",
-    "youtube": "https://www.youtube.com",
-    "جوجل": "https://www.google.com",
-    "غوغل": "https://www.google.com",
-    "google": "https://www.google.com",
+ARABIC_URL_TRANSLATIONS: Dict[str, str] = {
+    # Evolution Code / Core platforms
+    "كود التطور": "https://codealtatawor.net",
+    "كود_التطور": "https://codealtatawor.net",
+    "موقع كود التطور": "https://codealtatawor.net",
+    "codealtatawor": "https://codealtatawor.net",
+
+    # AI & Developer Tools
+    "شات جي بي تي": "https://chatgpt.com",
+    "شات_جي_بي_تي": "https://chatgpt.com",
+    "chatgpt": "https://chatgpt.com",
+    "openai": "https://openai.com",
+    "كلاود": "https://claude.ai",
+    "كلود": "https://claude.ai",
+    "claude": "https://claude.ai",
+    "جيميني": "https://gemini.google.com",
+    "gemini": "https://gemini.google.com",
     "غيتهاب": "https://www.github.com",
     "جيت هاب": "https://www.github.com",
     "جيت_هاب": "https://www.github.com",
     "github": "https://www.github.com",
+    "جيت لاب": "https://gitlab.com",
+    "gitlab": "https://gitlab.com",
+    "ستاك اوفر فلو": "https://stackoverflow.com",
+    "stackoverflow": "https://stackoverflow.com",
+    "نوشن": "https://www.notion.so",
+    "notion": "https://www.notion.so",
+    "كانفا": "https://www.canva.com",
+    "canva": "https://www.canva.com",
+    "فيجما": "https://www.figma.com",
+    "figma": "https://www.figma.com",
+
+    # Search & Cloud & Mail
+    "جوجل": "https://www.google.com",
+    "غوغل": "https://www.google.com",
+    "قووقل": "https://www.google.com",
+    "google": "https://www.google.com",
+    "بينج": "https://www.bing.com",
+    "bing": "https://www.bing.com",
+    "جيميل": "https://mail.google.com",
+    "gmail": "https://mail.google.com",
+    "درايف": "https://drive.google.com",
+    "جوجل درايف": "https://drive.google.com",
+    "ترجمة": "https://translate.google.com",
+    "ترجمة جوجل": "https://translate.google.com",
+    "مترجم جوجل": "https://translate.google.com",
+    "خرائط جوجل": "https://maps.google.com",
+    "خرائط": "https://maps.google.com",
+    "جوجل ميت": "https://meet.google.com",
+    "ويكيبيديا": "https://ar.wikipedia.org",
+    "wikipedia": "https://ar.wikipedia.org",
+    "ياهو": "https://www.yahoo.com",
+    "اوتلوك": "https://outlook.live.com",
+
+    # Social & Community
+    "يوتيوب": "https://www.youtube.com",
+    "youtube": "https://www.youtube.com",
     "تويتر": "https://x.com",
     "twitter": "https://x.com",
     "اكس": "https://x.com",
     "فيسبوك": "https://www.facebook.com",
     "فيس بوك": "https://www.facebook.com",
     "facebook": "https://www.facebook.com",
-    "شات جي بي تي": "https://chatgpt.com",
-    "شات_جي_بي_تي": "https://chatgpt.com",
-    "chatgpt": "https://chatgpt.com",
-    "جيميل": "https://mail.google.com",
-    "gmail": "https://mail.google.com",
+    "انستقرام": "https://www.instagram.com",
+    "انستغرام": "https://www.instagram.com",
+    "انستجرام": "https://www.instagram.com",
+    "instagram": "https://www.instagram.com",
+    "تيك توك": "https://www.tiktok.com",
+    "تيكتوك": "https://www.tiktok.com",
+    "tiktok": "https://www.tiktok.com",
     "لينكد ان": "https://www.linkedin.com",
-    "لينكد_ان": "https://www.linkedin.com",
+    "لينكدان": "https://www.linkedin.com",
     "linkedin": "https://www.linkedin.com",
     "واتساب": "https://web.whatsapp.com",
+    "واتس اب": "https://web.whatsapp.com",
     "whatsapp": "https://web.whatsapp.com",
+    "تيليجرام": "https://web.telegram.org",
+    "تليجرام": "https://web.telegram.org",
+    "telegram": "https://web.telegram.org",
+    "ريديت": "https://www.reddit.com",
     "reddit": "https://www.reddit.com",
+    "ديسكورد": "https://discord.com",
+    "discord": "https://discord.com",
+    "تويتش": "https://www.twitch.tv",
+    "twitch": "https://www.twitch.tv",
+    "بينترست": "https://www.pinterest.com",
+    "pinterest": "https://www.pinterest.com",
+    "سناب شات": "https://web.snapchat.com",
+
+    # Streaming & Entertainment
+    "نتفلكس": "https://www.netflix.com",
+    "نتفليكس": "https://www.netflix.com",
+    "netflix": "https://www.netflix.com",
+    "سبوتيفاي": "https://open.spotify.com",
+    "spotify": "https://open.spotify.com",
+    "ساوند كلاود": "https://soundcloud.com",
+    "soundcloud": "https://soundcloud.com",
+    "شاهد": "https://shahid.mbc.net",
+    "انغامي": "https://www.anghami.com",
+    "ستيم": "https://store.steampowered.com",
+
+    # E-Commerce & Arab Portals
+    "امازون": "https://www.amazon.com",
+    "أمازون": "https://www.amazon.com",
+    "amazon": "https://www.amazon.com",
+    "علي اكسبريس": "https://www.aliexpress.com",
+    "aliexpress": "https://www.aliexpress.com",
+    "ايباي": "https://www.ebay.com",
+    "ebay": "https://www.ebay.com",
+    "نون": "https://www.noon.com",
+    "noon": "https://www.noon.com",
+    "حراج": "https://haraj.com.sa",
+    "سلة": "https://salla.com",
+    "زد": "https://zid.sa",
+    "خمسات": "https://khamsat.com",
+    "مستقل": "https://mostaql.com",
+    "حاسوب": "https://academy.hsoub.com",
+    "موضوع": "https://mawdoo3.com",
+    "الجزيرة": "https://www.aljazeera.net",
+    "العربية": "https://www.alarabiya.net",
 }
+
+
+def resolve_url_name(name: str) -> Optional[str]:
+    """Resolves website name, brand or domain alias to an exact canonical URL."""
+    k = name.strip().lower()
+    for prefix in ["موقع ", "صفحة ", "the website ", "the site ", "website ", "site "]:
+        if k.startswith(prefix):
+            k = k[len(prefix):].strip()
+    if k in ARABIC_URL_TRANSLATIONS:
+        return ARABIC_URL_TRANSLATIONS[k]
+    if k.startswith("ال") and k[2:] in ARABIC_URL_TRANSLATIONS:
+        return ARABIC_URL_TRANSLATIONS[k[2:]]
+    return None
+
+
+def resolve_app_name(name: str) -> str:
+    """Translates natural application names and removes polite prefixes."""
+    k = name.strip().lower()
+    for prefix in ["تطبيق ", "برنامج ", "متصفح ", "the app ", "the application ", "app ", "program "]:
+        if k.startswith(prefix):
+            k = k[len(prefix):].strip()
+    if k in ARABIC_APP_TRANSLATIONS:
+        return ARABIC_APP_TRANSLATIONS[k]
+    if k.startswith("ال") and k[2:] in ARABIC_APP_TRANSLATIONS:
+        return ARABIC_APP_TRANSLATIONS[k[2:]]
+    return k
 
 
 def normalize_spoken_arabic_text(text: str) -> str:
@@ -309,8 +444,8 @@ class IntentRouter:
         if m_ar_target_br:
             tgt = m_ar_target_br.group("target").strip()
             br = m_ar_target_br.group("browser").strip()
-            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
-            resolved_browser = ARABIC_APP_TRANSLATIONS.get(br, br)
+            resolved_url = resolve_url_name(tgt) or ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_browser = resolve_app_name(br) or ARABIC_APP_TRANSLATIONS.get(br, br)
             return {
                 "intent": UserIntent.OPEN_URL,
                 "name": "open_url",
@@ -326,7 +461,7 @@ class IntentRouter:
         )
         if m_ar_site:
             tgt = m_ar_site.group("target").strip()
-            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_url = resolve_url_name(tgt) or ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
             return {
                 "intent": UserIntent.OPEN_URL,
                 "name": "open_url",
@@ -344,7 +479,7 @@ class IntentRouter:
         )
         if m_ar_url:
             tgt = m_ar_url.group("target").strip()
-            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_url = resolve_url_name(tgt) or ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
             return {
                 "intent": UserIntent.OPEN_URL,
                 "name": "open_url",
@@ -362,11 +497,12 @@ class IntentRouter:
         if m_en_url:
             tgt = m_en_url.group("target").strip()
             br = (m_en_url.group("browser") or "").strip()
-            resolved_url = ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_url = resolve_url_name(tgt) or ARABIC_URL_TRANSLATIONS.get(tgt, tgt)
+            resolved_browser = resolve_app_name(br) or ARABIC_APP_TRANSLATIONS.get(br, br)
             return {
                 "intent": UserIntent.OPEN_URL,
                 "name": "open_url",
-                "arguments": {"url": resolved_url, "browser": br},
+                "arguments": {"url": resolved_url, "browser": resolved_browser},
             }
 
         # 1. Volume Controls (Bilingual)
@@ -728,8 +864,17 @@ class IntentRouter:
             m = re.match(pat, low) or re.match(pat, raw)
             if m:
                 app = m.group("app").strip()
-                # Translate Arabic app names to system executable tokens
-                translated_app = ARABIC_APP_TRANSLATIONS.get(app, app)
+                # 1. Check if user asked to open a known website or web app (e.g. "افتح امازون", "افتح كانفا")
+                known_url = resolve_url_name(app)
+                if known_url:
+                    return {
+                        "intent": UserIntent.OPEN_URL,
+                        "name": "open_url",
+                        "arguments": {"url": known_url, "browser": ""},
+                    }
+
+                # 2. Translate Arabic app names and strip polite prefixes
+                translated_app = resolve_app_name(app)
 
                 if "clipboard" in app or "الحافظة" in app:
                     return {

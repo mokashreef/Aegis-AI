@@ -8,9 +8,13 @@ strDir = fso.GetParentFolderName(WScript.ScriptFullName)
 strPythonw = strDir & "\.venv\Scripts\pythonw.exe"
 strAegis = strDir & "\aegis.py"
 
+strPython = strDir & "\.venv\Scripts\python.exe"
 If fso.FileExists(strPythonw) Then
     WshShell.CurrentDirectory = strDir
     WshShell.Run Chr(34) & strPythonw & Chr(34) & " " & Chr(34) & strAegis & Chr(34), 0, False
+ElseIf fso.FileExists(strPython) Then
+    WshShell.CurrentDirectory = strDir
+    WshShell.Run Chr(34) & strPython & Chr(34) & " " & Chr(34) & strAegis & Chr(34), 0, False
 Else
     MsgBox "Aegis AI virtual environment not found in .venv!" & vbCrLf & "Please run .\scripts\setup_env.ps1 first.", 16, "Aegis AI Launcher"
 End If

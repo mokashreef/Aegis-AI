@@ -25,11 +25,13 @@ class BrightnessManager:
             "-ErrorAction SilentlyContinue).CurrentBrightness"
         )
         try:
+            no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             proc = subprocess.run(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
                 capture_output=True,
                 text=True,
                 timeout=5,
+                creationflags=no_win,
             )
             output = proc.stdout.strip()
             if output.isdigit():
@@ -56,11 +58,13 @@ class BrightnessManager:
             f"if ($wmi) {{ $wmi | ForEach-Object {{ $_.WmiSetBrightness(1, {clamped}) }} }}"
         )
         try:
+            no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             subprocess.Popen(
                 ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
-                shell=True,
+                shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
+                creationflags=no_win,
             )
             logger.info("Display brightness set to %d%%.", clamped)
             return {

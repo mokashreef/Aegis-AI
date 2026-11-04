@@ -30,6 +30,9 @@ class WindowsStartupManager:
         if pythonw.exists() and aegis_py.exists():
             return f'"{pythonw}" "{aegis_py}" --background'
 
+        vbs_path = base_dir / "AegisAI.vbs"
+        if vbs_path.exists():
+            return f'wscript.exe "{vbs_path}"'
         return f'"{sys.executable}" "{aegis_py}" --background'
 
     @classmethod

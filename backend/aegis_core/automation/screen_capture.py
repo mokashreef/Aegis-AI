@@ -127,11 +127,13 @@ try {{
 """
             script_path.write_text(script_content, encoding="utf-8")
             try:
+                no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
                 proc = subprocess.run(
                     ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script_path.resolve())],
                     capture_output=True,
                     text=True,
                     timeout=8,
+                    creationflags=no_win,
                 )
                 if "OK" in proc.stdout and out_path.exists():
                     data = out_path.read_bytes()

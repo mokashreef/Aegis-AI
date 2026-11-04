@@ -10,7 +10,12 @@ if not exist ".venv\Scripts\python.exe" (
     exit /b 1
 )
 
-:: Launch Aegis AI detached in background mode without keeping a console window open
+:: Launch completely silently without keeping or flashing any console window
+if exist "AegisAI.vbs" (
+    start "" wscript.exe "%~dp0AegisAI.vbs"
+    exit
+)
+
 if exist ".venv\Scripts\pythonw.exe" (
     start "" ".venv\Scripts\pythonw.exe" aegis.py
     exit

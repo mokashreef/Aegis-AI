@@ -17,6 +17,10 @@ if sys.platform == "win32":
         import ctypes
 
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AegisAI.Desktop.Companion.2026")
+        # Instantly hide any attached console window on startup
+        h_console = ctypes.windll.kernel32.GetConsoleWindow()
+        if h_console:
+            ctypes.windll.user32.ShowWindow(h_console, 0)
     except Exception:
         pass
 

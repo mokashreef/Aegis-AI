@@ -249,12 +249,14 @@ class AppFinder:
                 }
 
             # 2. Subprocess fallback
+            no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             proc = subprocess.Popen(
                 [target],
-                shell=True,
+                shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
+                creationflags=no_win,
             )
             return {
                 "success": True,

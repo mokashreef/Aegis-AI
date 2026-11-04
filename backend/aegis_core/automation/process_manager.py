@@ -65,14 +65,22 @@ class ProcessManager:
 
         logger.info("Launching desktop application: %s", command)
         try:
-            # On Windows, launch target directly when absolute path is known
+            # On Windows, launch target directly with window suppression
+            flags = 0
+            startupinfo = None
+            if os.name == "nt":
+                flags = subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 0
             proc = subprocess.Popen(
                 command,
-                shell=False if os.path.isabs(target) else True,
+                shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
-                creationflags=subprocess.DETACHED_PROCESS if os.name == "nt" else 0,
+                creationflags=flags,
+                startupinfo=startupinfo,
             )
             return {
                 "launched": True,

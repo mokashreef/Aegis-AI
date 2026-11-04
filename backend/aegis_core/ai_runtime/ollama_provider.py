@@ -129,7 +129,7 @@ class OllamaProvider(LLMProvider):
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 stdin=subprocess.DEVNULL,
-                creationflags=subprocess.DETACHED_PROCESS if os.name == "nt" else 0,
+                creationflags=(subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS) if os.name == "nt" else 0,
             )
             return True
         except Exception as exc:

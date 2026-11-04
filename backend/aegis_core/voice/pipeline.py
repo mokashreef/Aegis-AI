@@ -69,11 +69,13 @@ class VoicePipelineController:
                         f'$mediaPlayer.Play(); '
                         f'Start-Sleep -Seconds 1;'
                     )
+                    no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
                     subprocess.Popen(
                         ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
-                        shell=True,
+                        shell=False,
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
+                        creationflags=no_win,
                     )
                 return True
 
@@ -89,6 +91,7 @@ class VoicePipelineController:
                     f'$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; '
                     f'$synth.Speak("{clean_text}");'
                 )
+                no_win = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
                 proc = await asyncio.create_subprocess_exec(
                     "powershell",
                     "-NoProfile",
@@ -97,6 +100,7 @@ class VoicePipelineController:
                     ps_cmd,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
+                    creationflags=no_win,
                 )
                 await proc.wait()
             return True

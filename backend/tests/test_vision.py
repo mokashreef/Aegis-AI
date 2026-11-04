@@ -122,3 +122,23 @@ def test_api_vision_analyze():
         data = response.json()
         assert data["success"] is True
         assert data["active_window"] == "Chrome"
+
+
+def test_arbitrary_screen_questions_routing():
+    """Verifies that arbitrary and custom natural screen questions route to analyze_screen tool."""
+    prompts = [
+        "شو في بالشاشة",
+        "شو مكتوب بالشاشة",
+        "ما هذا الخطأ بالشاشة",
+        "اقرأ المكتوب بالشاشة",
+        "اشرح الكود المعروض على الشاشة",
+        "ترجم النص الظاهر على الشاشة",
+        "what is this error on my screen",
+        "read the text on my screen",
+    ]
+    for p in prompts:
+        routed = IntentRouter.classify_and_route(p)
+        assert routed is not None, f"Failed to route arbitrary screen question: {p}"
+        assert routed["intent"] == UserIntent.VISION_ANALYSIS
+        assert routed["name"] == "analyze_screen"
+

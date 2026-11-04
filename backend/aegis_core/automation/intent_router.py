@@ -356,11 +356,12 @@ class IntentRouter:
     VISION_ANALYSIS_PATTERNS = [
         (
             r"^(?:ممكن\s+)?(?:حلل\s+الشاشة|تحليل\s+الشاشة|حلل\s+ما\s+يظهر\s+على\s+الشاشة|حلل\s+ما\s+في\s+الشاشة|"
-            r"افحص\s+الشاشة|اقرأ\s+الشاشة|شوف\s+الشاشة|ايش\s+على\s+الشاشة|شو\s+في\s+على\s+الشاشة|"
+            r"افحص\s+الشاشة|اقرأ\s+الشاشة|شوف\s+الشاشة|ايش\s+على\s+الشاشة|شو\s+في\s+على\s+الشاشة|شو\s+في\s+بالشاشة|"
+            r"شو\s+ظاهر\s+بالشاشة|شو\s+مكتوب\s+بالشاشة|ايش\s+مكتوب\s+بالشاشة|ايش\s+في\s+بالشاشة|"
             r"ماذا\s+ترى\s+على\s+الشاشة|ماذا\s+يوجد\s+على\s+الشاشة|ماذا\s+في\s+الشاشة|اشرح\s+الشاشة|"
             r"اشرح\s+ما\s+في\s+الشاشة|ترجم\s+الشاشة|ترجم\s+ما\s+يظهر\s+على\s+الشاشة|فحص\s+الشاشة|"
-            r"تحليل\s+الشاشة\s+الذكي)"
-            r"(?:\s+(?:و\s+)?(?P<query>.+))?$"
+            r"تحليل\s+الشاشة\s+الذكي|اسأل\s+الشاشة|سؤال\s+عن\s+الشاشة)"
+            r"(?:\s+(?:و\s+|عن\s+)?(?P<query>.+))?$"
         ),
         (
             r"^(?:please\s+)?(?:ask\s+my\s+screen|ask\s+screen|analyze\s+screen|analyze\s+my\s+screen|"
@@ -606,18 +607,46 @@ class IntentRouter:
             }
 
         # 2.5 Screen Vision Analysis (Ask My Screen / Bilingual)
+        is_screen_query = False
+        screen_query_arg = raw.strip()
+
         for pat in cls.VISION_ANALYSIS_PATTERNS:
             m = re.match(pat, low) or re.match(pat, raw)
             if m:
+                is_screen_query = True
                 query_arg = (m.groupdict().get("query") or "").strip()
-                return {
-                    "intent": UserIntent.VISION_ANALYSIS,
-                    "name": "analyze_screen",
-                    "arguments": {
-                        "query": query_arg if query_arg else raw,
-                        "target": "full",
-                    },
-                }
+                if query_arg and len(query_arg) > 3:
+                    screen_query_arg = query_arg
+                break
+
+        if not is_screen_query:
+            # Broad natural query detection for arbitrary questions about the screen
+            # Handles: "شو في بالشاشة", "اقرأ المكتوب بالشاشة", "ما هذا الخطأ بالشاشة", "اشرح الكود المعروض", etc.
+            screen_keys_ar = ["الشاشة", "بالشاشة", "على الشاشة", "شاشتي"]
+            screen_keys_en = ["on screen", "on my screen", "this screen", "the screen", "in screen"]
+            has_screen_ref = any(k in raw for k in screen_keys_ar) or any(k in low for k in screen_keys_en)
+
+            actions_ar = [
+                "شو", "ايش", "ما", "ماذا", "اشرح", "حلل", "اقرأ", "اقرا", "ترجم",
+                "لخص", "شوف", "افحص", "هل", "كيف", "وين", "مين", "فحص", "تحليل", "خطأ", "كود", "صورة"
+            ]
+            actions_en = [
+                "what", "explain", "analyze", "read", "translate", "summarize",
+                "check", "see", "look", "how", "error", "code"
+            ]
+            has_intent_action = any(k in raw for k in actions_ar) or any(k in low for k in actions_en)
+            if has_screen_ref and has_intent_action:
+                is_screen_query = True
+
+        if is_screen_query:
+            return {
+                "intent": UserIntent.VISION_ANALYSIS,
+                "name": "analyze_screen",
+                "arguments": {
+                    "query": screen_query_arg,
+                    "target": "full",
+                },
+            }
 
         # 2.7 Document RAG Routing (Bilingual)
         for pat in cls.DOCUMENT_RAG_PATTERNS:

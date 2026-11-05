@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-05
+
+### Added - Phase 21: Precision Canonical Navigation, Arbitrary Screen Vision AI, Zero-Console Silent Daemon & Landing Page
+- **Direct Canonical Website Resolution (`intent_router.py`, `system_tools.py`)**:
+  - Eliminated ambiguous search engine fallbacks by mapping 80+ spoken Arabic and English aliases directly to official canonical endpoints (`كود التطور` -> `https://codealtatawor.net`, `Claude`, `Gemini`, `ChatGPT`, `Canva`, `Figma`, `YouTube`, `GitHub`, etc.).
+  - Added domain suffix stripping (`دوت نت`, `دوت كوم`, `دوت اورج`, `dot com`, `dot net`) and compound browser pairing (`افتح المتصفح وافتح كود التطور`).
+- **Open-Ended Arbitrary Screen Vision Analysis (`vision_analyzer.py`, `CompanionOverlay.tsx`, `intent_router.py`)**:
+  - Expanded screen query routing to allow arbitrary user questions ("شو هذا الخطأ؟", "ترجم النص الظاهر في المتصفح", "ما هو الكود المعروض").
+  - Rewrote vision synthesizer to reason intelligently using desktop inspection and local LLM context without false "access denied" errors.
+  - Enhanced Eye button in HUD UI with interactive query trigger: analyzes custom queries immediately or prepopulates editable starter prompts with auto-focus.
+- **Silent Background Execution & Zero Console Flashes (`aegis.py`, `AegisAI.vbs`, `run.bat`, backend modules)**:
+  - Enforced `CREATE_NO_WINDOW` and `SW_HIDE` across all child subprocess invocations and background tools.
+  - Upgraded Windows Startup daemon and launcher scripts for clean, invisible execution.
+- **Official GitHub Pages Landing Page (`docs/index.html`, `index.html`)**:
+  - Deployed modern, responsive bilingual landing page with glassmorphism design.
+  - Official attribution to Eng. Mohammad Abu Kashreef (MOHAMMAD ABU KASHREEF) and Code Evolution (كود التطور).
+  - Direct download links to latest Windows installer and release packages.
+- **System Diagnostics API & Test Suite (`main.py`, `test_screen_and_direct_routing.py`)**:
+  - Added `/api/system/diagnostics` endpoint reporting health, screen latency, tool counts, and privacy guarantees.
+  - Added dedicated test suite verifying canonical routing, arbitrary screen vision, and silent execution flags.
+
 ### Added - Phase 16: Native Windows Taskbar Branding & Application Identity Alignment
 - **Windows AppUserModelID Decoupling (`aegis.py`, `window.py`, `launcher.cs`)**: Explicitly registered `AegisAI.Desktop.Companion.2026` via Windows `shell32.SetCurrentProcessExplicitAppUserModelID`, permanently preventing Windows Taskbar from grouping Aegis AI under generic `python.exe` / `.py` document file associations.
 - **PyWebView WinForms Icon Binding (`window.py`)**: Bound `assets/icon.ico` directly into `webview.start(icon=...)`, preventing PyWebView from extracting the generic Python icon from `sys.executable`.

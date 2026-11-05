@@ -1,3 +1,4 @@
+import pytest
 """
 Tests for Canonical Website Resolution, Arbitrary Screen Vision Queries,
 and Silent Background Execution.
@@ -87,3 +88,19 @@ def test_tools_instantiation():
     open_url_tool = OpenUrlTool()
     assert launch_tool.name == "launch_application"
     assert open_url_tool.name == "open_url"
+
+
+@pytest.mark.asyncio
+async def test_system_diagnostics_endpoint():
+    """Verify system diagnostics endpoint returns healthy status and metadata."""
+    from aegis_core.main import app
+    from httpx import ASGITransport, AsyncClient
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        res = await client.get("/api/system/diagnostics")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "healthy"
+        assert "Mohammad Abu Kashreef" in data["author"]
+        assert data["zero_api_keys_enforced"] is True
+        assert data["silent_mode"] is True

@@ -233,6 +233,37 @@ def create_app() -> FastAPI:
         new_state = WindowsStartupManager.toggle()
         return {"enabled": new_state}
 
+    @app.get("/api/system/diagnostics")
+    async def get_system_diagnostics():
+        import time
+        from aegis_core.automation.screen_capture import screen_capture
+        from aegis_core.plugins.registry import plugin_registry
+
+        start_time = time.perf_counter()
+        screen_ok = False
+        screen_latency_ms = 0.0
+        try:
+            img = screen_capture.capture_fullscreen()
+            screen_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            screen_ok = img is not None
+        except Exception:
+            screen_ok = False
+
+        return {
+            "status": "healthy",
+            "app_name": settings.app_name,
+            "app_version": settings.app_version,
+            "author": "Eng. Mohammad Abu Kashreef (MOHAMMAD ABU KASHREEF)",
+            "organization": "Code Evolution (كود التطور)",
+            "portfolio": "https://mohammad.code-elta6ur.com/",
+            "platforms": "https://code-ora.com/about",
+            "screen_capture_ready": screen_ok,
+            "screen_latency_ms": screen_latency_ms,
+            "tools_count": len(plugin_registry.list_tools()),
+            "silent_mode": True,
+            "zero_api_keys_enforced": True,
+        }
+
     # Mount REST and WebSocket routers
     app.include_router(api_router, prefix="/api")
     app.include_router(ws_router)

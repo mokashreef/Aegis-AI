@@ -193,6 +193,7 @@ export const CompanionOverlay: React.FC = () => {
   const [activeDocument, setActiveDocument] = useState<DocumentItem | null>(null);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -774,6 +775,7 @@ export const CompanionOverlay: React.FC = () => {
             }}
           />
           <input
+            ref={textInputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -815,13 +817,31 @@ export const CompanionOverlay: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              const query = userSettings?.language === "en" ? "Analyze what is on my screen" : "حلل ما يظهر على الشاشة واشرح أهم ما تراه";
-              setInput(query);
-              sendMessage(query);
+              const trimmed = input.trim();
+              if (trimmed) {
+                const isScreenExplicit = /شاش[ةه]|screen|نافذ[ةه]|desktop/i.test(trimmed);
+                const query = isScreenExplicit
+                  ? trimmed
+                  : userSettings?.language === "en"
+                  ? `[Screen Analysis] ${trimmed}`
+                  : `في الشاشة: ${trimmed}`;
+                sendMessage(query);
+                setInput("");
+              } else {
+                const starter = userSettings?.language === "en"
+                  ? "What is on my screen? "
+                  : "ما الذي يظهر على الشاشة؟ ";
+                setInput(starter);
+                textInputRef.current?.focus();
+              }
             }}
             disabled={isStreaming || isTranscribing}
             className="p-2 rounded-xl bg-slate-700/60 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 transition"
-            title={userSettings?.language === "en" ? "Ask My Screen (Vision AI)" : "تحليل ما يظهر على الشاشة الذكي (Ask My Screen)"}
+            title={
+              userSettings?.language === "en"
+                ? "Ask My Screen: Type any question and click to analyze, or click to prepare screen question"
+                : "اسأل الشاشة: اكتب أي سؤال واضغط هنا لتحليله، أو اضغط لتجهيز سؤال الشاشة"
+            }
           >
             <Eye className="w-4 h-4" />
           </button>

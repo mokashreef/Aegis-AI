@@ -360,14 +360,13 @@ export const CompanionOverlay: React.FC = () => {
   };
 
   const defaultQuickActions: QuickActionItem[] = [
+    { id: "code_evo", title: "Code Evolution", title_ar: "موقع كود التطور", command: "افتح موقع كود التطور", icon: "globe", enabled: true },
+    { id: "vision", title: "Ask My Screen", title_ar: "سؤال الشاشة المفتوح", command: "ما الذي يظهر على الشاشة حالياً؟", icon: "camera", enabled: true },
     { id: "1", title: "YouTube in Chrome", title_ar: "يوتيوب في كروم", command: "افتح موقع يوتيوب بمتصفح كروم", icon: "globe", enabled: true },
-    { id: "2", title: "Google in Comet", title_ar: "جوجل في كومت", command: "افتح جوجل بمتصفح كومت", icon: "globe", enabled: true },
     { id: "3", title: "Launch Notepad", title_ar: "المفكرة", command: "open notepad", icon: "app", enabled: true },
     { id: "4", title: "Take Screenshot", title_ar: "لقطة شاشة", command: "صور الشاشة", icon: "camera", enabled: true },
-    { id: "vision", title: "Ask My Screen", title_ar: "تحليل الشاشة الذكي", command: "حلل ما يظهر على الشاشة واشرح محتواها", icon: "camera", enabled: true },
     { id: "timer5", title: "Timer 5 Mins", title_ar: "مؤقت 5 دقائق", command: "اضبط مؤقت 5 دقائق", icon: "app", enabled: true },
     { id: "media_pp", title: "Play/Pause Media", title_ar: "تشغيل/إيقاف الموسيقى", command: "شغل أو وقف الموسيقى", icon: "volume", enabled: true },
-    { id: "media_next", title: "Next Track", title_ar: "المقطع التالي", command: "المقطع التالي", icon: "volume", enabled: true },
     { id: "5", title: "Show Desktop", title_ar: "إظهار سطح المكتب", command: "صغر كل النوافذ", icon: "layers", enabled: true },
     { id: "6", title: "Read Clipboard", title_ar: "قراءة الحافظة", command: "get clipboard", icon: "clipboard", enabled: true },
   ];
@@ -615,7 +614,7 @@ export const CompanionOverlay: React.FC = () => {
                   className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition text-left group"
                 >
                   {renderQuickActionIcon(act.icon)}
-                  <span className="truncate">{act.title}</span>
+                  <span className="truncate">{userSettings?.language === "ar" ? (act.title_ar || act.title) : act.title}</span>
                 </button>
               ))}
             </div>

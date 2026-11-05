@@ -108,6 +108,9 @@ ARABIC_APP_TRANSLATIONS: Dict[str, str] = {
 ARABIC_URL_TRANSLATIONS: Dict[str, str] = {
     # Evolution Code / Core platforms
     "كود التطور": "https://codealtatawor.net",
+    "كود التطور دوت نت": "https://codealtatawor.net",
+    "كود التطور دوت كوم": "https://codealtatawor.net",
+    "كود التطور.نت": "https://codealtatawor.net",
     "كود_التطور": "https://codealtatawor.net",
     "موقع كود التطور": "https://codealtatawor.net",
     "codealtatawor": "https://codealtatawor.net",
@@ -238,6 +241,13 @@ def resolve_url_name(name: str) -> Optional[str]:
         return ARABIC_URL_TRANSLATIONS[k]
     if k.startswith("ال") and k[2:] in ARABIC_URL_TRANSLATIONS:
         return ARABIC_URL_TRANSLATIONS[k[2:]]
+    for suffix in [" دوت نت", " دوت كوم", " دوت اورج", " dot com", " dot net", ".net", ".com"]:
+        if k.endswith(suffix):
+            base = k[:-len(suffix)].strip()
+            if base in ARABIC_URL_TRANSLATIONS:
+                return ARABIC_URL_TRANSLATIONS[base]
+            if base.startswith("ال") and base[2:] in ARABIC_URL_TRANSLATIONS:
+                return ARABIC_URL_TRANSLATIONS[base[2:]]
     return None
 
 

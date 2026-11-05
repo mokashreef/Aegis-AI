@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added - Phase 21: Precision Canonical Navigation, Arbitrary Screen Vision AI, Zero-Console Silent Daemon & Landing Page
 - **Direct Canonical Website Resolution (`intent_router.py`, `system_tools.py`)**:
-  - Eliminated ambiguous search engine fallbacks by mapping 80+ spoken Arabic and English aliases directly to official canonical endpoints (`كود التطور` -> `https://codealtatawor.net`, `Claude`, `Gemini`, `ChatGPT`, `Canva`, `Figma`, `YouTube`, `GitHub`, etc.).
+  - Eliminated ambiguous search engine fallbacks by mapping 80+ spoken Arabic and English aliases directly to official canonical endpoints (`كود التطور` -> `https://code-elta6ur.net`, `Claude`, `Gemini`, `ChatGPT`, `Canva`, `Figma`, `YouTube`, `GitHub`, etc.).
   - Added domain suffix stripping (`دوت نت`, `دوت كوم`, `دوت اورج`, `dot com`, `dot net`) and compound browser pairing (`افتح المتصفح وافتح كود التطور`).
 - **Open-Ended Arbitrary Screen Vision Analysis (`vision_analyzer.py`, `CompanionOverlay.tsx`, `intent_router.py`)**:
   - Expanded screen query routing to allow arbitrary user questions ("شو هذا الخطأ؟", "ترجم النص الظاهر في المتصفح", "ما هو الكود المعروض").

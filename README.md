@@ -116,7 +116,7 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 - **Bilingual Spoken & Typed Query Routing**: Ask *"لخص المستند المرفق"*, *"ماذا يقول الملف بخصوص الميزانية؟"*, *"ابحث في الملف عن الشروط"*, or *"Summarize document please"*.
 
 ### 🚀 Precision App & Canonical URL Direct Resolution (التوجيه المباشر للتطبيقات والمواقع)
-- **Zero Search Engine Confusion**: Directly maps over 80+ spoken and written Arabic and English aliases to their canonical official URLs (e.g. *"كود التطور"* ➡️ `https://codealtatawor.net`, *"Claude"* ➡️ `https://claude.ai`, *"Gemini"*, *"Canva"*, *"Figma"*, *"YouTube"*, etc.) without falling back to ambiguous Google search pages.
+- **Zero Search Engine Confusion**: Directly maps over 80+ spoken and written Arabic and English aliases to their canonical official URLs (e.g. *"كود التطور"* ➡️ `https://code-elta6ur.net`, *"Claude"* ➡️ `https://claude.ai`, *"Gemini"*, *"Canva"*, *"Figma"*, *"YouTube"*, etc.) without falling back to ambiguous Google search pages.
 - **Smart Target-Browser Pairing**: Seamlessly handles compound commands like *"كروم و افتح موقع كود التطور"* or *"افتح المتصفح وافتح يوتيوب"*, routing directly to the specified browser.
 - **Silent Background Execution (Zero Console Flashes)**: Fully eliminated console window popups across application startup, tool invocation, and background daemons using Windows `CREATE_NO_WINDOW`, `SW_HIDE`, and silent VBScript invocation.
 
@@ -266,7 +266,7 @@ python aegis.py
 
 ### أبرز الميزات المخصصة للمستخدم العربي
 - **توجيه دقيق وتلقائي للمواقع والتطبيقات (بدون شاشات بحث وبدون نوافذ سوداء) 🚀:**
-  - فتح المواقع مباشرة بدون كتابة اسم الموقع في محرك بحث: *"افتح موقع كود التطور"* ⬅️ يفتح موقع `https://codealtatawor.net` فوراً.
+  - فتح المواقع مباشرة بدون كتابة اسم الموقع في محرك بحث: *"افتح موقع كود التطور"* ⬅️ يفتح موقع `https://code-elta6ur.net` فوراً.
   - دعم أكثر من 80+ موقع وتطبيق رسمي (كود التطور، كلود، جيميني، يوتيوب، كانفا، كانفا، فيجما، نتفليكس...).
   - تشغيل هادئ ونظيف 100% بدون أي وميض لشاشات التيرمنال السوداء بفضل معمارية `CREATE_NO_WINDOW` والصامتة.
 - **طرح أسئلة غير محدودة ومفتوحة عن الشاشة (Ask My Screen) 👁️:**
@@ -341,7 +341,7 @@ Aegis AI is open-source software licensed under the **[Apache License, Version 2
   <sub>
     <a href="https://mohammad.code-elta6ur.com/">الموقع الشخصي للمهندس</a> • 
     <a href="https://code-ora.com/about">منصات كود التطور</a> • 
-    <a href="https://codealtatawor.net">بوابة كود التطور</a> • 
+    <a href="https://code-elta6ur.net">بوابة كود التطور</a> • 
     <a href="https://mokashreef.github.io/Aegis-AI/">صفحة الهبوط الرسمية</a>
   </sub>
 </div>

@@ -17,9 +17,9 @@ from aegis_core.automation.system_tools import LaunchAppTool, OpenUrlTool
 def test_canonical_website_resolution_accuracy():
     """Verify that colloquial names route to canonical official URLs without search engine redirects."""
     cases = [
-        ("كود التطور", "https://codealtatawor.net"),
-        ("كود التطور دوت نت", "https://codealtatawor.net"),
-        ("موقع كود التطور", "https://codealtatawor.net"),
+        ("كود التطور", "https://code-elta6ur.net"),
+        ("كود التطور دوت نت", "https://code-elta6ur.net"),
+        ("موقع كود التطور", "https://code-elta6ur.net"),
         ("كلود", "https://claude.ai"),
         ("claude", "https://claude.ai"),
         ("جيميني", "https://gemini.google.com"),
@@ -41,7 +41,7 @@ def test_spoken_compound_url_navigation():
     res = IntentRouter.classify_and_route("افتح المتصفح و افتح كود التطور")
     assert res is not None
     assert res["intent"] == UserIntent.OPEN_URL
-    assert res["arguments"]["url"] == "https://codealtatawor.net"
+    assert res["arguments"]["url"] == "https://code-elta6ur.net"
 
     res2 = IntentRouter.classify_and_route("افتح موقع كلود بكروم")
     assert res2 is not None

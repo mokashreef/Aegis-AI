@@ -107,13 +107,17 @@ ARABIC_APP_TRANSLATIONS: Dict[str, str] = {
 # Arabic and shortcut website friendly names
 ARABIC_URL_TRANSLATIONS: Dict[str, str] = {
     # Evolution Code / Core platforms
-    "كود التطور": "https://codealtatawor.net",
-    "كود التطور دوت نت": "https://codealtatawor.net",
-    "كود التطور دوت كوم": "https://codealtatawor.net",
-    "كود التطور.نت": "https://codealtatawor.net",
-    "كود_التطور": "https://codealtatawor.net",
-    "موقع كود التطور": "https://codealtatawor.net",
-    "codealtatawor": "https://codealtatawor.net",
+    "كود التطور": "https://code-elta6ur.net",
+    "كود التطور دوت نت": "https://code-elta6ur.net",
+    "كود التطور دوت كوم": "https://code-elta6ur.com",
+    "كود التطور.نت": "https://code-elta6ur.net",
+    "كود التطور.كوم": "https://code-elta6ur.com",
+    "code-elta6ur": "https://code-elta6ur.net",
+    "code-elta6ur.net": "https://code-elta6ur.net",
+    "code-elta6ur.com": "https://code-elta6ur.com",
+    "كود_التطور": "https://code-elta6ur.net",
+    "موقع كود التطور": "https://code-elta6ur.net",
+    "code-elta6ur": "https://code-elta6ur.net",
 
     # AI & Developer Tools
     "شات جي بي تي": "https://chatgpt.com",

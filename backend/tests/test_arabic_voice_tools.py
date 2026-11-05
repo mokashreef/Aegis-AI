@@ -216,32 +216,32 @@ def test_arabic_spoken_phonetic_domains_and_compound_phrases():
     # 4. "افتح موقع كود التطور دوت نت"
     r4 = IntentRouter.classify_and_route("افتح موقع كود التطور دوت نت")
     assert r4 is not None
-    assert any(x in r4["arguments"]["url"] for x in ["كود التطور.net", "codealtatawor.net"])
+    assert any(x in r4["arguments"]["url"] for x in ["كود التطور.net", "code-elta6ur.net"])
 
     # 5. "كروم و افتح موقع كود التطور" (without domain extension)
     r5 = IntentRouter.classify_and_route("كروم و افتح موقع كود التطور")
     assert r5 is not None
     assert r5["intent"] == UserIntent.OPEN_URL
     assert r5["arguments"]["browser"] == "chrome"
-    assert r5["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
+    assert r5["arguments"]["url"] in ["https://code-elta6ur.net", "كود التطور"]
 
     # 6. "افتح موقع كود التطور بكروم"
     r6 = IntentRouter.classify_and_route("افتح موقع كود التطور بكروم")
     assert r6 is not None
     assert r6["arguments"]["browser"] == "chrome"
-    assert r6["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
+    assert r6["arguments"]["url"] in ["https://code-elta6ur.net", "كود التطور"]
 
     # 7. "كود التطور دوت نت" (standalone spoken domain)
     r7 = IntentRouter.classify_and_route("كود التطور دوت نت")
     assert r7 is not None
     assert r7["intent"] == UserIntent.OPEN_URL
-    assert any(x in r7["arguments"]["url"] for x in ["كود التطور.net", "codealtatawor.net"])
+    assert any(x in r7["arguments"]["url"] for x in ["كود التطور.net", "code-elta6ur.net"])
 
     # 8. "افتح المتصفح و افتح كود التطور"
     r8 = IntentRouter.classify_and_route("افتح المتصفح و افتح كود التطور")
     assert r8 is not None
     assert r8["intent"] == UserIntent.OPEN_URL
-    assert r8["arguments"]["url"] in ["https://codealtatawor.net", "كود التطور"]
+    assert r8["arguments"]["url"] in ["https://code-elta6ur.net", "كود التطور"]
     assert r8["arguments"]["browser"] == "chrome"
 
 
@@ -255,7 +255,7 @@ async def test_launch_app_tool_website_fallback():
     with patch("webbrowser.open", return_value=True):
         res = await tool.execute(app_name="كروم و افتح موقع كود التطور دوت نت")
         assert res.success is True
-        assert any(x in urllib.parse.unquote_plus(res.data["url"]) for x in ["كود التطور.net", "codealtatawor.net"])
+        assert any(x in urllib.parse.unquote_plus(res.data["url"]) for x in ["كود التطور.net", "code-elta6ur.net"])
 
 
 def test_windows_startup_manager():
@@ -294,7 +294,7 @@ def test_precision_website_and_app_resolution():
     from aegis_core.automation.intent_router import IntentRouter, UserIntent, resolve_app_name, resolve_url_name
 
     # 1. URL resolution tests
-    assert resolve_url_name("موقع كود التطور") == "https://codealtatawor.net"
+    assert resolve_url_name("موقع كود التطور") == "https://code-elta6ur.net"
     assert resolve_url_name("كانفا") == "https://www.canva.com"
     assert resolve_url_name("امازون") == "https://www.amazon.com"
     assert resolve_url_name("نتفلكس") == "https://www.netflix.com"

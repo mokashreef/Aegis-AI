@@ -6,7 +6,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20x64-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
-[![Release](https://img.shields.io/badge/Release-v0.2.0--alpha-success?logo=github)](https://github.com/mokashreef/Aegis-AI/releases/latest)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-success?logo=github)](https://github.com/mokashreef/Aegis-AI/releases/latest)
+[![Landing Page](https://img.shields.io/badge/Website-GitHub%20Pages-blue?logo=google-chrome&logoColor=white)](https://mokashreef.github.io/Aegis-AI/)
+[![Code Evolution](https://img.shields.io/badge/Developed%20By-كود%20التطور-0ea5e9)](https://mohammad.code-elta6ur.com/)
 [![CI/CD](https://github.com/mokashreef/Aegis-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/mokashreef/Aegis-AI/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Desktop Engine](https://img.shields.io/badge/Desktop-Native%20WebView2-0078D6?logo=microsoft)](backend/aegis_core/desktop/window.py)
@@ -16,11 +18,12 @@
 
 <br />
 
-**Aegis AI** is a native, privacy-first desktop companion for Windows 10/11.  
+**Aegis AI** is a native, privacy-first desktop companion for Windows 10/11, developed by **Eng. Mohammad Abu Kashreef (المهندس محمد أبو خشريف)** and powered by **Code Evolution (كود التطور)**.  
 Summoned instantly via a customizable global hotkey (default **`Alt + Space`**), Aegis AI operates with **zero mandatory subscriptions**, **zero required paid API keys**, and **100% local privacy**.
 
 <br />
 
+[🌐 **Official Landing Page**](https://mokashreef.github.io/Aegis-AI/) •
 [📥 **Download Latest Release**](#-download--installation) •
 [🎬 **Visual Showcase**](#-visual-showcase) •
 [⚡ **Key Features**](#-key-features) •
@@ -112,7 +115,15 @@ Configure and fine-tune your desktop copilot with runtime hotkey recording, lang
 - **Grounded Citation Answers**: Synthesizes thorough answers strictly grounded in document excerpts with specific page citations, eliminating hallucinations and ensuring 100% local privacy.
 - **Bilingual Spoken & Typed Query Routing**: Ask *"لخص المستند المرفق"*, *"ماذا يقول الملف بخصوص الميزانية؟"*, *"ابحث في الملف عن الشروط"*, or *"Summarize document please"*.
 
+### 🚀 Precision App & Canonical URL Direct Resolution (التوجيه المباشر للتطبيقات والمواقع)
+- **Zero Search Engine Confusion**: Directly maps over 80+ spoken and written Arabic and English aliases to their canonical official URLs (e.g. *"كود التطور"* ➡️ `https://codealtatawor.net`, *"Claude"* ➡️ `https://claude.ai`, *"Gemini"*, *"Canva"*, *"Figma"*, *"YouTube"*, etc.) without falling back to ambiguous Google search pages.
+- **Smart Target-Browser Pairing**: Seamlessly handles compound commands like *"كروم و افتح موقع كود التطور"* or *"افتح المتصفح وافتح يوتيوب"*, routing directly to the specified browser.
+- **Silent Background Execution (Zero Console Flashes)**: Fully eliminated console window popups across application startup, tool invocation, and background daemons using Windows `CREATE_NO_WINDOW`, `SW_HIDE`, and silent VBScript invocation.
+
 ### 👁️ Smart Screen Analysis (Ask My Screen / Vision AI)
+- **Open-Ended Arbitrary Screen Inquiries**: Users can ask any custom question about their screen (e.g. *"ما هذا الخطأ البرمجي في الشاشة؟"*, *"ترجم النص الظاهر في المتصفح"*, *"اشرح الكود المعروض"*).
+- **Interactive UI Query Trigger**: Click the eye icon (`👁️`) to either analyze a custom question already typed into the input, or prefill an editable starter prompt with auto-focus.
+
 - **Instant Desktop Inspection**: Capture the current display in <150ms and intelligently analyze visible windows, active workflows, diagrams, and error dialogs.
 - **Dedicated Eye Button (`👁️`)**: Trigger one-click screen inspection directly from the chat input bar or Welcome Screen Quick Action tiles.
 - **Multimodal VLM & Local Synthesis**: Automatically discovers and routes through local Ollama vision models (`Moondream`, `LLaVA`, `Llama 3.2 Vision`, `Qwen-VL`) when present, or synthesizes rich Win32 GDI workspace context.
@@ -254,6 +265,12 @@ python aegis.py
 > **معاينة حية للمساعد**: يمكنك مشاهدة العرض التوضيحي المتحرك ولقطات الشاشة الحقيقية في [قسم المعاينة البصرية (Visual Showcase)](#-visual-showcase).
 
 ### أبرز الميزات المخصصة للمستخدم العربي
+- **توجيه دقيق وتلقائي للمواقع والتطبيقات (بدون شاشات بحث وبدون نوافذ سوداء) 🚀:**
+  - فتح المواقع مباشرة بدون كتابة اسم الموقع في محرك بحث: *"افتح موقع كود التطور"* ⬅️ يفتح موقع `https://codealtatawor.net` فوراً.
+  - دعم أكثر من 80+ موقع وتطبيق رسمي (كود التطور، كلود، جيميني، يوتيوب، كانفا، كانفا، فيجما، نتفليكس...).
+  - تشغيل هادئ ونظيف 100% بدون أي وميض لشاشات التيرمنال السوداء بفضل معمارية `CREATE_NO_WINDOW` والصامتة.
+- **طرح أسئلة غير محدودة ومفتوحة عن الشاشة (Ask My Screen) 👁️:**
+  - يمكنك الآن كتابة أي سؤال مخصص عن شاشتك (مثلاً: *"شو هذا الخطأ؟"*, *"ترجم الكود المعروض"*, *"ما اسم الفيديو في المتصفح؟"*) والضغط على زر العين `👁️` ليجيبك فورياً بناءً على ما يظهر أمامك!
 - **تحليل ما يظهر على الشاشة الذكي (Ask My Screen / Vision AI) 👁️:**
   - انقر على زر العين (`👁️`) بجانب حقل الإدخال أو اطلب بالصوت: *"حلل ما يظهر على الشاشة"* أو *"ماذا ترى على الشاشة؟"* أو *"اقرأ الشاشة واشرح الكود"*.
   - يلتقط المساعد صورة الشاشة فورياً في أجزاء من الثانية ويحلل التطبيقات والنوافذ النشطة ويشرح محتوى الشاشة بصرياً.
@@ -287,7 +304,7 @@ python aegis.py
 ## 🧪 Quality Assurance & Continuous Integration
 
 Aegis AI uses automated testing and continuous integration via **GitHub Actions**:
-- **98 Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
+- **102+ Unit & Integration Tests**: Comprehensive tests covering desktop hotkeys, Win32 hooks, process orchestration, audio pipeline, and settings.
 - **0 Flake8 Lint Warnings**: Clean, strictly compliant Python codebase.
 - **Strict TypeScript & Vite Production Builds**: Pre-validated React 18 HUD bundle.
 
@@ -319,5 +336,12 @@ flake8 backend aegis.py --max-line-length=120
 Aegis AI is open-source software licensed under the **[Apache License, Version 2.0](LICENSE)**.
 
 <div align="center">
-  <sub>Developed with pride for the open-source community by <b>Mokashreef</b> and contributors.</sub>
+  <sub>Developed with passion and engineering rigor by <b>Eng. Mohammad Abu Kashreef (المهندس محمد أبو خشريف)</b> • <b>Code Evolution (كود التطور)</b></sub>
+  <br />
+  <sub>
+    <a href="https://mohammad.code-elta6ur.com/">الموقع الشخصي للمهندس</a> • 
+    <a href="https://code-ora.com/about">منصات كود التطور</a> • 
+    <a href="https://codealtatawor.net">بوابة كود التطور</a> • 
+    <a href="https://mokashreef.github.io/Aegis-AI/">صفحة الهبوط الرسمية</a>
+  </sub>
 </div>

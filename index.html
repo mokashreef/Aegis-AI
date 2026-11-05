@@ -2,29 +2,31 @@
 <html lang="ar" dir="rtl" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aegis AI | رفيق الذكاء الاصطناعي الذاتي لسطح مكتب ويندوز</title>
-  <meta name="description" content="Aegis AI - رفيق ويندوز الذاتي الأول بالذكاء الاصطناعي المحلي. تحكم بالكامل في حاسوبك، اسأل عن شاشتك (Ask My Screen)، وتحدث بالصوت العربي بدون أي اشتراكات أو مفاتيح API.">
-  <meta name="author" content="Mohammad Abu Kashreef - كود التطور">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aegis AI | Windows Desktop AI Companion • رفيق سطح مكتب ويندوز الذاتي</title>
+  <meta name="description" content="Aegis AI - The sovereign, privacy-first Windows desktop AI companion. Control your PC with voice, ask anything on your screen (Vision AI), and launch apps silently without cloud lock-in. Developed by Eng. Mohammad Abu Kashreef (Code Evolution).">
+  <meta name="author" content="Eng. Mohammad Abu Kashreef (كود التطور)">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Cairo & Inter -->
+  
+  <!-- Google Fonts: Cairo (Arabic) & Plus Jakarta Sans (English) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            cairo: ['Cairo', 'sans-serif'],
-            inter: ['Inter', 'sans-serif'],
+            ar: ['Cairo', 'sans-serif'],
+            en: ['Plus Jakarta Sans', 'sans-serif'],
           },
           colors: {
             brand: {
-              50: '#f0f9ff',
               400: '#38bdf8',
               500: '#0ea5e9',
               600: '#0284c7',
@@ -38,319 +40,580 @@
     }
   </script>
   <style>
+    :root {
+      --font-current: 'Cairo', sans-serif;
+    }
+    html[dir="ltr"] {
+      --font-current: 'Plus Jakarta Sans', sans-serif;
+    }
     body {
-      font-family: 'Cairo', sans-serif;
-      background-color: #0b0f19;
+      font-family: var(--font-current);
+      background-color: #070b14;
       color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
     .glass-card {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.78);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(56, 189, 248, 0.15);
     }
     .glass-card:hover {
-      border-color: rgba(56, 189, 248, 0.4);
-      box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 12px 36px -10px rgba(14, 165, 233, 0.25);
     }
-    .glow-effect {
-      background: radial-gradient(circle at 50% 20%, rgba(14, 165, 233, 0.18) 0%, transparent 60%);
+    .glow-radial {
+      background: radial-gradient(circle at 50% 15%, rgba(14, 165, 233, 0.22) 0%, rgba(7, 11, 20, 0) 65%);
+    }
+    .hud-glow {
+      box-shadow: 0 0 50px -10px rgba(14, 165, 233, 0.35);
+    }
+    /* Mobile optimization */
+    @media (max-width: 640px) {
+      .mobile-padding {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
     }
   </style>
 </head>
-<body class="min-h-screen bg-[#070b14] text-slate-100 selection:bg-sky-500 selection:text-slate-950 glow-effect flex flex-col justify-between">
+<body class="min-h-screen bg-[#070b14] text-slate-100 selection:bg-sky-500 selection:text-slate-950 glow-radial flex flex-col justify-between pb-20 sm:pb-0">
 
-  <!-- Navbar -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-[#070b14]/80 border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/20 ring-1 ring-white/20">
-          <svg class="w-6 h-6 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+  <!-- Desktop & Tablet Navbar -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#070b14]/85 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
         </div>
         <div>
-          <span class="text-2xl font-black tracking-tight text-white flex items-center gap-1.5 font-inter">
+          <div class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1 font-['Plus_Jakarta_Sans']">
             Aegis <span class="text-sky-400">AI</span>
-          </span>
-          <span class="text-[11px] block font-semibold text-slate-400 -mt-1">
+          </div>
+          <div class="text-[10px] sm:text-[11px] font-semibold text-slate-400 -mt-0.5" data-i18n="tagline">
             Windows AI Companion
-          </span>
+          </div>
         </div>
-      </div>
+      </a>
 
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-        <a href="#features" class="hover:text-sky-400 transition">الميزات الخارقة</a>
-        <a href="#vision" class="hover:text-sky-400 transition">تحليل الشاشة (Vision)</a>
-        <a href="#specs" class="hover:text-sky-400 transition">المواصفات والتشغيل</a>
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-300">
+        <a href="#features" class="hover:text-sky-400 transition" data-i18n="nav_features">الميزات</a>
+        <a href="#vision" class="hover:text-sky-400 transition" data-i18n="nav_vision">تحليل الشاشة</a>
+        <a href="#specs" class="hover:text-sky-400 transition" data-i18n="nav_specs">المواصفات</a>
         <a href="https://code-ora.com/about" target="_blank" class="hover:text-sky-400 transition flex items-center gap-1">
-          منصات كود التطور
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          <span data-i18n="nav_platforms">منصات كود التطور</span>
+          <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
       </nav>
 
-      <div class="flex items-center gap-3">
-        <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="p-2.5 rounded-xl border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white transition" title="GitHub Repository">
-          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+      <!-- Right Header Actions (Language Toggle + Download + GitHub) -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Bilingual Switcher Button -->
+        <button id="langToggleBtn" onclick="toggleLanguage()" class="px-3 py-1.5 rounded-xl border border-sky-500/30 bg-sky-950/40 hover:bg-sky-900/50 text-sky-300 font-bold text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm" title="Switch Language / تبديل اللغة">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+          <span id="langLabel">English</span>
+        </button>
+
+        <!-- GitHub Repo Icon -->
+        <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="p-2 sm:p-2.5 rounded-xl border border-slate-700/80 hover:border-slate-500 text-slate-300 hover:text-white transition shrink-0" title="GitHub Repository">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
           </svg>
         </a>
-        <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-bold hover:shadow-lg hover:shadow-sky-500/25 transition flex items-center gap-2 text-sm">
-          <span>تحميل مجاناً</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+
+        <!-- Desktop Download Button -->
+        <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-bold hover:shadow-lg hover:shadow-sky-500/30 transition text-xs sm:text-sm">
+          <span data-i18n="download_btn">تحميل لويندوز</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <main>
-    <section class="relative pt-16 pb-24 overflow-hidden">
+  <main class="flex-1">
+    
+    <!-- Hero Section -->
+    <section class="relative pt-8 sm:pt-16 pb-16 sm:pb-24 overflow-hidden">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <!-- Top Badge -->
-        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-sky-500/30 bg-sky-950/40 text-sky-300 text-xs sm:text-sm font-semibold mb-8 animate-pulse">
-          <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-          <span>الإصدار الرسمي لويندوز • خصوصية تامة محلياً وبدون مفاتيح API</span>
+        
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-500/30 bg-sky-950/40 text-sky-300 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          <span data-i18n="hero_badge">Windows 10 & 11 • ذكاء محلي 100% وبدون مفاتيح API</span>
         </div>
 
-        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white mb-6 leading-tight">
-          رفيق الذكاء الاصطناعي <br>
-          <span class="bg-gradient-to-r from-sky-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent">
+        <!-- Main Headline -->
+        <h1 class="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight text-white mb-4 sm:mb-6 leading-[1.25] sm:leading-tight">
+          <span data-i18n="hero_title_1">رفيق الذكاء الاصطناعي</span> <br>
+          <span class="bg-gradient-to-r from-sky-400 via-cyan-300 to-teal-300 bg-clip-text text-transparent" data-i18n="hero_title_2">
             المطلق لسطح مكتب ويندوز
           </span>
         </h1>
 
-        <p class="max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 mb-10 leading-relaxed">
-          تحكم في حاسوبك بالصوت والكتابة، اسأل عن أي شيء يظهر على شاشتك فوراً، وافتح المواقع والبرامج بدقة قياسية وسرعة فائقة بدون ظهور نوافذ التيرمنال وبدون اشتراكات سحابية.
+        <!-- Subheading -->
+        <p class="max-w-2xl sm:max-w-3xl mx-auto text-sm sm:text-lg lg:text-xl text-slate-300 mb-8 sm:mb-10 leading-relaxed mobile-padding" data-i18n="hero_desc">
+          تحكم في حاسوبك بالصوت والكتابة، اسأل عن أي تفصيل في شاشتك بحرية (Ask My Screen)، وافتح المواقع والبرامج بسرعة فائقة دون وميض شاشات التيرمنال وبأعلى خصوصية ممكنة.
         </p>
 
-        <!-- CTA Buttons -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-black text-lg hover:shadow-xl hover:shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-3">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            <span>تحميل Aegis AI لويندوز</span>
+        <!-- Action CTAs -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-10 sm:mb-14 px-4 sm:px-0">
+          <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-black text-base sm:text-lg hover:shadow-xl hover:shadow-sky-500/30 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2.5 shadow-lg shadow-sky-500/20">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span data-i18n="hero_cta_download">تحميل Aegis AI للكمبيوتر (v1.0.0)</span>
           </a>
-          <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-lg transition flex items-center justify-center gap-3">
+          <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 font-bold text-base sm:text-lg transition flex items-center justify-center gap-2.5">
             <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-            <span>استعراض المصدر على GitHub</span>
+            <span data-i18n="hero_cta_source">كود المشروع المفتوح</span>
           </a>
         </div>
 
         <!-- Hotkey Pill -->
-        <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-sm text-slate-400">
-          <span>الاستدعاء الفوري من أي مكان:</span>
-          <kbd class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-sky-400 font-mono font-bold text-xs">Alt + Space</kbd>
+        <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs sm:text-sm text-slate-400 mb-12">
+          <span data-i18n="hotkey_label">الاستدعاء الفوري بلمسة زر:</span>
+          <kbd class="px-2 py-0.5 rounded-lg bg-slate-800 border border-slate-700 text-sky-400 font-mono font-bold text-xs">Alt + Space</kbd>
+        </div>
+
+        <!-- Interactive Visual Mobile / Desktop HUD Preview Simulation -->
+        <div class="max-w-2xl mx-auto rounded-3xl bg-[#0b0f19] border border-sky-500/30 p-3 sm:p-5 hud-glow text-left text-slate-200 text-xs sm:text-sm shadow-2xl relative">
+          <!-- Window Header Bar -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+              <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+              <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+              <span class="font-bold text-white font-['Plus_Jakarta_Sans'] text-xs ml-1">Aegis AI Companion</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-[11px] text-sky-400 font-mono">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>100% Local (Ollama)</span>
+            </div>
+          </div>
+
+          <!-- Mock Chat Message 1 -->
+          <div class="space-y-3 mb-3">
+            <div class="flex justify-end">
+              <div class="bg-sky-600/90 text-white rounded-2xl rounded-tr-sm px-3.5 py-2 text-xs font-semibold max-w-[85%]" data-i18n="mock_user_msg">
+                ما الذي يظهر على الشاشة حالياً وما هذا الخطأ؟
+              </div>
+            </div>
+            <!-- Mock Chat Assistant Response -->
+            <div class="flex justify-start">
+              <div class="bg-slate-800/90 border border-slate-700 rounded-2xl rounded-tl-sm p-3 text-xs leading-relaxed max-w-[95%] text-slate-300">
+                <div class="flex items-center gap-1.5 text-sky-400 font-bold mb-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span data-i18n="mock_vision_title">تحليل الشاشة المباشر (Ask My Screen)</span>
+                </div>
+                <div data-i18n="mock_ai_answer">
+                  النافذة النشطة هي متصفح كروم. الخطأ الظاهر في الكود هو نقص في فاصلة الأسطر البرمجية، تم فحص الإطار في 84 ملي ثانية عبر محرك Win32 المباشر.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mock Input Bar -->
+          <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl p-1.5">
+            <input type="text" disabled placeholder="Ask Aegis or command Windows..." class="bg-transparent flex-1 px-3 text-xs text-slate-400 focus:outline-none">
+            <div class="p-1.5 rounded-xl bg-slate-800 text-sky-400"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></div>
+            <div class="p-1.5 rounded-xl bg-slate-800 text-slate-400"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg></div>
+            <div class="p-1.5 rounded-xl bg-sky-500 text-slate-950 font-bold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></div>
+          </div>
         </div>
 
         <!-- Developer Credit Banner -->
-        <div class="mt-12 p-6 rounded-3xl glass-card max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-4 text-right">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-xl shrink-0">
+        <div class="mt-10 sm:mt-14 p-5 sm:p-6 rounded-3xl glass-card max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-right">
+          <div class="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-4 text-center sm:text-start">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-sky-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black text-lg sm:text-xl shrink-0 font-['Plus_Jakarta_Sans']">
               MK
             </div>
             <div>
-              <div class="text-xs uppercase tracking-wider text-sky-400 font-bold">مطور ومهندس المشروع</div>
-              <div class="text-lg font-black text-white">المهندس محمد أبو خشريف (MOHAMMAD ABU KASHREEF)</div>
-              <div class="text-xs text-slate-400">مؤسس ومطور أنظمة كود التطور للبرمجيات والذكاء الاصطناعي</div>
+              <div class="text-[11px] uppercase tracking-wider text-sky-400 font-bold" data-i18n="dev_lead">مطور ومهندس المشروع</div>
+              <div class="text-base sm:text-lg font-black text-white" data-i18n="dev_name">المهندس محمد أبو خشريف (MOHAMMAD ABU KASHREEF)</div>
+              <div class="text-xs text-slate-400" data-i18n="dev_sub">مؤسس ومطور أنظمة كود التطور للبرمجيات والذكاء الاصطناعي</div>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <a href="https://mohammad.code-elta6ur.com/" target="_blank" class="px-4 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs font-bold transition">
-              الموقع الشخصي
+          <div class="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
+            <a href="https://mohammad.code-elta6ur.com/" target="_blank" class="flex-1 md:flex-none text-center px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 text-xs font-bold transition">
+              <span data-i18n="dev_portfolio">الموقع الشخصي</span>
             </a>
-            <a href="https://code-ora.com/about" target="_blank" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition">
-              منصات كود التطور
+            <a href="https://code-ora.com/about" target="_blank" class="flex-1 md:flex-none text-center px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition">
+              <span data-i18n="dev_platforms">منصات كود التطور</span>
+            </a>
+            <a href="https://code-elta6ur.net" target="_blank" class="flex-1 md:flex-none text-center px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition">
+              <span data-i18n="dev_portal">بوابة كود التطور</span>
             </a>
           </div>
         </div>
+
       </div>
     </section>
 
-    <!-- Core Features Grid -->
-    <section id="features" class="py-20 border-t border-slate-800/80 bg-slate-950/40">
+    <!-- Key Features Grid (Responsive Phone & Desktop) -->
+    <section id="features" class="py-14 sm:py-20 border-t border-slate-800/80 bg-slate-950/40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-sky-400 mb-3">القوة الحقيقية على جهازك</h2>
-          <p class="text-3xl sm:text-4xl font-black text-white">أسرع وأذكى رفيق تشغيلي لويندوز</p>
+        <div class="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-sky-400 mb-2" data-i18n="feat_tag">القوة الهندسية الحقيقية</h2>
+          <p class="text-2xl sm:text-4xl font-black text-white" data-i18n="feat_head">أسرع وأذكى رفيق ذكاء اصطناعي لويندوز</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Card 1: Precision App & URL Launcher -->
-          <div class="p-8 rounded-3xl glass-card transition flex flex-col justify-between">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          
+          <!-- Card 1 -->
+          <div class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">فتح التطبيقات والمواقع بدقة قياسية</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                توجيه فوري للمواقع الرسمية والتطبيقات المثبتة. قل: "افتح كود التطور"، "افتح Claude"، أو "شغل كروم"، ويتم التوجيه فوراً للرابط الرسمي بدون شاشات بحث وبدون أي وميض تيرمنال.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c1_title">توجيه فوري للمواقع والتطبيقات</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c1_desc">
+                توجيه مباشر لأكثر من 80 موقعاً وتطبيقاً بدون صفحات بحث جوجل (كود التطور، Claude، Gemini، YouTube، Canva...). تشغيل نظيف وسريع.
               </p>
             </div>
-            <span class="text-xs font-semibold text-sky-400 flex items-center gap-1">دعم أكثر من 80+ منصة وتطبيق</span>
+            <div class="text-xs font-bold text-sky-400" data-i18n="c1_sub">دعم التسميات العربية والإنجليزية المركبة</div>
           </div>
 
-          <!-- Card 2: Ask My Screen Vision AI -->
-          <div id="vision" class="p-8 rounded-3xl glass-card transition flex flex-col justify-between border-sky-500/40 shadow-lg shadow-sky-500/10">
+          <!-- Card 2 -->
+          <div id="vision" class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between border-sky-500/40">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">اسأل شاشتك بحرية (Ask My Screen)</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                التقاط فوري لسطح المكتب في أقل من 100 ملي ثانية عبر محرك Win32 GDI، مع إمكانية طرح أي سؤال مخصص عن الكود أو الأخطاء أو الصور المفتوحة مع استنتاج ذكي للسياق.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c2_title">اسأل شاشتك بحرية (Ask My Screen)</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c2_desc">
+                اطرح أي سؤال مخصص عن الأخطاء أو الكود أو الصور المعروضة أمامك. التقاط فوري لسطح المكتب في أقل من 100 ملي ثانية عبر Win32 GDI.
               </p>
             </div>
-            <span class="text-xs font-semibold text-cyan-400 flex items-center gap-1">سؤال عشوائي ومفتوح عن أي تفصيل في الشاشة</span>
+            <div class="text-xs font-bold text-cyan-400" data-i18n="c2_sub">استنتاج سياقي ذكي وبدون أي قيود</div>
           </div>
 
-          <!-- Card 3: Hands-Free Voice -->
-          <div class="p-8 rounded-3xl glass-card transition flex flex-col justify-between">
+          <!-- Card 3 -->
+          <div class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">تفاعل صوتي تلقائي وبدون لمس</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                تحدث مع Aegis AI بنبرتك الطبيعية باللغة العربية أو الإنجليزية. يستشعر الصمت تلقائياً (Client VAD) مع دعم النداء الصوتي (Wake Word) والرد بالنطق الفوري.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c3_title">تفاعل صوتي تلقائي (Hands-Free)</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c3_desc">
+                تحدث مع Aegis AI بنبرتك الطبيعية باللغة العربية أو الإنجليزية. يستشعر الصمت تلقائياً (Client VAD) مع دعم كامل للنداء الصوتي الذكي (Wake Word).
               </p>
             </div>
-            <span class="text-xs font-semibold text-indigo-400 flex items-center gap-1">محرك Whisper السريع المدمج</span>
+            <div class="text-xs font-bold text-indigo-400" data-i18n="c3_sub">محرك Whisper السريع المدمج محلياً</div>
           </div>
 
-          <!-- Card 4: Zero Console Flash -->
-          <div class="p-8 rounded-3xl glass-card transition flex flex-col justify-between">
+          <!-- Card 4 -->
+          <div class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">تشغيل صامت 100% بدون شاشات سوداء</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                تم القضاء التام على وميض التيرمنال أو النوافذ السوداء عند الإقلاع أو تنفيذ الأوامر الخلفية، عبر راية <code>CREATE_NO_WINDOW</code> وVBScript Silent Daemon.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c4_title">تشغيل صامت 100% بدون وميض</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c4_desc">
+                تم القضاء على نوافذ التيرمنال والشاشات السوداء نهائياً بفضل راية CREATE_NO_WINDOW ومشغل VBScript الصامت، لإعطاء تجربة إنتاجية هادئة.
               </p>
             </div>
-            <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1">تشغيل نظيف ومصقول لبيئة الإنتاج</span>
+            <div class="text-xs font-bold text-emerald-400" data-i18n="c4_sub">Silent Daemon لسطح المكتب</div>
           </div>
 
-          <!-- Card 5: Local Document RAG -->
-          <div class="p-8 rounded-3xl glass-card transition flex flex-col justify-between">
+          <!-- Card 5 -->
+          <div class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">استعلام وتلخيص المستندات محلياً</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                اسحب أي ملف PDF أو Word أو كود برمجي مباشرة للواجهة واطرح أسئلتك. يقوم Aegis بتحليله واستخراج إجابات موثقة فورياً وبأعلى خصوصية دون رفع ملفك لأي خادم خارجي.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c5_title">سحب وإفلات المستندات (Local RAG)</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c5_desc">
+                اسحب ملفات PDF أو Word أو كود برمجي واطرح أسئلتك مباشرة ليجيبك باستشهادات دقيقة محلياً دون إرسال محتواك لأي سيرفر سحابي.
               </p>
             </div>
-            <span class="text-xs font-semibold text-amber-400 flex items-center gap-1">Local In-Memory Vector Search</span>
+            <div class="text-xs font-bold text-amber-400" data-i18n="c5_sub">محرك SQLite FTS5 مع دعم اليونيكود</div>
           </div>
 
-          <!-- Card 6: Zero Cloud Lock-In -->
-          <div class="p-8 rounded-3xl glass-card transition flex flex-col justify-between">
+          <!-- Card 6 -->
+          <div class="p-6 sm:p-8 rounded-3xl glass-card transition flex flex-col justify-between">
             <div>
-              <div class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-5">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">سيادة تامة وخصوصية صفرية</h3>
-              <p class="text-slate-400 text-sm leading-relaxed mb-4">
-                بياناتك وأسرارك لا تغادر جهازك أبداً. يعمل بالكامل مع نماذجك المحلية عبر Ollama، مع دعم تلقائي لبدائل الطوارئ الصفرية بدون أي متطلبات لكروت ائتمان.
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2.5" data-i18n="c6_title">سيادة البيانات والخصوصية الصفرية</h3>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4" data-i18n="c6_desc">
+                بياناتك ومحادثاتك ملك لك وحدك وتبقى على قرصك الصلب. يعمل محلياً مع Ollama ونماذج مفتوحة المصدر بدون أي كروت ائتمان أو اشتراكات.
               </p>
             </div>
-            <span class="text-xs font-semibold text-rose-400 flex items-center gap-1">مفتوح المصدر 100% تحت رخصة MIT</span>
+            <div class="text-xs font-bold text-rose-400" data-i18n="c6_sub">مفتوح المصدر 100% برخصة MIT</div>
           </div>
+
         </div>
       </div>
     </section>
 
-    <!-- Specs & Requirements Section -->
-    <section id="specs" class="py-20 border-t border-slate-800/80">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-sky-400 mb-2">متطلبات التشغيل</h2>
-          <p class="text-3xl font-black text-white">سهولة في التثبيت، أداء خفيف ومستقر</p>
+    <!-- Specs Section -->
+    <section id="specs" class="py-14 sm:py-20 border-t border-slate-800/80">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-sky-400 mb-2" data-i18n="specs_tag">المواصفات والتشغيل</h2>
+          <p class="text-2xl sm:text-3xl font-black text-white" data-i18n="specs_head">متطلبات تشغيل خفيفة وسهلة</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="p-6 rounded-2xl glass-card">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="p-6 rounded-3xl glass-card">
+            <h3 class="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              البيئة المدعومة
+              <span data-i18n="specs_box1_title">البيئة المدعومة</span>
             </h3>
-            <ul class="space-y-3 text-sm text-slate-300">
-              <li class="flex items-center gap-2">
-                <span class="text-sky-400">✓</span> نظام التشغيل: Windows 10 أو Windows 11 (64-bit)
+            <ul class="space-y-3 text-xs sm:text-sm text-slate-300">
+              <li class="flex items-center gap-2.5">
+                <span class="text-sky-400">✓</span>
+                <span data-i18n="specs_item_os">نظام التشغيل: Windows 10 أو Windows 11 (64-bit)</span>
               </li>
-              <li class="flex items-center gap-2">
-                <span class="text-sky-400">✓</span> الذاكرة: 8GB كحد أدنى (يفضل 16GB للنماذج المحلية الكبيرة)
+              <li class="flex items-center gap-2.5">
+                <span class="text-sky-400">✓</span>
+                <span data-i18n="specs_item_ram">الذاكرة (RAM): 8GB كحد أدنى (16GB للنماذج المحلية الكبيرة)</span>
               </li>
-              <li class="flex items-center gap-2">
-                <span class="text-sky-400">✓</span> المسرع الذكي: يدعم Ollama محلياً بنماذج Qwen2.5 و LLaMA 3
+              <li class="flex items-center gap-2.5">
+                <span class="text-sky-400">✓</span>
+                <span data-i18n="specs_item_ollama">المسرع الذكي: Ollama اختياري لتشغيل النماذج دون اتصال</span>
               </li>
-              <li class="flex items-center gap-2">
-                <span class="text-sky-400">✓</span> الصوت: ميكروفون وسماعات لدعم Whisper والـ TTS العربي
+              <li class="flex items-center gap-2.5">
+                <span class="text-sky-400">✓</span>
+                <span data-i18n="specs_item_audio">الصوت: ميكروفون وسماعات لدعم المحادثة الصوتية</span>
               </li>
             </ul>
           </div>
 
-          <div class="p-6 rounded-2xl glass-card">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <div class="p-6 rounded-3xl glass-card">
+            <h3 class="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
               <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              طريقة التثبيت السريعة
+              <span data-i18n="specs_box2_title">التشغيل والتثبيت</span>
             </h3>
-            <div class="space-y-3 text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-300">
-              <p class="text-slate-500"># 1. الاستنساخ من GitHub</p>
-              <p class="text-sky-400">git clone https://github.com/mokashreef/Aegis-AI.git</p>
-              <p class="text-slate-500"># 2. التشغيل بنقرة واحدة بدون تيرمنال</p>
-              <p class="text-emerald-400">run.bat</p>
-              <p class="text-slate-500"># أو التثبيت عبر الحزمة الجاهزة مباشرة</p>
+            <div class="space-y-2.5 text-xs font-mono bg-slate-950/90 p-4 rounded-2xl border border-slate-800 text-slate-300">
+              <p class="text-slate-500"># 1. تثبيت فوري بنقرة واحدة</p>
               <p class="text-cyan-300">AegisAI-Setup.exe</p>
+              <p class="text-slate-500"># 2. أو استنساخ المصدر والتشغيل الصامت</p>
+              <p class="text-sky-400">git clone https://github.com/mokashreef/Aegis-AI.git</p>
+              <p class="text-emerald-400">run.bat</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Call To Action -->
-    <section class="py-20 border-t border-slate-800/80 bg-gradient-to-b from-sky-950/20 to-transparent">
-      <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-3xl sm:text-5xl font-black text-white mb-6">
-          ابدأ تجربة سطح المكتب الذكي الآن
+    <!-- Bottom CTA -->
+    <section class="py-14 sm:py-20 border-t border-slate-800/80 bg-gradient-to-b from-sky-950/20 to-transparent">
+      <div class="max-w-3xl mx-auto px-4 text-center">
+        <h2 class="text-2xl sm:text-4xl font-black text-white mb-4" data-i18n="bottom_cta_title">
+          جاهز لتجربة سطح المكتب الذكي؟
         </h2>
-        <p class="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
-          مجاني بالكامل، ومفتوح المصدر ومطور بأعلى معايير هندسة البرمجيات.
+        <p class="text-slate-300 text-xs sm:text-base mb-8 max-w-xl mx-auto" data-i18n="bottom_cta_desc">
+          مجاني بالكامل، ومفتوح المصدر ومصمم بأعلى معايير هندسة البرمجيات.
         </p>
-        <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-black text-xl hover:shadow-2xl hover:shadow-sky-500/40 transition">
-          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          <span>تحميل النسخة المستقرة</span>
+        <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-black text-base sm:text-lg hover:shadow-2xl hover:shadow-sky-500/40 transition">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span data-i18n="bottom_cta_btn">تحميل النسخة المستقرة</span>
         </a>
       </div>
     </section>
+
   </main>
 
+  <!-- Sticky Bottom Bar for Mobile Screens (Special Phone UX) -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-50 p-2.5 bg-[#070b14]/95 backdrop-blur-xl border-t border-slate-800 flex items-center justify-between gap-2 shadow-2xl">
+    <a href="https://github.com/mokashreef/Aegis-AI/releases/latest" target="_blank" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-black text-xs text-center flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 active:scale-95 transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      <span data-i18n="mobile_bottom_download">تحميل لويندوز (v1.0.0)</span>
+    </a>
+    <button onclick="toggleLanguage()" class="p-3 rounded-xl border border-slate-700 bg-slate-800 text-sky-400 active:scale-95 transition" title="Switch Language">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+    </button>
+  </div>
+
   <!-- Footer -->
-  <footer class="border-t border-slate-800/80 py-12 bg-[#050810] text-sm text-slate-400">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+  <footer class="border-t border-slate-800/80 py-8 sm:py-12 bg-[#050810] text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-start">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold font-inter">
+        <div class="w-7 h-7 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold font-['Plus_Jakarta_Sans']">
           A
         </div>
         <div>
-          <span class="font-bold text-white font-inter">Aegis AI</span>
-          <span class="text-xs text-slate-500 block">إشراف وتطوير المهندس محمد أبو خشريف • كود التطور</span>
+          <span class="font-bold text-white font-['Plus_Jakarta_Sans']">Aegis AI</span>
+          <span class="text-[11px] text-slate-500 block" data-i18n="footer_credit">إشراف وتطوير المهندس محمد أبو خشريف • كود التطور</span>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center justify-center gap-6 text-xs">
-        <a href="https://mohammad.code-elta6ur.com/" target="_blank" class="hover:text-sky-400 transition">موقع المهندس محمد أبو خشريف</a>
-        <a href="https://code-ora.com/about" target="_blank" class="hover:text-sky-400 transition">منصات كود التطور</a>
-        <a href="https://code-elta6ur.net" target="_blank" class="hover:text-sky-400 transition">بوابة كود التطور الرسمية</a>
-        <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="hover:text-sky-400 transition">مستودع GitHub</a>
+      <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs">
+        <a href="https://mohammad.code-elta6ur.com/" target="_blank" class="hover:text-sky-400 transition" data-i18n="footer_portfolio">الموقع الشخصي للمهندس</a>
+        <a href="https://code-ora.com/about" target="_blank" class="hover:text-sky-400 transition" data-i18n="footer_platforms">منصات كود التطور</a>
+        <a href="https://code-elta6ur.net" target="_blank" class="hover:text-sky-400 transition" data-i18n="footer_portal">بوابة كود التطور الرسمية</a>
+        <a href="https://github.com/mokashreef/Aegis-AI" target="_blank" class="hover:text-sky-400 transition" data-i18n="footer_repo">مستودع GitHub</a>
       </div>
 
-      <div class="text-xs text-slate-500">
-        &copy; 2026 Aegis AI. Released under the MIT License.
+      <div class="text-[11px] text-slate-500">
+        &copy; 2026 Aegis AI. Released under the Apache 2.0 / MIT License.
       </div>
     </div>
   </footer>
 
+  <!-- Bilingual JavaScript Logic -->
+  <script>
+    const translations = {
+      ar: {
+        tagline: "Windows AI Companion",
+        nav_features: "الميزات",
+        nav_vision: "تحليل الشاشة",
+        nav_specs: "المواصفات",
+        nav_platforms: "منصات كود التطور",
+        download_btn: "تحميل لويندوز",
+        hero_badge: "Windows 10 & 11 • ذكاء محلي 100% وبدون مفاتيح API",
+        hero_title_1: "رفيق الذكاء الاصطناعي",
+        hero_title_2: "المطلق لسطح مكتب ويندوز",
+        hero_desc: "تحكم في حاسوبك بالصوت والكتابة، اسأل عن أي تفصيل في شاشتك بحرية (Ask My Screen)، وافتح المواقع والبرامج بسرعة فائقة دون وميض شاشات التيرمنال وبأعلى خصوصية ممكنة.",
+        hero_cta_download: "تحميل Aegis AI للكمبيوتر (v1.0.0)",
+        hero_cta_source: "كود المشروع المفتوح",
+        hotkey_label: "الاستدعاء الفوري بلمسة زر:",
+        mock_user_msg: "ما الذي يظهر على الشاشة حالياً وما هذا الخطأ؟",
+        mock_vision_title: "تحليل الشاشة المباشر (Ask My Screen)",
+        mock_ai_answer: "النافذة النشطة هي متصفح كروم. الخطأ الظاهر في الكود هو نقص في فاصلة الأسطر البرمجية، تم فحص الإطار في 84 ملي ثانية عبر محرك Win32 المباشر.",
+        dev_lead: "مطور ومهندس المشروع",
+        dev_name: "المهندس محمد أبو خشريف (MOHAMMAD ABU KASHREEF)",
+        dev_sub: "مؤسس ومطور أنظمة كود التطور للبرمجيات والذكاء الاصطناعي",
+        dev_portfolio: "الموقع الشخصي",
+        dev_platforms: "منصات كود التطور",
+        dev_portal: "بوابة كود التطور",
+        feat_tag: "القوة الهندسية الحقيقية",
+        feat_head: "أسرع وأذكى رفيق ذكاء اصطناعي لويندوز",
+        c1_title: "توجيه فوري للمواقع والتطبيقات",
+        c1_desc: "توجيه مباشر لأكثر من 80 موقعاً وتطبيقاً بدون صفحات بحث جوجل (كود التطور، Claude، Gemini، YouTube، Canva...). تشغيل نظيف وسريع.",
+        c1_sub: "دعم التسميات العربية والإنجليزية المركبة",
+        c2_title: "اسأل شاشتك بحرية (Ask My Screen)",
+        c2_desc: "اطرح أي سؤال مخصص عن الأخطاء أو الكود أو الصور المعروضة أمامك. التقاط فوري لسطح المكتب في أقل من 100 ملي ثانية عبر Win32 GDI.",
+        c2_sub: "استنتاج سياقي ذكي وبدون أي قيود",
+        c3_title: "تفاعل صوتي تلقائي (Hands-Free)",
+        c3_desc: "تحدث مع Aegis AI بنبرتك الطبيعية باللغة العربية أو الإنجليزية. يستشعر الصمت تلقائياً (Client VAD) مع دعم كامل للنداء الصوتي الذكي (Wake Word).",
+        c3_sub: "محرك Whisper السريع المدمج محلياً",
+        c4_title: "تشغيل صامت 100% بدون وميض",
+        c4_desc: "تم القضاء على نوافذ التيرمنال والشاشات السوداء نهائياً بفضل راية CREATE_NO_WINDOW ومشغل VBScript الصامت، لإعطاء تجربة إنتاجية هادئة.",
+        c4_sub: "Silent Daemon لسطح المكتب",
+        c5_title: "سحب وإفلات المستندات (Local RAG)",
+        c5_desc: "اسحب ملفات PDF أو Word أو كود برمجي واطرح أسئلتك مباشرة ليجيبك باستشهادات دقيقة محلياً دون إرسال محتواك لأي سيرفر سحابي.",
+        c5_sub: "محرك SQLite FTS5 مع دعم اليونيكود",
+        c6_title: "سيادة البيانات والخصوصية الصفرية",
+        c6_desc: "بياناتك ومحادثاتك ملك لك وحدك وتبقى على قرصك الصلب. يعمل محلياً مع Ollama ونماذج مفتوحة المصدر بدون أي كروت ائتمان أو اشتراكات.",
+        c6_sub: "مفتوح المصدر 100% برخصة MIT",
+        specs_tag: "المواصفات والتشغيل",
+        specs_head: "متطلبات تشغيل خفيفة وسهلة",
+        specs_box1_title: "البيئة المدعومة",
+        specs_item_os: "نظام التشغيل: Windows 10 أو Windows 11 (64-bit)",
+        specs_item_ram: "الذاكرة (RAM): 8GB كحد أدنى (16GB للنماذج المحلية الكبيرة)",
+        specs_item_ollama: "المسرع الذكي: Ollama اختياري لتشغيل النماذج دون اتصال",
+        specs_item_audio: "الصوت: ميكروفون وسماعات لدعم المحادثة الصوتية",
+        specs_box2_title: "التشغيل والتثبيت",
+        bottom_cta_title: "جاهز لتجربة سطح المكتب الذكي؟",
+        bottom_cta_desc: "مجاني بالكامل، ومفتوح المصدر ومصمم بأعلى معايير هندسة البرمجيات.",
+        bottom_cta_btn: "تحميل النسخة المستقرة",
+        mobile_bottom_download: "تحميل لويندوز (v1.0.0)",
+        footer_credit: "إشراف وتطوير المهندس محمد أبو خشريف • كود التطور",
+        footer_portfolio: "الموقع الشخصي للمهندس",
+        footer_platforms: "منصات كود التطور",
+        footer_portal: "بوابة كود التطور الرسمية",
+        footer_repo: "مستودع GitHub"
+      },
+      en: {
+        tagline: "Windows AI Companion",
+        nav_features: "Features",
+        nav_vision: "Screen Vision",
+        nav_specs: "System Specs",
+        nav_platforms: "Code Evolution Platforms",
+        download_btn: "Download for Windows",
+        hero_badge: "Windows 10 & 11 • 100% Local • Zero Paid API Keys",
+        hero_title_1: "The Sovereign AI Companion",
+        hero_title_2: "For Windows Desktop",
+        hero_desc: "Control your PC by voice and text, ask anything about your display with open-ended Vision AI, and launch apps directly with zero console flashes and total privacy.",
+        hero_cta_download: "Download Aegis AI for Windows (v1.0.0)",
+        hero_cta_source: "View Source on GitHub",
+        hotkey_label: "Instant Summon Hotkey:",
+        mock_user_msg: "What is currently on my screen and what is this code error?",
+        mock_vision_title: "Live Vision Inspection (Ask My Screen)",
+        mock_ai_answer: "Active foreground window is Chrome. The error shown in the console is a missing statement semicolon. Desktop frame analyzed in 84ms via direct Win32 GDI.",
+        dev_lead: "Project Architect & Lead Engineer",
+        dev_name: "Eng. Mohammad Abu Kashreef (MOHAMMAD ABU KASHREEF)",
+        dev_sub: "Founder & Lead Developer at Code Evolution (كود التطور)",
+        dev_portfolio: "Personal Portfolio",
+        dev_platforms: "Code Evolution Platforms",
+        dev_portal: "Code Evolution Portal",
+        feat_tag: "True Engineering Power",
+        feat_head: "Fastest & Smartest Windows AI Desktop Companion",
+        c1_title: "Direct Canonical App & URL Navigation",
+        c1_desc: "Direct navigation to 80+ official websites and local apps without ambiguous search results (Code Evolution, Claude, Gemini, YouTube, Canva...).",
+        c1_sub: "Arabic & English compound command parsing",
+        c2_title: "Arbitrary Screen Vision (Ask My Screen)",
+        c2_desc: "Ask any custom question about errors, code, or images on your display. Sub-100ms desktop capture via native Win32 GDI with zero restrictions.",
+        c2_sub: "Context-aware grounded reasoning",
+        c3_title: "Hands-Free Voice & Whisper VAD",
+        c3_desc: "Natural conversations in Arabic and English. Auto-detects speech pauses via Client VAD with background Wake Word listening and instant neural speech output.",
+        c3_sub: "Local Faster-Whisper neural STT",
+        c4_title: "100% Silent Execution (No Terminal Popups)",
+        c4_desc: "Completely eliminated command prompt windows and black terminal flashes via CREATE_NO_WINDOW and invisible VBScript daemon wrappers.",
+        c4_sub: "Silent Windows Background Daemon",
+        c5_title: "Drag & Drop Local Document RAG",
+        c5_desc: "Drag any PDF, Word doc, or source file directly into the HUD to ask questions with grounded page citations without sending data to external clouds.",
+        c5_sub: "In-memory SQLite FTS5 Unicode BM25",
+        c6_title: "Data Sovereignty & Zero Cloud Lock-In",
+        c6_desc: "Your data never leaves your machine. Operates completely locally with Ollama and open models with zero subscription fees or required credit cards.",
+        c6_sub: "100% Open Source under Apache 2.0 / MIT",
+        specs_tag: "Requirements & Installation",
+        specs_head: "Lightweight, Reliable & Fast Setup",
+        specs_box1_title: "Supported Environment",
+        specs_item_os: "Operating System: Windows 10 or Windows 11 (64-bit)",
+        specs_item_ram: "Memory (RAM): 8GB minimum (16GB recommended for local LLMs)",
+        specs_item_ollama: "AI Accelerator: Ollama optional for 100% offline intelligence",
+        specs_item_audio: "Audio: Microphone and speakers for hands-free voice",
+        specs_box2_title: "Quick Installation",
+        bottom_cta_title: "Ready for the Sovereign Desktop Experience?",
+        bottom_cta_desc: "Completely free, open-source, and engineered with top-tier software craftsmanship.",
+        bottom_cta_btn: "Download Stable Release",
+        mobile_bottom_download: "Download for Windows (v1.0.0)",
+        footer_credit: "Engineered by Eng. Mohammad Abu Kashreef • Code Evolution",
+        footer_portfolio: "Eng. Mohammad's Portfolio",
+        footer_platforms: "Code Evolution Platforms",
+        footer_portal: "Code Evolution Official Portal",
+        footer_repo: "GitHub Repository"
+      }
+    };
+
+    let currentLang = localStorage.getItem('aegis_lang') || 'ar';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('aegis_lang', lang);
+      const isAr = lang === 'ar';
+      
+      document.documentElement.lang = lang;
+      document.documentElement.dir = isAr ? 'rtl' : 'ltr';
+      
+      // Update label
+      document.getElementById('langLabel').textContent = isAr ? 'English' : 'العربية';
+      
+      // Update all data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+    }
+
+    function toggleLanguage() {
+      setLanguage(currentLang === 'ar' ? 'en' : 'ar');
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+    });
+  </script>
 </body>
 </html>

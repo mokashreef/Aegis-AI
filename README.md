@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20x64-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 [![Release](https://img.shields.io/badge/Release-v1.0.0-success?logo=github)](https://github.com/mokashreef/Aegis-AI/releases/latest)
+[![GitHub Packages](https://img.shields.io/badge/Packages-GHCR%20%7C%20npm-purple?logo=github)](https://github.com/users/mokashreef/packages?repo_name=Aegis-AI)
 [![Landing Page](https://img.shields.io/badge/Website-GitHub%20Pages-blue?logo=google-chrome&logoColor=white)](https://mokashreef.github.io/Aegis-AI/)
 [![Code Evolution](https://img.shields.io/badge/Developed%20By-كود%20التطور-0ea5e9)](https://mohammad.code-elta6ur.com/)
 [![CI/CD](https://github.com/mokashreef/Aegis-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/mokashreef/Aegis-AI/actions)
@@ -24,6 +25,7 @@ Summoned instantly via a customizable global hotkey (default **`Alt + Space`**),
 <br />
 
 [🌐 **Official Landing Page**](https://mokashreef.github.io/Aegis-AI/) •
+[📦 **GitHub Packages**](https://github.com/users/mokashreef/packages?repo_name=Aegis-AI) •
 [📥 **Download Latest Release**](#-download--installation) •
 [🎬 **Visual Showcase**](#-visual-showcase) •
 [⚡ **Key Features**](#-key-features) •

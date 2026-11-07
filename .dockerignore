@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+releases/
+build/
+installer/
+storage/*.db
+storage/logs
+node_modules
+apps/desktop-ui/node_modules

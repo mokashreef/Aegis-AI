@@ -23,6 +23,7 @@ mss>=9.0.0
 # Real Voice Pipeline & Wake Word (Zero Cloud Lock-in)
 faster-whisper>=1.0.0
 edge-tts>=6.1.0
+piper-tts>=1.2.0
 sounddevice>=0.5.0
 onnxruntime>=1.18.0
 

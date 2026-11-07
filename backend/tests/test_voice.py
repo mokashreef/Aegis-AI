@@ -36,7 +36,7 @@ def test_tts_engine_status():
     tts = NeuralTTSEngine()
     status = tts.get_status()
     assert status["zero_api_keys"] is True
-    assert status["backend"] == "edge_tts_neural"
+    assert "edge_tts" in status["backend"]
     assert status["default_voice"] in ["ar-SA-HamedNeural", "en-US-AriaNeural"]
 
 

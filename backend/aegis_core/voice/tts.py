@@ -7,10 +7,33 @@ using Microsoft Edge Neural speech synthesis with local SAPI offline fallback.
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from aegis_core.utils.logger import logger
+from aegis_core.voice.piper_engine import (
+    piper_engine,
+    DEFAULT_PIPER_ARABIC_VOICE,
+)
 
 DEFAULT_VOICE = "ar-SA-HamedNeural"
 
 VOICE_CATALOG: List[Dict[str, Any]] = [
+    # Piper Offline Neural Voices (أصوات عصبية محلية دون اتصال)
+    {
+        "id": "piper-ar_JO-kareem-medium",
+        "name": "كريم (Piper Neural - عربي أوفلاين فائق النعومة)",
+        "name_en": "Kareem (Piper - Jordanian Offline Neural)",
+        "gender": "Male",
+        "lang": "ar-JO",
+        "lang_name": "العربية (أوفلاين محلي - Piper)",
+        "sample_text": "مرحباً، أنا المساعد إيجيس بنطق عصبي محلي دون الحاجة للاتصال بالإنترنت.",
+    },
+    {
+        "id": "piper-ar_JO-kareem-low",
+        "name": "كريم الخفيف (Piper Neural - سريع للأجهزة المتوسطة)",
+        "name_en": "Kareem Low (Piper - Fast Offline Neural)",
+        "gender": "Male",
+        "lang": "ar-JO",
+        "lang_name": "العربية (سريع محلي - Piper)",
+        "sample_text": "أهلاً بك، تم تفعيل النطق العصبي السريع على حاسوبك.",
+    },
     # Arabic Voices (الأصوات العربية الفصيحة والإقليمية)
     {
         "id": "ar-SA-HamedNeural",
@@ -153,6 +176,21 @@ class NeuralTTSEngine:
         if len(clean_text) > 1000:
             clean_text = clean_text[:1000] + "..."
 
+        # 1. Direct Piper Offline Neural Synthesis
+        if target_voice.startswith("piper-"):
+            model_key = target_voice.replace("piper-", "")
+            if piper_engine.is_model_installed(model_key):
+                try:
+                    import asyncio
+                    wav_data = await asyncio.to_thread(
+                        piper_engine.synthesize_wav_bytes, clean_text, model_key
+                    )
+                    if wav_data:
+                        return wav_data
+                except Exception as exc:
+                    logger.warning("Piper neural synthesis failed for '%s': %s", model_key, exc)
+
+        # 2. Cloud Edge Neural Synthesis
         try:
             import edge_tts
 
@@ -164,7 +202,19 @@ class NeuralTTSEngine:
             return b"".join(chunks)
 
         except Exception as exc:
-            logger.warning("Neural TTS synthesis via edge-tts failed: %s. Using local fallback.", exc)
+            logger.warning("Neural TTS synthesis via edge-tts failed: %s. Attempting offline neural fallback.", exc)
+            # 3. High-Fidelity Offline Fallback to Piper if available
+            if piper_engine.is_model_installed(DEFAULT_PIPER_ARABIC_VOICE):
+                try:
+                    import asyncio
+                    wav_data = await asyncio.to_thread(
+                        piper_engine.synthesize_wav_bytes, clean_text, DEFAULT_PIPER_ARABIC_VOICE
+                    )
+                    if wav_data:
+                        logger.info("Successfully recovered speech using Piper offline neural voice.")
+                        return wav_data
+                except Exception as p_exc:
+                    logger.debug("Piper fallback error: %s", p_exc)
             return b""
 
     async def synthesize_to_file(
@@ -186,7 +236,8 @@ class NeuralTTSEngine:
         return {
             "default_voice": self.default_voice,
             "available_voices": VOICE_CATALOG,
-            "backend": "edge_tts_neural",
+            "backend": "edge_tts_and_piper_neural",
+            "piper": piper_engine.get_status(),
             "zero_api_keys": True,
         }
 

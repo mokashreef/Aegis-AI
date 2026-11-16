@@ -125,7 +125,7 @@ export interface PresetHotkey {
 }
 
 export interface UserSettings {
-  theme: "dark" | "light" | "system";
+  theme: "dark" | "oled" | "light" | "system";
   language: "auto" | "ar" | "en";
   auto_speak: boolean;
   tts_voice: string;

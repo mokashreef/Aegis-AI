@@ -1,0 +1,52 @@
+{
+  "theme": "dark",
+  "language": "auto",
+  "auto_speak": false,
+  "tts_voice": "ar-SA-HamedNeural",
+  "tts_rate": "+0%",
+  "default_browser": "chrome",
+  "global_hotkey": "Alt+Space",
+  "start_with_windows": false,
+  "quick_actions": [
+    {
+      "id": "yt",
+      "title": "YouTube in Chrome",
+      "title_ar": "يوتيوب في كروم",
+      "command": "افتح موقع يوتيوب بمتصفح كروم",
+      "icon": "globe",
+      "enabled": true
+    },
+    {
+      "id": "code_evolution",
+      "title": "Code Evolution (Official)",
+      "title_ar": "كود التطور (الموقع الرسمي)",
+      "command": "افتح موقع كود التطور بمتصفح كروم",
+      "icon": "globe",
+      "enabled": true
+    },
+    {
+      "id": "google",
+      "title": "Google in Comet",
+      "title_ar": "جوجل في كومت",
+      "command": "افتح جوجل بمتصفح كومت",
+      "icon": "globe",
+      "enabled": true
+    },
+    {
+      "id": "notepad",
+      "title": "Launch Notepad",
+      "title_ar": "فتح المفكرة",
+      "command": "افتح برنامج المفكرة",
+      "icon": "app",
+      "enabled": true
+    },
+    {
+      "id": "screen_snap",
+      "title": "Screen Analysis",
+      "title_ar": "تحليل الشاشة",
+      "command": "حلل ما يظهر على الشاشة الآن",
+      "icon": "camera",
+      "enabled": true
+    }
+  ]
+}

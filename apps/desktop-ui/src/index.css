@@ -52,6 +52,52 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* OLED Black Theme Support (Pure pitch black for zero battery drain & extreme contrast) */
+.theme-oled {
+  color-scheme: dark;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+.theme-oled .bg-\[\#0b0f19\] {
+  background-color: #000000 !important;
+}
+.theme-oled .bg-\[\#0f172a\] {
+  background-color: #040404 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.theme-oled .border-slate-800,
+.theme-oled .border-slate-800\/80,
+.theme-oled .border-slate-700\/60 {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+.theme-oled .bg-slate-800,
+.theme-oled .bg-slate-800\/50,
+.theme-oled .bg-slate-800\/60,
+.theme-oled .bg-slate-800\/70,
+.theme-oled .bg-slate-800\/80 {
+  background-color: #0a0a0a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+.theme-oled .bg-slate-900\/60,
+.theme-oled .bg-slate-900\/80,
+.theme-oled .bg-slate-950\/40 {
+  background-color: #000000 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+.theme-oled .glass-panel {
+  background: #000000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+.theme-oled .glass-card {
+  background: #080808 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+.theme-oled input {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
 /* Light mode theme support */
 .theme-light {
   color-scheme: light;

@@ -388,7 +388,7 @@ export const CompanionOverlay: React.FC = () => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`w-full h-full flex flex-col bg-[#0b0f19] border border-slate-800 shadow-2xl relative select-none ${
-        userSettings?.theme === "light" ? "theme-light" : ""
+        userSettings?.theme === "oled" ? "theme-oled" : userSettings?.theme === "light" ? "theme-light" : ""
       }`}
     >
       {/* System Reminder / Timer Alert Popup Banner */}

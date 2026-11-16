@@ -5,8 +5,11 @@ Aegis AI - Session & Conversational Memory Manager.
 import json
 import uuid
 from typing import Any, Dict, List, Optional
+from aegis_core.config import STORAGE_DIR
 from aegis_core.memory.db import DatabaseEngine, db_engine
 from aegis_core.utils.logger import logger
+
+SETTINGS_FILE = STORAGE_DIR / "settings.json"
 
 
 class SessionManager:
@@ -14,6 +17,7 @@ class SessionManager:
 
     def __init__(self, engine: Optional[DatabaseEngine] = None):
         self.engine = engine or db_engine
+        self._sync_from_file()
 
     def create_session(self, title: str = "New Conversation", metadata: Optional[Dict[str, Any]] = None) -> str:
         """Generates a new session ID and persists it."""
@@ -132,8 +136,8 @@ class SessionManager:
             )
             return cursor.lastrowid or 0
 
-    def set_preference(self, key: str, value: Any) -> None:
-        """Stores a persistent user preference."""
+    def set_preference(self, key: str, value: Any, sync_file: bool = True) -> None:
+        """Stores a persistent user preference in SQLite and optionally mirrors to storage/settings.json."""
         val_str = json.dumps(value) if not isinstance(value, str) else value
         with self.engine.get_connection() as conn:
             conn.execute(
@@ -144,6 +148,8 @@ class SessionManager:
                 """,
                 (key, val_str),
             )
+        if sync_file:
+            self._sync_to_file()
 
     def get_preference(self, key: str, default: Any = None) -> Any:
         """Retrieves a persistent user preference."""
@@ -173,10 +179,40 @@ class SessionManager:
         return prefs
 
     def update_preferences(self, updates: Dict[str, Any]) -> Dict[str, Any]:
-        """Bulk updates user preferences and returns the updated state."""
+        """Bulk updates user preferences, mirrors to storage/settings.json, and returns the updated state."""
         for key, value in updates.items():
-            self.set_preference(key, value)
+            self.set_preference(key, value, sync_file=False)
+        self._sync_to_file()
         return self.get_all_preferences()
+
+    def _sync_to_file(self) -> None:
+        """Atomically mirrors user preferences to storage/settings.json for offline file persistence."""
+        try:
+            prefs = self.get_all_preferences()
+            SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            tmp_file = SETTINGS_FILE.with_suffix(".tmp")
+            with open(tmp_file, "w", encoding="utf-8") as f:
+                json.dump(prefs, f, indent=2, ensure_ascii=False)
+            tmp_file.replace(SETTINGS_FILE)
+            logger.debug("Synchronized user settings to %s", SETTINGS_FILE)
+        except Exception as exc:
+            logger.warning("Failed writing settings.json: %s", exc)
+
+    def _sync_from_file(self) -> None:
+        """Loads user preferences from storage/settings.json if present on system startup."""
+        if not SETTINGS_FILE.exists():
+            # Generate initial settings.json from defaults
+            self._sync_to_file()
+            return
+        try:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    self.set_preference(k, v, sync_file=False)
+                logger.debug("Loaded user preferences from %s", SETTINGS_FILE)
+        except Exception as exc:
+            logger.warning("Failed reading settings.json: %s", exc)
 
 
 DEFAULT_USER_PREFERENCES: Dict[str, Any] = {

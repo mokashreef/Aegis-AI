@@ -209,6 +209,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const isLight = localSettings.theme === "light";
+  const isOled = localSettings.theme === "oled";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm select-none">
@@ -216,6 +217,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         className={`w-full max-w-2xl rounded-2xl border shadow-2xl flex flex-col h-[540px] overflow-hidden transition-colors ${
           isLight
             ? "bg-white border-slate-200 text-slate-800"
+            : isOled
+            ? "bg-black border-neutral-800 text-white"
             : "bg-[#0f172a] border-slate-800 text-slate-100"
         }`}
       >
@@ -370,28 +373,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </h3>
                 <p className="text-xs text-slate-400 mb-3">
                   {localSettings.language === "ar"
-                    ? "التبديل بين الوضع الليلي المريح أو النهاري الواضح"
-                    : "Switch between Dark, Light, or OS System appearance"}
+                    ? "التبديل بين الوضع الداكن المتوازن (Dark Slate)، الأسود الفاحم (OLED)، أو الزجاجي الفاتح (Light Glass)"
+                    : "Switch between Dark Slate, OLED Black, Light Glass, or System appearance"}
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { id: "dark", label: "مظلم (Dark)", icon: "🌙" },
-                    { id: "light", label: "فاتح (Light)", icon: "☀️" },
-                    { id: "system", label: "تلقائي (System)", icon: "💻" },
+                    { id: "dark", label: "Dark Slate", label_ar: "دارك سليت", icon: "🌌" },
+                    { id: "oled", label: "OLED Black", label_ar: "أسود فاحم", icon: "⚫" },
+                    { id: "light", label: "Light Glass", label_ar: "زجاجي فاتح", icon: "☀️" },
+                    { id: "system", label: "System Sync", label_ar: "مع النظام", icon: "💻" },
                   ].map((t) => (
                     <button
                       key={t.id}
-                      onClick={() => handleSaveField("theme", t.id as "dark" | "light" | "system")}
-                      className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs transition ${
+                      onClick={() => handleSaveField("theme", t.id as "dark" | "oled" | "light" | "system")}
+                      className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 text-xs transition ${
                         localSettings.theme === t.id
-                          ? "bg-sky-500/20 border-sky-500 text-sky-300 font-bold"
+                          ? "bg-sky-500/20 border-sky-500 text-sky-300 font-bold shadow-sm"
                           : isLight
                           ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
+                          : isOled
+                          ? "bg-black border-neutral-800 text-neutral-300 hover:text-white"
                           : "bg-slate-800/80 border-slate-700/60 text-slate-400 hover:text-slate-200"
                       }`}
                     >
-                      <span>{t.icon}</span>
-                      <span>{t.label}</span>
+                      <span className="text-sm">{t.icon}</span>
+                      <span className="font-semibold text-center leading-tight">
+                        {localSettings.language === "ar" ? t.label_ar : t.label}
+                      </span>
                     </button>
                   ))}
                 </div>

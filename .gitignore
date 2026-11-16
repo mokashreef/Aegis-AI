@@ -81,6 +81,7 @@ piper_voices/
 storage/*.db
 storage/*.sqlite
 storage/*.sqlite3
+storage/settings.json
 storage/vectors/
 storage/logs/
 storage/cache/
@@ -88,6 +89,7 @@ storage/notes/
 storage/models/
 *.log
 !storage/.gitkeep
+!storage/settings.example.json
 
 # IDEs & Editors
 .vscode/*

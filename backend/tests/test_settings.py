@@ -157,3 +157,65 @@ def test_clear_session_endpoint():
     resp = client.post("/api/sessions/test-session-123/clear")
     assert resp.status_code == 200
     assert resp.json() == {"session_id": "test-session-123", "cleared": True}
+
+
+def test_settings_json_file_persistence():
+    """Verify user preferences are mirrored and persisted in storage/settings.json."""
+    from aegis_core.config import STORAGE_DIR
+    import json
+
+    settings_file = STORAGE_DIR / "settings.json"
+    assert settings_file.exists()
+
+    # Update preferences with OLED theme and custom hotkey
+    session_manager.update_preferences({"theme": "oled", "global_hotkey": "Ctrl+Shift+A"})
+
+    with open(settings_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assert data["theme"] == "oled"
+    assert data["global_hotkey"] == "Ctrl+Shift+A"
+
+    # Reset
+    session_manager.update_preferences({"theme": "dark", "global_hotkey": "Alt+Space"})
+
+
+def test_theme_modes_oled_dark_light():
+    """Verify switching between OLED Black, Dark Slate, and Light Glass themes via API."""
+    client = TestClient(app)
+
+    # 1. OLED Black
+    r1 = client.post("/api/settings", json={"theme": "oled"})
+    assert r1.status_code == 200
+    assert r1.json()["theme"] == "oled"
+
+    # 2. Light Glass
+    r2 = client.post("/api/settings", json={"theme": "light"})
+    assert r2.status_code == 200
+    assert r2.json()["theme"] == "light"
+
+    # 3. Dark Slate
+    r3 = client.post("/api/settings", json={"theme": "dark"})
+    assert r3.status_code == 200
+    assert r3.json()["theme"] == "dark"
+
+
+def test_hotkey_rebinding_api():
+    """Verify dynamic hotkey rebinding and persistence via /api/desktop/hotkey."""
+    client = TestClient(app)
+
+    # 1. Update hotkey
+    resp = client.post("/api/desktop/hotkey", json={"hotkey": "Ctrl+Shift+A"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["success"] is True
+    assert data["hotkey"] == "Ctrl+Shift+A"
+
+    # 2. Verify via GET /api/desktop/hotkey
+    get_resp = client.get("/api/desktop/hotkey")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["current_hotkey"] == "Ctrl+Shift+A"
+
+    # Reset back to Alt+Space
+    client.post("/api/desktop/hotkey", json={"hotkey": "Alt+Space"})
+

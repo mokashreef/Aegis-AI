@@ -101,6 +101,19 @@ class ScreenVisionAnalyzer:
         height = cap.get("height", 1080)
         latency_ms = cap.get("latency_ms", 0.0)
 
+        # 1.5 Extract pixel-level text via native Windows OCR
+        ocr_text = ""
+        ocr_lines: List[str] = []
+        try:
+            from aegis_core.automation.screen_ocr import screen_ocr_engine
+
+            ocr_res = await screen_ocr_engine.extract_text(image_or_path=img_path)
+            if ocr_res.get("success"):
+                ocr_text = ocr_res.get("text", "").strip()
+                ocr_lines = ocr_res.get("lines", [])
+        except Exception as ocr_err:
+            logger.debug("Vision OCR extraction step notice: %s", ocr_err)
+
         # 2. Inspect active desktop windows and foreground task
         desktop_ctx = self.inspect_desktop_context()
         fg_window = desktop_ctx["foreground_window"]
@@ -168,8 +181,9 @@ class ScreenVisionAnalyzer:
                 width=width,
                 height=height,
                 is_arabic=is_arabic,
+                ocr_text=ocr_text,
             )
-            model_used = "Aegis Vision Synthesizer (Local + Win32 GDI)"
+            model_used = "Aegis Vision Synthesizer (Local + Win32 GDI + OCR)"
 
         return {
             "success": True,
@@ -183,6 +197,8 @@ class ScreenVisionAnalyzer:
             "latency_ms": latency_ms,
             "vision_model_used": model_used,
             "has_local_vision_model": vision_model is not None,
+            "ocr_text_preview": (ocr_text[:200] + "...") if len(ocr_text) > 200 else ocr_text,
+            "ocr_line_count": len(ocr_lines),
         }
 
     async def _synthesize_desktop_analysis(
@@ -193,6 +209,7 @@ class ScreenVisionAnalyzer:
         width: int,
         height: int,
         is_arabic: bool,
+        ocr_text: str = "",
     ) -> str:
         """
         Synthesizes a rich, structured screen analysis answering any user question
@@ -207,17 +224,24 @@ class ScreenVisionAnalyzer:
             router = AIRuntimeRouter()
             sys_prompt = (
                 "أنت المساعد الذكي الخبير Aegis AI، وتتمتع بقدرة كاملة على فحص سطح المكتب وشاشة المستخدم.\n"
-                "تم التقاط الشاشة وتحليل النافذة النشطة في الواجهة والتطبيقات المفتوحة.\n"
+                "تم التقاط الشاشة وتحليل النافذة النشطة في الواجهة والتطبيقات المفتوحة واستخراج النصوص بصرياً.\n"
                 "المستخدم يسألك سؤالاً مباشراً حول شاشته وما يظهر فيها. أجب على سؤاله بدقة ومباشرة وبالتفصيل.\n"
                 "لا تدّعِ أبداً أنك غير قادر على الوصول للشاشة؛ "
-                "بل استخدم سياق النافذة النشطة لتقديم إجابة حقيقية ومفيدة.\n"
+                "بل استخدم سياق النافذة النشطة والنصوص المقروءة لتقديم إجابة حقيقية ومفيدة.\n"
                 "أجب باللغة العربية باحترافية وسلاسة."
+            )
+            ocr_section = (
+                f"- النصوص والأكواد المقروءة بدقة من الشاشة (Windows Native OCR):\n"
+                f"```text\n{ocr_text[:3000]}\n```\n"
+                if ocr_text
+                else ""
             )
             user_prompt = (
                 f"بيانات الشاشة الملتقطة مباشرة:\n"
                 f"- النافذة/التطبيق النشط حالياً: {fg_window}\n"
                 f"- النوافذ والتطبيقات الأخرى الظاهرة: {', '.join(open_windows[:6])}\n"
-                f"- دقة العرض: {width}x{height} بكسل\n\n"
+                f"- دقة العرض: {width}x{height} بكسل\n"
+                f"{ocr_section}\n"
                 f"سؤال واستفسار المستخدم بالتحديد حول الشاشة:\n{query}"
             )
             chunks = []

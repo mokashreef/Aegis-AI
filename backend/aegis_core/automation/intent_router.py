@@ -19,6 +19,7 @@ class UserIntent(str, Enum):
     VOLUME = "volume"
     BRIGHTNESS = "brightness"
     SCREEN_CAPTURE = "screen_capture"
+    SCREEN_OCR = "screen_ocr"
     VISION_ANALYSIS = "vision_analysis"
     DOCUMENT_RAG = "document_rag"
     TIMER = "timer"
@@ -411,6 +412,27 @@ class IntentRouter:
         ),
     ]
 
+    SCREEN_OCR_PATTERNS = [
+        (
+            r"^(?:please\s+)?"
+            r"(?:extract|read|copy|get|grab)\s+(?:all\s+)?(?:the\s+)?"
+            r"(?:text|words|lines|content)\s+(?:from|on|in)\s+(?:the\s+)?"
+            r"(?:screen|display|desktop|window)(?:\s+(?:to\s+clipboard|and\s+copy))?$"
+        ),
+        (
+            r"^(?:screen\s+ocr|ocr\s+screen|read\s+screen\s+text|extract\s+screen\s+text|copy\s+screen\s+text)$"
+        ),
+        (
+            r"^(?:ممكن\s+)?(?:اقرأ|استخرج|انسخ|هات|طلع)(?:\s+لي)?\s+"
+            r"(?:النص|الكلام|الكتابة|النصوص)\s+(?:من|في|على|اللي\s+في|بال|بـ)?\s*"
+            r"(?:الشاشة|سطح المكتب|النافذة)?(?:\s+(?:وانسخه|وحطه\s+بالحافظة|إلى\s+الحافظة|للحافظة))?$"
+        ),
+        (
+            r"^(?:اقرأ\s+نص\s+الشاشة|اقرا\s+نص\s+الشاشة|قراءة\s+نص\s+الشاشة|استخراج\s+النص|نسخ\s+نص\s+الشاشة|"
+            r"استخراج\s+نصوص\s+الشاشة)$"
+        ),
+    ]
+
     SCREEN_CAPTURE_PATTERNS = [
         (
             r"^(?:please\s+)?"
@@ -626,7 +648,21 @@ class IntentRouter:
                 "arguments": {"action": "decrease", "level": 10},
             }
 
-        # 2.5 Screen Vision Analysis (Ask My Screen / Bilingual)
+        # 2.5 Screen OCR Text Extraction (Bilingual)
+        for pat in cls.SCREEN_OCR_PATTERNS:
+            if re.match(pat, low) or re.match(pat, raw):
+                copy_to_clip = bool(re.search(r"انسخ|حافظة|clipboard|copy", low + " " + raw))
+                is_ar = any("\u0600" <= ch <= "\u06ff" for ch in raw)
+                return {
+                    "intent": UserIntent.SCREEN_OCR,
+                    "name": "extract_screen_text",
+                    "arguments": {
+                        "lang": "ar-SA" if is_ar else "en-US",
+                        "copy_to_clipboard": copy_to_clip,
+                    },
+                }
+
+        # 2.6 Screen Vision Analysis (Ask My Screen / Bilingual)
         is_screen_query = False
         screen_query_arg = raw.strip()
 

@@ -557,6 +557,72 @@ class AnalyzeScreenTool(BaseTool):
         return ToolResult(success=False, error=res.get("error", "Vision screen analysis failed."), data=res)
 
 
+class ExtractScreenTextTool(BaseTool):
+    name = "extract_screen_text"
+    description = (
+        "Extracts pixel-level text from active desktop windows and screenshots "
+        "using native Windows OCR with offline privacy and high-speed recognition."
+    )
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "lang": {
+                "type": "string",
+                "description": "OCR recognition language ('ar-SA', 'en-US', or 'auto').",
+            },
+            "copy_to_clipboard": {
+                "type": "boolean",
+                "description": "Whether to copy extracted text directly to Windows clipboard.",
+            },
+        },
+    }
+
+    async def execute(
+        self,
+        lang: Optional[str] = None,
+        copy_to_clipboard: bool = False,
+        **kwargs: Any,
+    ) -> ToolResult:
+        from aegis_core.automation.screen_ocr import screen_ocr_engine
+
+        res = await screen_ocr_engine.extract_text(lang=lang)
+        if res.get("success"):
+            text = res.get("text", "")
+            lines = res.get("lines", [])
+            if copy_to_clipboard and text:
+                ClipboardManager.set_text(text)
+
+            preview = text[:200] + "..." if len(text) > 200 else text
+            message = (
+                f"تم استخراج {len(lines)} سطراً ({len(text)} حرفاً) بنجاح عبر محرك Windows OCR."
+                if (lang and lang.startswith("ar")) or any("\u0600" <= ch <= "\u06ff" for ch in text)
+                else f"Successfully extracted {len(lines)} lines ({len(text)} characters) via native Windows OCR."
+            )
+            if copy_to_clipboard:
+                message += " (تم نسخ النص إلى الحافظة)" if "تم" in message else " (Copied to clipboard)"
+
+            return ToolResult(
+                success=True,
+                data={
+                    "text": text,
+                    "lines": lines,
+                    "line_count": res.get("line_count", len(lines)),
+                    "word_count": res.get("word_count", 0),
+                    "language": res.get("language"),
+                    "latency_ms": res.get("latency_ms"),
+                    "copied_to_clipboard": copy_to_clipboard,
+                    "preview": preview,
+                },
+                message=message,
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", "Native Windows OCR extraction failed."),
+            data=res,
+        )
+
+
 class QuickNotesTool(BaseTool):
     name = "manage_notes"
     description = (

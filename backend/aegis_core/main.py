@@ -40,6 +40,9 @@ from aegis_core.automation.system_tools import (
     ControlMediaTool,
     SetClipboardTool,
     SnapWindowTool,
+    MoveWindowMonitorTool,
+    ListMonitorsTool,
+    ManageVirtualDesktopTool,
     VolumeControlTool,
 )
 from aegis_core.config import settings
@@ -63,6 +66,9 @@ def register_default_tools() -> None:
         FocusWindowByTitleTool(),
         MinimizeAllWindowsTool(),
         SnapWindowTool(),
+        MoveWindowMonitorTool(),
+        ListMonitorsTool(),
+        ManageVirtualDesktopTool(),
         VolumeControlTool(),
         BrightnessControlTool(),
         ScreenCaptureTool(),

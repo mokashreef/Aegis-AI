@@ -351,36 +351,149 @@ class MinimizeAllWindowsTool(BaseTool):
 
 class SnapWindowTool(BaseTool):
     name = "snap_window"
-    description = "Snaps the foreground active window to the 'left' or 'right' half of the monitor, or maximizes it."
+    description = (
+        "Snaps the foreground active window to the 'left', 'right', 'top', 'bottom' half, "
+        "maximizes, or moves it to a designated display monitor."
+    )
     risk_level = RiskLevel.MUTATING_SAFE
     parameters_schema = {
         "type": "object",
         "properties": {
             "side": {
                 "type": "string",
-                "enum": ["left", "right", "maximize", "restore"],
+                "enum": ["left", "right", "top", "bottom", "maximize", "restore", "center"],
                 "description": "Placement layout target.",
             },
             "hwnd": {
                 "type": "integer",
                 "description": "Optional specific window handle to snap. If omitted, uses current foreground window.",
             },
+            "monitor": {
+                "type": "integer",
+                "description": "Optional target display monitor index (1, 2, ...).",
+            },
         },
         "required": ["side"],
     }
 
-    async def execute(self, side: str, hwnd: int = 0, **kwargs: Any) -> ToolResult:
+    async def execute(self, side: str, hwnd: int = 0, monitor: int = 0, **kwargs: Any) -> ToolResult:
         h = hwnd if hwnd > 0 else None
-        res = WindowManager.snap_window(side=side, hwnd=h)
+        m = monitor if monitor > 0 else None
+        res = WindowManager.snap_window(side=side, hwnd=h, monitor=m)
         if res.get("snapped") or res.get("success"):
+            target_str = f" on monitor {monitor}" if m else ""
             return ToolResult(
                 success=True,
                 data=res,
-                message=f"Snapped window to {side}.",
+                message=f"Snapped window to {side}{target_str}.",
             )
         return ToolResult(
             success=False,
             error=res.get("error", f"Failed to snap window to {side}."),
+            data=res,
+        )
+
+
+class MoveWindowMonitorTool(BaseTool):
+    name = "move_window_monitor"
+    description = (
+        "Moves the active (or designated) window to a specified display monitor (e.g. monitor 1, monitor 2) "
+        "with optional side alignment ('left', 'right', 'top', 'bottom', 'maximize', 'center')."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "monitor": {
+                "type": "integer",
+                "description": "Target display monitor number (1-based: 1 for monitor 1, 2 for monitor 2, etc.).",
+            },
+            "side": {
+                "type": "string",
+                "enum": ["left", "right", "top", "bottom", "maximize", "center"],
+                "description": "Optional alignment or snapping on target monitor (default: 'center').",
+            },
+            "hwnd": {
+                "type": "integer",
+                "description": "Optional specific window handle to move.",
+            },
+        },
+        "required": ["monitor"],
+    }
+
+    async def execute(self, monitor: int, side: str = "center", hwnd: int = 0, **kwargs: Any) -> ToolResult:
+        h = hwnd if hwnd > 0 else None
+        res = WindowManager.move_window_to_monitor(monitor_index=monitor, side=side, hwnd=h)
+        if res.get("success"):
+            side_desc = f" ({side})" if side and side != "center" else ""
+            return ToolResult(
+                success=True,
+                data=res,
+                message=f"Moved window to Monitor {monitor}{side_desc} successfully.",
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"Failed to move window to Monitor {monitor}."),
+            data=res,
+        )
+
+
+class ListMonitorsTool(BaseTool):
+    name = "list_monitors"
+    description = (
+        "Enumerates all connected physical and virtual display monitors with resolutions, "
+        "work areas, primary status, and DPI scale factors via EnumDisplayMonitors."
+    )
+    risk_level = RiskLevel.READ_ONLY
+    parameters_schema = {
+        "type": "object",
+        "properties": {},
+    }
+
+    async def execute(self, **kwargs: Any) -> ToolResult:
+        monitors = WindowManager.get_monitors()
+        return ToolResult(
+            success=True,
+            data={"count": len(monitors), "monitors": monitors},
+            message=f"Found {len(monitors)} connected display monitor(s).",
+        )
+
+
+class ManageVirtualDesktopTool(BaseTool):
+    name = "manage_virtual_desktop"
+    description = (
+        "Controls Windows virtual desktops: switch next/previous, jump to desktop N, "
+        "create a new virtual desktop, close current desktop, or open Task View."
+    )
+    risk_level = RiskLevel.MUTATING_SAFE
+    parameters_schema = {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["next", "prev", "new", "close", "task_view", "switch"],
+                "description": "Virtual desktop action.",
+            },
+            "desktop": {
+                "type": "integer",
+                "description": "Target virtual desktop number when action is 'switch' (e.g. 1, 2, 3).",
+            },
+        },
+        "required": ["action"],
+    }
+
+    async def execute(self, action: str, desktop: int = 0, **kwargs: Any) -> ToolResult:
+        target = desktop if desktop > 0 and action in ["switch", "go"] else action
+        res = WindowManager.switch_virtual_desktop(target=target)
+        if res.get("success"):
+            return ToolResult(
+                success=True,
+                data=res,
+                message=f"Executed virtual desktop action: {res.get('action')}.",
+            )
+        return ToolResult(
+            success=False,
+            error=res.get("error", f"Failed to execute virtual desktop action '{action}'."),
             data=res,
         )
 

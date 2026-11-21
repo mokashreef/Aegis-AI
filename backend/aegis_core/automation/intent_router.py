@@ -14,6 +14,8 @@ class UserIntent(str, Enum):
     APP_CLOSE = "app_close"
     OPEN_URL = "open_url"
     WINDOW_ACTION = "window_action"
+    MULTI_MONITOR = "multi_monitor"
+    VIRTUAL_DESKTOP = "virtual_desktop"
     SYSTEM_QUERY = "system_query"
     CLIPBOARD = "clipboard"
     VOLUME = "volume"
@@ -329,6 +331,71 @@ class IntentRouter:
         (
             r"^(?:ممكن\s+)?(?:صغر\s+(?:كل\s+)?ال?نوافذ|اظهر\s+سطح\s+المكتب|سطح\s+المكتب|"
             r"نزل\s+كل\s+شي|اخفي\s+ال?نوافذ)(?:\s+لو\s+سمحت|\s+من\s+فضلك)?$"
+        ),
+    ]
+
+    MULTI_MONITOR_PATTERNS = [
+        # "انقل النافذة للشاشة الثانية", "انقل للشاشة 2", "وديها على الشاشة الثانية", "انقل ليمين الشاشة الثانية"
+        (
+            r"^(?:ممكن\s+)?(?:انقل|انقلها|ودي|ودّي|وديها|ودها|حط|حول|ارسل)(?:\s+لي)?"
+            r"(?:\s+(?:النافذة|الشباك|التطبيق|البرنامج))?"
+            r"(?:\s+(?:إلى|الى|على|لـ))?\s*(?:يمين|يسار|أعلى|اعلى|أسفل|اسفل|نصف|منتصف)?"
+            r"\s*(?:للشاشة|الشاشة|شاشة|شاشه|للشاشه|لشاشة|لشاشه)\s*"
+            r"(?P<mon>الأولى|الاولى|الثانية|الثانيه|الثالثة|الثالثه|الرابعة|الرابعه|1|2|3|4)?"
+            r"(?:\s+(?:على\s+)?(?P<side>اليمين|اليسار|يمين|يسار|أعلى|اعلى|أسفل|اسفل|بالنص|بالوسط|تكبير|ملء))?$"
+        ),
+        # "Snap active window to the right half of monitor 2"
+        (
+            r"^(?:please\s+)?(?:snap|tile|dock)\s+(?:the\s+)?(?:active\s+)?(?:window|app)?\s*"
+            r"(?:to\s+(?:the\s+)?)?(?P<side>left|right|top|bottom|center|maximize)?\s*(?:half\s+)?(?:of\s+)?"
+            r"(?:the\s+)?(?:monitor|screen|display)\s*(?P<mon>\d+|first|second|third|1|2|3)?$"
+        ),
+        # "Move window to monitor 2" / "Move to monitor 2"
+        (
+            r"^(?:please\s+)?(?:move|send|shift|transfer|put)\s+(?:(?:the\s+)?(?:active\s+)?(?:window|app)\s+)?to\s+"
+            r"(?:the\s+)?(?:monitor|screen|display)\s*(?P<mon>\d+|first|second|third|1|2|3)"
+            r"(?:\s+(?:to\s+the\s+)?(?P<side>left|right|top|bottom|center|maximize))?$"
+        ),
+        # "انقل للشاشة 2"
+        (
+            r"^(?:انقل|انقلها|وديها|ودها)\s+(?:للشاشة|للشاشه|على\s+الشاشة|على\s+الشاشه)\s*"
+            r"(?P<mon>\d+|الثانية|الثانيه|الاولى|الأولى)$"
+        ),
+        # "اعرض الشاشات" / "list monitors"
+        (
+            r"^(?:list\s+monitors|show\s+monitors|display\s+monitors|اعرض\s+الشاشات|"
+            r"كم\s+شاشة\s+متصلة|الشاشات\s+المتصلة)$"
+        ),
+    ]
+
+    VIRTUAL_DESKTOP_PATTERNS = [
+        # "Switch to virtual desktop 2"
+        (
+            r"^(?:please\s+)?(?:switch|go|move|jump)\s+(?:to\s+)?(?:virtual\s+)?desktop\s*"
+            r"(?P<desk>\d+|next|prev|previous|new)$"
+        ),
+        # "Next virtual desktop" / "previous virtual desktop" / "new virtual desktop"
+        (
+            r"^(?:next|previous|prev|new|create|close)\s+(?:virtual\s+)?desktop$"
+        ),
+        # "Task view"
+        (
+            r"^(?:task\s+view|overview\s+desktops)$"
+        ),
+        # "انتقل إلى سطح المكتب الثاني" / "سطح المكتب 2" / "روح لسطح المكتب 2"
+        (
+            r"^(?:ممكن\s+)?(?:انتقل|روح|تحول|ابدل|غير)(?:\s+إلى|\s+الى|\s+لـ)?\s+"
+            r"(?:سطح\s+المكتب|الدسكتوب|الديسكتوب)\s*"
+            r"(?P<desk>الأول|الاول|الثاني|الثالث|الرابع|القادم|التالي|السابق|الماضي|الجديد|1|2|3|4)?$"
+        ),
+        # "سطح المكتب 2"
+        (
+            r"^(?:سطح\s+المكتب|الدسكتوب|الديسكتوب)\s*(?P<desk>\d+|الثاني|الثالث|الرابع|الاول|الأول)$"
+        ),
+        # "سطح مكتب جديد" / "اغلق سطح المكتب" / "اعرض اسطح المكتب"
+        (
+            r"^(?:سطح\s+مكتب\s+جديد|انشئ\s+سطح\s+مكتب|أنشئ\s+سطح\s+مكتب|"
+            r"اغلق\s+سطح\s+المكتب|أغلق\s+سطح\s+المكتب|اعرض\s+اسطح\s+المكتب|نوافذ\s+المهام)$"
         ),
     ]
 
@@ -910,6 +977,105 @@ class IntentRouter:
                     "intent": UserIntent.WINDOW_ACTION,
                     "name": "minimize_all_windows",
                     "arguments": {},
+                }
+
+        # 5.1 Multi-Monitor Management & Snapping (Bilingual)
+        for pat in cls.MULTI_MONITOR_PATTERNS:
+            m = re.match(pat, low) or re.match(pat, raw)
+            if m:
+                text_matched = (m.group(0) or "").lower()
+                if any(k in text_matched for k in ["list", "show", "اعرض", "كم شاشة", "الشاشات"]):
+                    return {
+                        "intent": UserIntent.MULTI_MONITOR,
+                        "name": "list_monitors",
+                        "arguments": {},
+                    }
+
+                # Extract monitor index
+                mon_raw = m.groupdict().get("mon") or ""
+                mon_idx = 2
+                if any(k in mon_raw for k in ["1", "الاولى", "الأولى", "الاول", "الأول", "first"]):
+                    mon_idx = 1
+                elif any(k in mon_raw for k in ["2", "الثانية", "الثانيه", "الثاني", "second"]):
+                    mon_idx = 2
+                elif any(k in mon_raw for k in ["3", "الثالثة", "الثالثه", "الثالث", "third"]):
+                    mon_idx = 3
+                elif any(k in mon_raw for k in ["4", "الرابعة", "الرابعه", "الرابع", "fourth"]):
+                    mon_idx = 4
+                elif mon_raw.isdigit():
+                    mon_idx = int(mon_raw)
+                elif "1" in text_matched or "الأولى" in text_matched or "الاولى" in text_matched:
+                    mon_idx = 1
+
+                # Extract snap side
+                side_raw = (m.groupdict().get("side") or "").lower()
+                full_text = text_matched + " " + side_raw
+                if any(k in full_text for k in ["يمين", "right"]):
+                    side = "right"
+                elif any(k in full_text for k in ["يسار", "left"]):
+                    side = "left"
+                elif any(k in full_text for k in ["أعلى", "اعلى", "top"]):
+                    side = "top"
+                elif any(k in full_text for k in ["أسفل", "اسفل", "bottom"]):
+                    side = "bottom"
+                elif any(k in full_text for k in ["تكبير", "ملء", "maximize"]):
+                    side = "maximize"
+                else:
+                    side = "center"
+
+                return {
+                    "intent": UserIntent.MULTI_MONITOR,
+                    "name": "move_window_monitor",
+                    "arguments": {
+                        "monitor": mon_idx,
+                        "side": side,
+                    },
+                }
+
+        # 5.2 Virtual Desktop Control (Bilingual)
+        for pat in cls.VIRTUAL_DESKTOP_PATTERNS:
+            m = re.match(pat, low) or re.match(pat, raw)
+            if m:
+                text_matched = (m.group(0) or "").lower()
+                desk_raw = (m.groupdict().get("desk") or "").lower()
+
+                if any(k in text_matched for k in ["new", "create", "جديد", "انشئ", "أنشئ"]):
+                    action = "new"
+                    desk_num = 0
+                elif any(k in text_matched for k in ["close", "delete", "اغلق", "أغلق", "احذف"]):
+                    action = "close"
+                    desk_num = 0
+                elif any(k in text_matched for k in ["task_view", "task view", "اعرض", "مهام"]):
+                    action = "task_view"
+                    desk_num = 0
+                elif any(k in text_matched for k in ["next", "تالي", "قادم", "بعد"]):
+                    action = "next"
+                    desk_num = 0
+                elif any(k in text_matched for k in ["prev", "previous", "سابق", "ماضي", "قبل"]):
+                    action = "prev"
+                    desk_num = 0
+                else:
+                    action = "switch"
+                    if any(k in desk_raw or k in text_matched for k in ["1", "الاول", "الأول", "first"]):
+                        desk_num = 1
+                    elif any(k in desk_raw or k in text_matched for k in ["2", "الثاني", "second"]):
+                        desk_num = 2
+                    elif any(k in desk_raw or k in text_matched for k in ["3", "الثالث", "third"]):
+                        desk_num = 3
+                    elif any(k in desk_raw or k in text_matched for k in ["4", "الرابع", "fourth"]):
+                        desk_num = 4
+                    elif desk_raw.isdigit():
+                        desk_num = int(desk_raw)
+                    else:
+                        desk_num = 2
+
+                return {
+                    "intent": UserIntent.VIRTUAL_DESKTOP,
+                    "name": "manage_virtual_desktop",
+                    "arguments": {
+                        "action": action,
+                        "desktop": desk_num,
+                    },
                 }
 
         # 6. Window Snapping (left, right, maximize)

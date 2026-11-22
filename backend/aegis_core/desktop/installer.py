@@ -17,7 +17,7 @@ logger = logging.getLogger("aegis.installer")
 
 CSC_PATH_X64 = r"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 CSC_PATH_X86 = r"C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe"
-VERSION = "0.2.0-alpha"
+VERSION = "1.1.0"
 
 
 def find_csc_compiler() -> Optional[str]:

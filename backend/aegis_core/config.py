@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Core Application Metadata
     app_name: str = Field(default="Aegis AI", description="Application display name")
-    app_version: str = Field(default="0.1.0-alpha", description="Semantic version string")
+    app_version: str = Field(default="1.1.0", description="Semantic version string")
     debug: bool = Field(default=False, description="Debug mode toggle for verbose telemetry")
     environment: str = Field(default="development", description="Environment: development, test, production")
 

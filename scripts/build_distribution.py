@@ -14,7 +14,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BUILD_DIR = PROJECT_ROOT / "build" / "AegisAI"
 RELEASES_DIR = PROJECT_ROOT / "releases"
-VERSION = "0.2.0-alpha"
+VERSION = "1.1.0"
 
 
 def log(msg: str) -> None:

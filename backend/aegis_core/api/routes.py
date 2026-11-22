@@ -628,3 +628,35 @@ async def media_stop_endpoint() -> Dict[str, Any]:
     from aegis_core.automation.media_manager import media_manager
 
     return media_manager.stop()
+
+
+# -------------------------------------------------------------
+# Community Plugins & Modular Tool Endpoints
+# -------------------------------------------------------------
+
+@router.get("/plugins")
+async def list_plugins_and_tools() -> Dict[str, Any]:
+    """Returns metadata for all registered automation tools and active community plugins."""
+    from aegis_core.plugins.loader import plugin_loader
+    from aegis_core.plugins.registry import plugin_registry
+
+    return {
+        "total_tools": len(plugin_registry.list_tools()),
+        "tools": plugin_registry.list_tools(),
+        "community_plugins": plugin_loader.list_loaded_plugins(),
+        "community_plugins_count": len(plugin_loader.list_loaded_plugins()),
+    }
+
+
+@router.post("/plugins/reload")
+async def reload_community_plugins() -> Dict[str, Any]:
+    """Triggers dynamic auto-discovery and loading from storage/plugins/."""
+    from aegis_core.plugins.loader import plugin_loader
+
+    status = plugin_loader.discover_and_load_all()
+    return {
+        "success": True,
+        "discovery_status": status,
+        "active_plugins": plugin_loader.list_loaded_plugins(),
+    }
+

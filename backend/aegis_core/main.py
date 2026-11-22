@@ -101,9 +101,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings.ensure_directories()
     db_engine.init_db()
 
-    # 2. Register tools
+    # 2. Register tools and discover community plugins
     register_default_tools()
-    logger.info("Registered %d built-in desktop automation tools.", len(plugin_registry.list_tools()))
+    from aegis_core.plugins.loader import plugin_loader
+
+    plugin_loader.discover_and_load_all()
+    logger.info(
+        "Registered %d automation tools (including community extensions).",
+        len(plugin_registry.list_tools()),
+    )
 
     # 3. Probe AI Runtime Matrix and ensure local Ollama daemon starts if installed
     try:

@@ -1,0 +1,19 @@
+name: weather_forecast
+version: "1.0.0"
+author: "Mohammad Abu Kashreef"
+description: "Community weather forecast extension demonstrating Aegis AI modular plugin architecture"
+license: "MIT"
+tools:
+  - name: get_weather_forecast
+    description: "Returns current weather conditions and temperature forecast for any given city."
+    risk_level: "read_only"
+    entrypoint: "handler.py:get_weather"
+    timeout_seconds: 10.0
+    parameters:
+      type: object
+      properties:
+        city:
+          type: string
+          description: "Name of city to query weather for (e.g. عمان, الرياض, London, New York)"
+      required:
+        - city
